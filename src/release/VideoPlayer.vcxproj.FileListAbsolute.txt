@@ -1,1 +1,0 @@
-E:\projects\c++\myProject\vc\video_player\VideoPlayer\release\VideoPlayer.exe

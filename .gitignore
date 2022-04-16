@@ -8,6 +8,8 @@ src/release/VideoPlayer.tlog/
 #tem files
 *.log
 .recipe
+.ilk
+.pdb
 
 
 # Prerequisites
