@@ -1,3 +1,15 @@
+#tmp folders
+src/.vs
+src/debug/qmake/
+src/debug/VideoPlayer.tlog/
+src/release/qmake/
+src/release/VideoPlayer.tlog/
+
+#tem files
+*.log
+.recipe
+
+
 # Prerequisites
 *.d
 
@@ -14,19 +26,21 @@
 # Compiled Dynamic libraries
 *.so
 *.dylib
-*.dll
+# *.dll
+
 
 # Fortran module files
 *.mod
 *.smod
 
+
 # Compiled Static libraries
 *.lai
 *.la
 *.a
-*.lib
+#*.lib
 
 # Executables
-*.exe
+# *.exe
 *.out
 *.app
