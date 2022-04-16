@@ -5,7 +5,7 @@
 ![FFmpeg Version](https://img.shields.io/badge/FFmpeg--blue)
 
 A simple video player based on QT and FFmpeg. This is the first rough version for personal use.
-
+<img src="src/res/player.png" width="320" height="240" />
 
 ##### References
 
