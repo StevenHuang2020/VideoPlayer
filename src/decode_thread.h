@@ -26,8 +26,10 @@ signals:
 protected:
 	void run() override;
 
-public:
+public slots:
 	void stop_decode();
+
+public:
 	void pause_decode();
 	bool paused();
 	const AVCodecContext* get_decode_context(bool bVideo = true);

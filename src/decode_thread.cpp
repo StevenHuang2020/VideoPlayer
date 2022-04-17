@@ -44,21 +44,15 @@ void audio_callback(AVCodecContext* pContex, AVFrame* avFrame, int bufsize, uint
 	// qDebug("audio packet: bufsize=%d, nb_samples=%d, channels=%d\n", bufsize, avFrame->nb_samples, pContex->channels);
 	emit thread->audio_ready(bufsize, buffer);
 
+#if 0
 	//output format: 32-bit float, little-endian, 2 chn, 44100hz
 	char file[] = "decode.pcm";
 	static FILE* outfile = fopen(file, "wb");
-#if 1
+
 	fwrite(buffer, 1, bufsize, outfile);
-#else
-	for (int i = 0; i < avFrame->nb_samples; i++)
-			for (int ch = 0; ch < pContex->channels; ch++)
-				fwrite(avFrame->data[ch] + data_size * i, 1, data_size, outfile);
-	//https://programming.vip/docs/qt5-play-the-audio-decoded-by-ffmpeg-using-qaudiooutput.html
-	//https://chowdera.com/2022/02/202202160912582311.html
 #endif
 	// audio_convertion(pContex, avFrame);
-
-	//av_free(buffer); //after play
+	// av_free(buffer); //call this after play
 }
 
 
@@ -95,6 +89,8 @@ void DecodeThread::run()
 
 	m_pDecode->start_decode();
 	emit this->finish_decode();
+
+	qDebug("--------decode thread exit.");
 }
 
 void DecodeThread::stop_decode()
@@ -102,7 +98,6 @@ void DecodeThread::stop_decode()
 	if (m_pDecode) {
 		m_pDecode->stop_decode();
 		wait();
-
 		// emit this->finish_decode();
 	}
 }

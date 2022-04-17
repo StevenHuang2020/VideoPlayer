@@ -215,8 +215,8 @@ AVCodecContext* Video_decode::open_codec_contex(int streamId)
 
 int Video_decode::start_decode() {
     assert(m_pFormatCtx != NULL); // if is NULL, please init_decode first
-    assert(m_videoStream >= 0);
-    assert(m_pVideoCodecCtx != NULL);
+    //assert(m_videoStream >= 0);
+    //assert(m_pVideoCodecCtx != NULL);
     //assert(m_pAudioCodecCtx != NULL);
 
     // Now we need a place to actually store the frame:
@@ -232,24 +232,24 @@ int Video_decode::start_decode() {
 
      // Allocate a rgb video frame
     AVFrame* pFrameRGB = NULL;
-    pFrameRGB = av_frame_alloc();
-    if (pFrameRGB == NULL)
-    {
-        printf("Could not allocate rgb frame.\n");
-        return -1;
-    }
-
-    // Even though we've allocated the frame, we still need a place to put
-    // the raw data when we convert it. We use avpicture_get_size to get
-    // the size we need, and allocate the space manually:
     uint8_t* buffer_RGB = NULL;
-    int numBytes = av_image_get_buffer_size(AV_PIX_FMT_RGB24, 
-        m_pVideoCodecCtx->width, m_pVideoCodecCtx->height, 32);
-    buffer_RGB = (uint8_t*)av_malloc(numBytes * sizeof(uint8_t));
 
-    av_image_fill_arrays(pFrameRGB->data, pFrameRGB->linesize, buffer_RGB,
-        AV_PIX_FMT_RGB24, m_pVideoCodecCtx->width, m_pVideoCodecCtx->height, 32);
+    if (m_pVideoCodecCtx) {
+        pFrameRGB = av_frame_alloc();
+        if (pFrameRGB == NULL)
+        {
+            printf("Could not allocate rgb frame.\n");
+            return -1;
+        }
 
+        int numBytes = av_image_get_buffer_size(AV_PIX_FMT_RGB24,
+            m_pVideoCodecCtx->width, m_pVideoCodecCtx->height, 32);
+        buffer_RGB = (uint8_t*)av_malloc(numBytes * sizeof(uint8_t));
+
+        av_image_fill_arrays(pFrameRGB->data, pFrameRGB->linesize, buffer_RGB,
+            AV_PIX_FMT_RGB24, m_pVideoCodecCtx->width, m_pVideoCodecCtx->height, 32);
+    }
+   
    //malloc buffer for decoed audio
     struct SwrContext* swrCtx = NULL;
     if (m_pAudioCodecCtx) {
@@ -288,7 +288,10 @@ int Video_decode::start_decode() {
     while (!m_bExit)
     {
         if (m_bPause)
+        {
+            av_usleep(10000);
             continue;
+        }
 
         if (av_read_frame(m_pFormatCtx, pPacket) < 0)
             break;
@@ -296,7 +299,10 @@ int Video_decode::start_decode() {
         // Is this a packet from the video stream?
         if (pPacket->stream_index == m_videoStream)
         {
-            video_decode(i++, m_pVideoCodecCtx, pFrame, pFrameRGB, pPacket);
+            if (m_pVideoCodecCtx)
+            {
+                video_decode(i++, m_pVideoCodecCtx, pFrame, pFrameRGB, pPacket);
+            }            
         }
         else if (pPacket->stream_index == m_audioStream) 
         {
@@ -392,7 +398,7 @@ int Video_decode::video_decode(int frameId, AVCodecContext* pContex, AVFrame* pF
 
 int Video_decode::audio_decode(AVCodecContext* dec_ctx, AVPacket* pkt, AVFrame* frame, struct SwrContext* swrCtx)
 {
-    int ret, data_size;
+    int ret;
 
     /* send the packet with the compressed data to the decoder */
     ret = avcodec_send_packet(dec_ctx, pkt);
@@ -410,7 +416,7 @@ int Video_decode::audio_decode(AVCodecContext* dec_ctx, AVPacket* pkt, AVFrame* 
             fprintf(stderr, "Error during decoding\n");
             return -1;
         }
-        //data_size = av_get_bytes_per_sample(dec_ctx->sample_fmt);
+        //int data_size = av_get_bytes_per_sample(dec_ctx->sample_fmt);
         //if (data_size < 0) {
         //    /* This should not occur, checking just for paranoia */
         //    return -1;

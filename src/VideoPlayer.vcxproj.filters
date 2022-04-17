@@ -72,7 +72,10 @@
     <ClCompile Include="decode_thread.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="audio_play.cpp">
+    <ClCompile Include="audio_play_thread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="video_play_thread.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -86,7 +89,10 @@
     <QtMoc Include="decode_thread.h">
       <Filter>Header Files</Filter>
     </QtMoc>
-    <QtMoc Include="audio_play.h">
+    <QtMoc Include="audio_play_thread.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="video_play_thread.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

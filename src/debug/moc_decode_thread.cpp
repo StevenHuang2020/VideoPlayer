@@ -21,8 +21,8 @@ QT_BEGIN_MOC_NAMESPACE
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_DecodeThread_t {
-    QByteArrayData data[12];
-    char stringdata0[127];
+    QByteArrayData data[13];
+    char stringdata0[139];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -42,13 +42,14 @@ QT_MOC_LITERAL(7, 84, 6), // "pAudio"
 QT_MOC_LITERAL(8, 91, 11), // "audio_ready"
 QT_MOC_LITERAL(9, 103, 7), // "bufsize"
 QT_MOC_LITERAL(10, 111, 8), // "uint8_t*"
-QT_MOC_LITERAL(11, 120, 6) // "buffer"
+QT_MOC_LITERAL(11, 120, 6), // "buffer"
+QT_MOC_LITERAL(12, 127, 11) // "stop_decode"
 
     },
     "DecodeThread\0frame_ready\0\0finish_decode\0"
     "decode_context\0const AVCodecContext*\0"
     "pVideo\0pAudio\0audio_ready\0bufsize\0"
-    "uint8_t*\0buffer"
+    "uint8_t*\0buffer\0stop_decode"
 };
 #undef QT_MOC_LITERAL
 
@@ -58,7 +59,7 @@ static const uint qt_meta_data_DecodeThread[] = {
        8,       // revision
        0,       // classname
        0,    0, // classinfo
-       4,   14, // methods
+       5,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -66,16 +67,22 @@ static const uint qt_meta_data_DecodeThread[] = {
        4,       // signalCount
 
  // signals: name, argc, parameters, tag, flags
-       1,    1,   34,    2, 0x06 /* Public */,
-       3,    0,   37,    2, 0x06 /* Public */,
-       4,    2,   38,    2, 0x06 /* Public */,
-       8,    2,   43,    2, 0x06 /* Public */,
+       1,    1,   39,    2, 0x06 /* Public */,
+       3,    0,   42,    2, 0x06 /* Public */,
+       4,    2,   43,    2, 0x06 /* Public */,
+       8,    2,   48,    2, 0x06 /* Public */,
+
+ // slots: name, argc, parameters, tag, flags
+      12,    0,   53,    2, 0x0a /* Public */,
 
  // signals: parameters
     QMetaType::Void, QMetaType::QImage,    2,
     QMetaType::Void,
     QMetaType::Void, 0x80000000 | 5, 0x80000000 | 5,    6,    7,
     QMetaType::Void, QMetaType::Int, 0x80000000 | 10,    9,   11,
+
+ // slots: parameters
+    QMetaType::Void,
 
        0        // eod
 };
@@ -90,6 +97,7 @@ void DecodeThread::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id
         case 1: _t->finish_decode(); break;
         case 2: _t->decode_context((*reinterpret_cast< const AVCodecContext*(*)>(_a[1])),(*reinterpret_cast< const AVCodecContext*(*)>(_a[2]))); break;
         case 3: _t->audio_ready((*reinterpret_cast< int(*)>(_a[1])),(*reinterpret_cast< uint8_t*(*)>(_a[2]))); break;
+        case 4: _t->stop_decode(); break;
         default: ;
         }
     } else if (_c == QMetaObject::IndexOfMethod) {
@@ -154,13 +162,13 @@ int DecodeThread::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 4)
+        if (_id < 5)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 4;
+        _id -= 5;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 4)
+        if (_id < 5)
             *reinterpret_cast<int*>(_a[0]) = -1;
-        _id -= 4;
+        _id -= 5;
     }
     return _id;
 }

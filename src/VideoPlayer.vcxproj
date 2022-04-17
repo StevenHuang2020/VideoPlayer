@@ -201,11 +201,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="about.cpp" />
-    <ClCompile Include="audio_play.cpp" />
+    <ClCompile Include="audio_play_thread.cpp" />
     <ClCompile Include="decode_thread.cpp" />
     <ClCompile Include="ffmpeg_decode.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mainwindow.cpp" />
+    <ClCompile Include="video_play_thread.cpp" />
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="mainwindow.h">
@@ -252,7 +253,10 @@
     <QtMoc Include="decode_thread.h" />
   </ItemGroup>
   <ItemGroup>
-    <QtMoc Include="audio_play.h" />
+    <QtMoc Include="audio_play_thread.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="video_play_thread.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">
