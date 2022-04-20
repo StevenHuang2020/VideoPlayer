@@ -4,8 +4,15 @@
 ![QT Version](https://img.shields.io/badge/QT-5.12.12-green)
 ![FFmpeg Version](https://img.shields.io/badge/FFmpeg--blue)
 
-A simple video player based on QT and FFmpeg. This is the first rough version for personal use.
+A simple video player based on QT and FFmpeg. This is just a rough product for personal entertainment.
 <img src="src/res/player.png" width="320" height="240" />
+
+##### History
+
+- v1.0.1, 20/04/22
+    - A/V play buffer control
+- v1.0.0, 16/04/22
+    - initial version
 
 ##### References
 

@@ -122,9 +122,64 @@ const AVCodecContext* Video_decode::get_decode_context(bool bVideo)
     }
 }
 
-bool Video_decode::init_decode(const char* filename)
+//bool Video_decode::init_decode(const char* filename)
+//{
+//    int ret = avformat_open_input(&m_pFormatCtx, filename, NULL, NULL);
+//    if (ret < 0)
+//    {
+//        printf("Could not open file %s\n", filename);
+//        return false;
+//    }
+//
+//    // Retrieve stream information
+//    ret = avformat_find_stream_info(m_pFormatCtx, NULL);
+//    if (ret < 0)
+//    {
+//        printf("Could not find stream information %s\n", filename);
+//        return false;
+//    }
+//
+//    // information about file onto standard error
+//    av_dump_format(m_pFormatCtx, 0, filename, 0); 
+//
+//    // Now pFormatCtx->streams is just an array of pointers, of size
+//    // pFormatCtx->nb_streams, so let's walk through it until we find a video
+//    // stream.
+//    unsigned int i;
+//
+//    // The stream's information about the codec is in what we call the
+//    // "codec context." This contains all the information about the codec that
+//    // the stream is using
+//   
+//    // Find the first video stream
+//    for (i = 0; i < m_pFormatCtx->nb_streams; i++)
+//    {
+//        // check the General type of the encoded data to match
+//        if (m_pFormatCtx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO)
+//        {
+//            m_videoStream = i;
+//            m_pVideoCodecCtx = open_codec_contex(i);
+// 
+//        }
+//        else if (m_pFormatCtx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_AUDIO)
+//        {
+//            m_audioStream = i;
+//            m_pAudioCodecCtx = open_codec_contex(i);
+//        }
+//
+//        if (m_videoStream != -1 && m_audioStream != -1)
+//            break;
+//    }
+//
+//    if (m_pVideoCodecCtx == NULL && m_pAudioCodecCtx == NULL)
+//        return false;
+//
+//    return true;
+//}
+
+bool Video_decode::init_decode(const char* filename, bool bVideo)
 {
-    int ret = avformat_open_input(&m_pFormatCtx, filename, NULL, NULL);    // [2]
+    int ret = avformat_open_input(&m_pFormatCtx, filename, NULL, NULL);
     if (ret < 0)
     {
         printf("Could not open file %s\n", filename);
@@ -132,7 +187,7 @@ bool Video_decode::init_decode(const char* filename)
     }
 
     // Retrieve stream information
-    ret = avformat_find_stream_info(m_pFormatCtx, NULL);  //[3]
+    ret = avformat_find_stream_info(m_pFormatCtx, NULL);
     if (ret < 0)
     {
         printf("Could not find stream information %s\n", filename);
@@ -140,7 +195,7 @@ bool Video_decode::init_decode(const char* filename)
     }
 
     // information about file onto standard error
-    av_dump_format(m_pFormatCtx, 0, filename, 0);  // [4]
+    av_dump_format(m_pFormatCtx, 0, filename, 0);
 
     // Now pFormatCtx->streams is just an array of pointers, of size
     // pFormatCtx->nb_streams, so let's walk through it until we find a video
@@ -150,31 +205,34 @@ bool Video_decode::init_decode(const char* filename)
     // The stream's information about the codec is in what we call the
     // "codec context." This contains all the information about the codec that
     // the stream is using
-   
-    // Find the first video stream
-    for (i = 0; i < m_pFormatCtx->nb_streams; i++)
+
+    if (bVideo)
     {
-        // check the General type of the encoded data to match
-        if (m_pFormatCtx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO)
+        for (i = 0; i < m_pFormatCtx->nb_streams; i++)
         {
-            m_videoStream = i;
-            m_pVideoCodecCtx = open_codec_contex(i);
- 
+            // check the General type of the encoded data to match
+            if (m_pFormatCtx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO)
+            {
+                m_videoStream = i;
+                m_pVideoCodecCtx = open_codec_contex(i);
+                return (m_pVideoCodecCtx != NULL);
+            }
         }
-        else if (m_pFormatCtx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_AUDIO)
-        {
-            m_audioStream = i;
-            m_pAudioCodecCtx = open_codec_contex(i);
-        }
-
-        if (m_videoStream != -1 && m_audioStream != -1)
-            break;
     }
-
-    if (m_pVideoCodecCtx == NULL && m_pAudioCodecCtx == NULL)
-        return false;
-
-    return true;
+    else
+    {
+        for (i = 0; i < m_pFormatCtx->nb_streams; i++)
+        {
+            if (m_pFormatCtx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_AUDIO)
+            {
+                m_audioStream = i;
+                m_pAudioCodecCtx = open_codec_contex(i);
+                return (m_pAudioCodecCtx != NULL);
+            }
+        }
+    }
+      
+    return false;
 }
 
 AVCodecContext* Video_decode::open_codec_contex(int streamId)
@@ -233,8 +291,22 @@ int Video_decode::start_decode() {
      // Allocate a rgb video frame
     AVFrame* pFrameRGB = NULL;
     uint8_t* buffer_RGB = NULL;
+    struct SwsContext* sws_ctx = NULL;
 
     if (m_pVideoCodecCtx) {
+        sws_ctx = sws_getContext( 
+            m_pVideoCodecCtx->width,
+            m_pVideoCodecCtx->height,
+            m_pVideoCodecCtx->pix_fmt,
+            m_pVideoCodecCtx->width,
+            m_pVideoCodecCtx->height,
+            AV_PIX_FMT_RGB24,   // sws_scale destination color scheme
+            SWS_BILINEAR,
+            NULL,
+            NULL,
+            NULL
+        );
+
         pFrameRGB = av_frame_alloc();
         if (pFrameRGB == NULL)
         {
@@ -301,7 +373,7 @@ int Video_decode::start_decode() {
         {
             if (m_pVideoCodecCtx)
             {
-                video_decode(i++, m_pVideoCodecCtx, pFrame, pFrameRGB, pPacket);
+                video_decode(i++, m_pVideoCodecCtx, pFrame, pFrameRGB, pPacket, sws_ctx);
             }            
         }
         else if (pPacket->stream_index == m_audioStream) 
@@ -316,9 +388,13 @@ int Video_decode::start_decode() {
     }
 
     printf("Decode loop ended normally.\n");
+
     /* Cleanup.  */
-    //Free decoded audio
+    //Free audio resample context
     swr_free(&swrCtx);
+
+    //Free video resample context
+    sws_freeContext(sws_ctx);
 
     // Free the RGB image
     av_free(buffer_RGB);
@@ -331,21 +407,8 @@ int Video_decode::start_decode() {
     return 0;
 }
 
-int Video_decode::video_decode(int frameId, AVCodecContext* pContex, AVFrame* pFrame, AVFrame* pFrameRGB, AVPacket* pPacket)
+int Video_decode::video_decode(int frameId, AVCodecContext* pContex, AVFrame* pFrame, AVFrame* pFrameRGB, AVPacket* pPacket, struct SwsContext* sws_ctx)
 {
-    struct SwsContext* sws_ctx = sws_getContext(   // [13]
-        pContex->width,
-        pContex->height,
-        pContex->pix_fmt,
-        pContex->width,
-        pContex->height,
-        AV_PIX_FMT_RGB24,   // sws_scale destination color scheme
-        SWS_BILINEAR,
-        NULL,
-        NULL,
-        NULL
-    );
-
     int ret = avcodec_send_packet(pContex, pPacket);
     if (ret < 0)
     {
@@ -369,11 +432,11 @@ int Video_decode::video_decode(int frameId, AVCodecContext* pContex, AVFrame* pF
         // Convert the image from its native format to RGB
         sws_scale(sws_ctx, (uint8_t const* const*)pFrame->data, pFrame->linesize, 0, pContex->height, pFrameRGB->data, pFrameRGB->linesize);
 
-        // save the read AVFrame into ppm file
         if (callback_video_fun)
         {
             callback_video_fun(pContex, pFrameRGB, frameId, m_pCallContext);
         }
+        // save the read AVFrame into ppm file
         //saveFrame(pFrameRGB, m_pCodecCtx->width, m_pCodecCtx->height, i);
 
         // print log information

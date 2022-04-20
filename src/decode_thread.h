@@ -11,17 +11,16 @@ class DecodeThread : public QThread
 	Q_OBJECT
 
 public:
-	DecodeThread(QObject* parent = nullptr, const QString& file = "");
+	DecodeThread(QObject* parent = nullptr, const QString& file = "", bool bVideo = true);
 	~DecodeThread();
 private:
 	Video_decode* m_pDecode;
 	QString m_videoFile;
-	// QMutex m_mutex;
+	bool m_bVideo;  //for independent video or audio decode thread
 signals:
 	void frame_ready(const QImage&);
-	void finish_decode();
-	void decode_context(const AVCodecContext*pVideo, const AVCodecContext*pAudio);
-	void audio_ready(int bufsize, uint8_t* buffer);
+	// void decode_context(const AVCodecContext*pVideo, const AVCodecContext*pAudio);
+	void audio_ready(uint8_t* buffer, int bufsize);
 
 protected:
 	void run() override;
@@ -30,6 +29,7 @@ public slots:
 	void stop_decode();
 
 public:
+	bool decode_thread_init();
 	void pause_decode();
 	bool paused();
 	const AVCodecContext* get_decode_context(bool bVideo = true);

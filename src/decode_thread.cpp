@@ -42,7 +42,7 @@ void audio_callback(AVCodecContext* pContex, AVFrame* avFrame, int bufsize, uint
 {
 	DecodeThread* thread = (DecodeThread*)pParam;
 	// qDebug("audio packet: bufsize=%d, nb_samples=%d, channels=%d\n", bufsize, avFrame->nb_samples, pContex->channels);
-	emit thread->audio_ready(bufsize, buffer);
+	emit thread->audio_ready(buffer, bufsize);
 
 #if 0
 	//output format: 32-bit float, little-endian, 2 chn, 44100hz
@@ -55,13 +55,12 @@ void audio_callback(AVCodecContext* pContex, AVFrame* avFrame, int bufsize, uint
 	// av_free(buffer); //call this after play
 }
 
-
-DecodeThread::DecodeThread(QObject* parent, const QString&file)
+DecodeThread::DecodeThread(QObject* parent, const QString& file, bool bVideo)
 	: QThread(parent),
-	m_videoFile(file)
+	m_videoFile(file),
+	m_pDecode(NULL),
+	m_bVideo(bVideo)
 {
-	m_videoFile = file;
-	m_pDecode = NULL;
 }
 
 DecodeThread::~DecodeThread()
@@ -73,24 +72,42 @@ DecodeThread::~DecodeThread()
 	}
 }
 
-void DecodeThread::run()
+bool DecodeThread::decode_thread_init()
 {
 	assert(m_pDecode == NULL);
 	m_pDecode = new Video_decode(frame_callback, audio_callback, this);
 
-	qDebug("decode thread started, file:%s.\n", qUtf8Printable(m_videoFile));
 	std::string str = m_videoFile.toStdString();
 	const char* filename = str.c_str();
-	qDebug("video file:%s\n", filename);
-	m_pDecode->init_decode(filename);
+	// qDebug("video file:%s\n", filename);
+	bool ret = m_pDecode->init_decode(filename, m_bVideo);
+	if (ret)
+	{
+		qDebug("decode [%d(1:video, 0:audio)] init success, file:%s.", m_bVideo, qUtf8Printable(m_videoFile));
+	}
+	else
+	{
+		qDebug("decode [%d(1:video, 0:audio)] init failed, file:%s.", m_bVideo, qUtf8Printable(m_videoFile));
+	}
 
-	emit this->decode_context(m_pDecode->get_decode_context(), 
-		m_pDecode->get_decode_context(false));
+	return ret;
+}
 
-	m_pDecode->start_decode();
-	emit this->finish_decode();
+void DecodeThread::run()
+{
+	if (m_pDecode)
+	{
+		m_pDecode->start_decode();
+	}
 
-	qDebug("--------decode thread exit.");
+	if (m_bVideo)
+	{
+		qDebug("--------decode video thread exit.");
+	}
+	else
+	{
+		qDebug("--------decode audio thread exit.");
+	}
 }
 
 void DecodeThread::stop_decode()
@@ -98,7 +115,6 @@ void DecodeThread::stop_decode()
 	if (m_pDecode) {
 		m_pDecode->stop_decode();
 		wait();
-		// emit this->finish_decode();
 	}
 }
 
@@ -115,7 +131,7 @@ bool DecodeThread::paused()
 	return false;
 }
 
-const AVCodecContext* DecodeThread::get_decode_context(bool bVideo) 
+const AVCodecContext* DecodeThread::get_decode_context(bool bVideo)
 {
 	if (m_pDecode)
 		return m_pDecode->get_decode_context(bVideo);

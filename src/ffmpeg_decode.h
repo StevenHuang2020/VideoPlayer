@@ -35,7 +35,9 @@ private:
 public:
 	// int video_decode2(const char* filename);
 	// void decode_init(const char* filename); // deprecated
-	bool init_decode(const char* filename);
+	// bool init_decode(const char* filename);
+	bool init_decode(const char* filename, bool bVideo=true);
+
 	int start_decode();
 	void stop_decode();
 	void pause_decode();
@@ -46,7 +48,7 @@ public:
 private:
 	void release_decode();
 	AVCodecContext* open_codec_contex(int streamId);
-	int video_decode(int frameId, AVCodecContext* pContex, AVFrame* pFrame, AVFrame* pFrameRGB, AVPacket* pPacket);
+	int video_decode(int frameId, AVCodecContext* pContex, AVFrame* pFrame, AVFrame* pFrameRGB, AVPacket* pPacket, struct SwsContext* sws_ctx);
 	int audio_decode(AVCodecContext* pContex, AVPacket* pkt, AVFrame* frame, struct SwrContext* swrCtx);
 };
 #endif

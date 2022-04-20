@@ -1,13 +1,16 @@
 #include "audio_play_thread.h"
+#include "ffmpeg_decode.h"
 
 
 AudioPlayThread::AudioPlayThread(QObject* parent)
 	: QThread(parent),
-	m_pDevice(NULL), 
+	m_pDevice(NULL),
 	m_pOutput(NULL),
 	m_bExitThread(false),
-	m_bPauseThread(false)
+	m_bPauseThread(false),
+	m_bWaitToExitThread(false)
 {
+	m_bufferSize = 256; // 128;
 	// print_device();
 	// init_device();
 	// play_file("./res/test.pcm");
@@ -15,6 +18,7 @@ AudioPlayThread::AudioPlayThread(QObject* parent)
 
 AudioPlayThread::~AudioPlayThread()
 {
+	stop_thread();
 	clear_buffer_queue();
 	stop_device();
 }
@@ -63,7 +67,7 @@ bool AudioPlayThread::init_device(int sample_rate, int channel, AVSampleFormat s
 	// Set up the format, eg.
 	format.setSampleRate(sample_rate);
 	format.setChannelCount(channel);
-	format.setSampleSize(8 * av_get_bytes_per_sample(sample_fmt));  
+	format.setSampleSize(8 * av_get_bytes_per_sample(sample_fmt));
 	format.setCodec("audio/pcm");
 	format.setByteOrder(QAudioFormat::LittleEndian);
 	format.setSampleType(QAudioFormat::SignedInt);
@@ -104,7 +108,7 @@ void AudioPlayThread::play_buf(const uint8_t* buf, int datasize)
 #if 0
 		m_audioDevice->write((const char*)buf, datasize);
 #else
-		uint8_t* data = (uint8_t *)buf;
+		uint8_t* data = (uint8_t*)buf;
 		while (datasize > 0) {
 			qint64 len = m_audioDevice->write((const char*)data, datasize);
 			if (len < 0)
@@ -115,41 +119,21 @@ void AudioPlayThread::play_buf(const uint8_t* buf, int datasize)
 			}
 
 			// qDebug("play buf:reslen:%d, write len:%d", len, datasize);
-		}		
+		}
 #endif
 	}
 }
 
-void AudioPlayThread::receive_buf(const uint8_t* buf, int datasize)
-{
-	audio_buffer* pBuffer = new audio_buffer();
-	pBuffer->pData = new uint8_t[datasize];
-	memcpy(pBuffer->pData, buf, datasize);
-	pBuffer->datasize = datasize;
-
-	QMutexLocker lock(&m_mutex);
-	m_AudioBufferQueue.enqueue(pBuffer);
-	lock.unlock();
-
-#if PRINT_AUDIO_BUFFER_INFO
-	print_buffer_info();
-#endif
-}
-
 audio_buffer* AudioPlayThread::get_head_buffer()
 {
-	QMutexLocker lock(&m_mutex);
-	if (!m_AudioBufferQueue.isEmpty()) 
+	if (!m_AudioBufferQueue.isEmpty())
 		return m_AudioBufferQueue.dequeue();
 	return NULL;
-	lock.unlock();
 }
 
-int AudioPlayThread::get_buffersize()
+uint AudioPlayThread::get_buffersize()
 {
-	QMutexLocker lock(&m_mutex);
 	return m_AudioBufferQueue.length();
-	lock.unlock();
 }
 
 void AudioPlayThread::print_buffer_info()
@@ -181,17 +165,56 @@ void AudioPlayThread::clear_buffer_queue()
 	lock.unlock();
 }
 
+void AudioPlayThread::receive_buf(const uint8_t* buf, int datasize)
+{
+	m_mutex.lock();
+	if (get_buffersize() >= m_bufferSize)  //limit buffer size
+	{
+		m_bufferTooFull.wait(&m_mutex);
+	}
+	m_mutex.unlock();
+
+	audio_buffer* pBuffer = new audio_buffer();
+	pBuffer->pData = new uint8_t[datasize];
+	memcpy(pBuffer->pData, buf, datasize);
+	pBuffer->datasize = datasize;
+
+	av_free((void*)buf);
+
+	QMutexLocker lock(&m_mutex);
+	m_AudioBufferQueue.enqueue(pBuffer);
+	//if (get_buffersize() >= m_bufferSize)  //limit buffer size
+	//{
+	//	m_bufferNotEmpty.wakeAll();
+	//}
+	lock.unlock();
+
+#if PRINT_AUDIO_BUFFER_INFO
+	print_buffer_info();
+#endif
+}
+
 void AudioPlayThread::run()
 {
 	while (true)
 	{
-		if (m_bExitThread && get_buffersize() == 0)
+		if (m_bExitThread)
 			break;
+
+		if (m_bWaitToExitThread && get_buffersize() == 0)
+			break;
+
+		/*m_mutex.lock();
+		if (get_buffersize() < m_bufferSize)
+		{
+			m_bufferNotEmpty.wait(&m_mutex);
+		}
+		m_mutex.unlock();*/
 
 		audio_buffer* pBuffer = get_head_buffer();
 		if (m_bPauseThread || pBuffer == NULL)
 		{
-			msleep(100);
+			QThread::msleep(10);
 		}
 		else
 		{
@@ -201,16 +224,31 @@ void AudioPlayThread::run()
 
 			play_buf(pBuffer->pData, pBuffer->datasize);
 			free_buffer(pBuffer);
+
+			m_mutex.lock();
+			if (get_buffersize() < m_bufferSize)  //limit buffer size
+			{
+				m_bufferTooFull.wakeAll();
+			}
+			m_mutex.unlock();
 		}
+
 	}
 	qDebug("--------audio play thread exit.");
-	emit finish_play();
 }
 
 void AudioPlayThread::stop_thread()
 {
 	m_bExitThread = true;
-	// wait();
+	m_bufferNotEmpty.wakeAll();
+	wait();
+}
+
+void AudioPlayThread::wait_stop_thread()
+{
+	m_bWaitToExitThread = true;
+	m_bufferNotEmpty.wakeAll();
+	wait();
 }
 
 void AudioPlayThread::pause_thread()

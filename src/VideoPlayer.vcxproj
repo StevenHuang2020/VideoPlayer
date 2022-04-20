@@ -258,6 +258,9 @@
   <ItemGroup>
     <QtMoc Include="video_play_thread.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="version.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">
     <Import Project="$(QtMsBuild)\qt.targets" />
