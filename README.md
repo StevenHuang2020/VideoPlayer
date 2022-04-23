@@ -9,6 +9,9 @@ A simple video player based on QT and FFmpeg. This is just a rough product for p
 
 ##### History
 
+- v1.1.0, 23/04/22
+    - A/V sync control
+
 - v1.0.1, 20/04/22
     - A/V play buffer control
 - v1.0.0, 16/04/22

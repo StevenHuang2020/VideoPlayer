@@ -201,12 +201,18 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="about.cpp" />
+    <ClCompile Include="audio_decode_thread.cpp" />
     <ClCompile Include="audio_play_thread.cpp" />
-    <ClCompile Include="decode_thread.cpp" />
-    <ClCompile Include="ffmpeg_decode.cpp" />
+    <ClCompile Include="ffmpeg_init.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mainwindow.cpp" />
+    <ClCompile Include="packets_sync.cpp" />
+    <ClCompile Include="read_thread.cpp" />
+    <ClCompile Include="subtitle_decode_thread.cpp" />
+    <ClCompile Include="video_decode_thread.cpp" />
     <ClCompile Include="video_play_thread.cpp" />
+    <ClCompile Include="video_state.cpp" />
+    <ClCompile Include="youtube_url_dlg.cpp" />
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="mainwindow.h">
@@ -238,6 +244,7 @@
     <QtUic Include="about.ui" />
     <QtUic Include="mainwindow.ui">
     </QtUic>
+    <QtUic Include="youtube_url_dlg.ui" />
   </ItemGroup>
   <ItemGroup>
     <None Include="debug\VideoPlayer_en_001.qm">
@@ -250,16 +257,19 @@
     <QtMoc Include="about.h" />
   </ItemGroup>
   <ItemGroup>
-    <QtMoc Include="decode_thread.h" />
-  </ItemGroup>
-  <ItemGroup>
     <QtMoc Include="audio_play_thread.h" />
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="video_play_thread.h" />
   </ItemGroup>
   <ItemGroup>
+    <QtMoc Include="audio_decode_thread.h" />
+    <ClInclude Include="packets_sync.h" />
+    <QtMoc Include="video_decode_thread.h" />
+    <QtMoc Include="read_thread.h" />
+    <QtMoc Include="subtitle_decode_thread.h" />
     <ClInclude Include="version.h" />
+    <QtMoc Include="youtube_url_dlg.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

@@ -4,16 +4,16 @@
 #include "ui_about.h"
 
 
-class about : public QDialog
+class About : public QDialog
 {
 	Q_OBJECT
 
 public:
-	about(QWidget* parent = Q_NULLPTR);
-	~about();
+	About(QWidget* parent = Q_NULLPTR);
+	~About();
 
 private:
-	Ui::about* ui;
+	Ui::About* ui;
 private:
 	void init_label();
 private slots:

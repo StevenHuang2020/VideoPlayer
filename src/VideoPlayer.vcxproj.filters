@@ -66,16 +66,34 @@
     <ClCompile Include="about.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ffmpeg_decode.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="decode_thread.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="audio_play_thread.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="video_play_thread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="youtube_url_dlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="packets_sync.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="read_thread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ffmpeg_init.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="video_state.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="video_decode_thread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="audio_decode_thread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="subtitle_decode_thread.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -86,13 +104,25 @@
     <QtMoc Include="about.h">
       <Filter>Header Files</Filter>
     </QtMoc>
-    <QtMoc Include="decode_thread.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
     <QtMoc Include="audio_play_thread.h">
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="video_play_thread.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="youtube_url_dlg.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="read_thread.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="video_decode_thread.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="audio_decode_thread.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="subtitle_decode_thread.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>
@@ -113,6 +143,9 @@
     <QtUic Include="about.ui">
       <Filter>Form Files</Filter>
     </QtUic>
+    <QtUic Include="youtube_url_dlg.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
   </ItemGroup>
   <ItemGroup>
     <None Include="debug\VideoPlayer_en_001.qm">
@@ -124,6 +157,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="version.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="packets_sync.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

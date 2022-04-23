@@ -1,9 +1,9 @@
 #include "about.h"
 #include "version.h"
 
-about::about(QWidget* parent)
+About::About(QWidget* parent)
 	: QDialog(parent)
-	, ui(new Ui::about)
+	, ui(new Ui::About)
 {
 	ui->setupUi(this);
 	setWindowFlags(windowFlags() & ~Qt::WindowMaximizeButtonHint);
@@ -11,20 +11,20 @@ about::about(QWidget* parent)
 	init_label();
 }
 
-about::~about()
+About::~About()
 {
 	delete ui;
 }
 
-void about::on_btn_Ok_clicked() {
+void About::on_btn_Ok_clicked() {
 	QDialog::close();
 }
 
-void about::on_btn_Cancel_clicked() {
+void About::on_btn_Cancel_clicked() {
 	QDialog::close();
 }
 
-void about::init_label()
+void About::init_label()
 {
 	QString str = "";
 	str += "Video player v";

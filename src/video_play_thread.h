@@ -1,51 +1,58 @@
-#ifndef _H_VIDEO_PLAY_THREAD_H__
+﻿#ifndef _H_VIDEO_PLAY_THREAD_H__
 #define _H_VIDEO_PLAY_THREAD_H__
 #include <QThread>
-#include <QImage>
 #include <QDebug>
+#include <QImage>
 #include <QMutex>
-#include <QQueue>
-#include <QWaitCondition>
+#include "packets_sync.h"
 
 
 #define PRINT_VIDEO_BUFFER_INFO 0
+
+typedef struct Video_Resample {
+	AVFrame* pFrameRGB;
+	uint8_t* buffer_RGB;
+	struct SwsContext* sws_ctx;
+}Video_Resample;
 
 class VideoPlayThread : public QThread
 {
 	Q_OBJECT
 public:
-	VideoPlayThread(QObject* parent);
+	VideoPlayThread(QObject* parent = NULL, VideoState* pState = NULL);
 	~VideoPlayThread();
+private:
+	VideoState* m_pState;
 
+	Video_Resample m_Resample;
+	QMutex m_mutex;
 protected:
 	void run() override;
 
-private:
-	bool m_bExitThread;
-	bool m_bWaitToExitThread;
-	int m_frameRate;
-	int m_playSleep;
-	bool m_bPauseThread;
-
-	// QQueue<QImage*> m_FrameBufferQueue;
-	QQueue<QImage> m_FrameBufferQueue;
-	QMutex m_mutex;
-	uint m_videoBufferSize;
-	QWaitCondition m_bufferNotEmpty;
-	QWaitCondition m_bufferNotFull;
-signals:
-	void show_image(const QImage& img);
-
 public slots:
 	void stop_thread();
-	void pause_thread();
-	void receive_image(const QImage& img);
-	void wait_stop_thread();
 
+signals:
+	void frame_ready(const QImage&);
+
+private:
+	void video_refresh(VideoState* is, double* remaining_time);
+	void video_image_display(VideoState* is);
+	void video_display(VideoState* is);
+	void video_audio_display(VideoState* s);
+
+	void final_resample_param();
+
+	inline int compute_mod(int a, int b)
+	{
+		return a < 0 ? a % b + b : a % b;
+	}
 public:
-	// const QImage& get_image();
-	uint get_buffersize();
-	void print_buffer_info();
-	void clear_image_queue();
+	bool thread_init();
+	void pause_thread();
+	bool paused();
+
+	bool init_resample_param(AVCodecContext* pVideo);
+
 };
 #endif

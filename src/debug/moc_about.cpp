@@ -20,28 +20,28 @@
 QT_BEGIN_MOC_NAMESPACE
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
-struct qt_meta_stringdata_about_t {
+struct qt_meta_stringdata_About_t {
     QByteArrayData data[4];
     char stringdata0[47];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
-    qptrdiff(offsetof(qt_meta_stringdata_about_t, stringdata0) + ofs \
+    qptrdiff(offsetof(qt_meta_stringdata_About_t, stringdata0) + ofs \
         - idx * sizeof(QByteArrayData)) \
     )
-static const qt_meta_stringdata_about_t qt_meta_stringdata_about = {
+static const qt_meta_stringdata_About_t qt_meta_stringdata_About = {
     {
-QT_MOC_LITERAL(0, 0, 5), // "about"
+QT_MOC_LITERAL(0, 0, 5), // "About"
 QT_MOC_LITERAL(1, 6, 17), // "on_btn_Ok_clicked"
 QT_MOC_LITERAL(2, 24, 0), // ""
 QT_MOC_LITERAL(3, 25, 21) // "on_btn_Cancel_clicked"
 
     },
-    "about\0on_btn_Ok_clicked\0\0on_btn_Cancel_clicked"
+    "About\0on_btn_Ok_clicked\0\0on_btn_Cancel_clicked"
 };
 #undef QT_MOC_LITERAL
 
-static const uint qt_meta_data_about[] = {
+static const uint qt_meta_data_About[] = {
 
  // content:
        8,       // revision
@@ -65,10 +65,10 @@ static const uint qt_meta_data_about[] = {
        0        // eod
 };
 
-void about::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
+void About::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
 {
     if (_c == QMetaObject::InvokeMetaMethod) {
-        auto *_t = static_cast<about *>(_o);
+        auto *_t = static_cast<About *>(_o);
         Q_UNUSED(_t)
         switch (_id) {
         case 0: _t->on_btn_Ok_clicked(); break;
@@ -79,30 +79,30 @@ void about::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void 
     Q_UNUSED(_a);
 }
 
-QT_INIT_METAOBJECT const QMetaObject about::staticMetaObject = { {
+QT_INIT_METAOBJECT const QMetaObject About::staticMetaObject = { {
     &QDialog::staticMetaObject,
-    qt_meta_stringdata_about.data,
-    qt_meta_data_about,
+    qt_meta_stringdata_About.data,
+    qt_meta_data_About,
     qt_static_metacall,
     nullptr,
     nullptr
 } };
 
 
-const QMetaObject *about::metaObject() const
+const QMetaObject *About::metaObject() const
 {
     return QObject::d_ptr->metaObject ? QObject::d_ptr->dynamicMetaObject() : &staticMetaObject;
 }
 
-void *about::qt_metacast(const char *_clname)
+void *About::qt_metacast(const char *_clname)
 {
     if (!_clname) return nullptr;
-    if (!strcmp(_clname, qt_meta_stringdata_about.stringdata0))
+    if (!strcmp(_clname, qt_meta_stringdata_About.stringdata0))
         return static_cast<void*>(this);
     return QDialog::qt_metacast(_clname);
 }
 
-int about::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
+int About::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 {
     _id = QDialog::qt_metacall(_c, _id, _a);
     if (_id < 0)

@@ -20,7 +20,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class Ui_about
+class Ui_About
 {
 public:
     QWidget *layoutWidget;
@@ -30,18 +30,18 @@ public:
     QPushButton *btn_Ok;
     QPushButton *btn_Cancel;
 
-    void setupUi(QDialog *about)
+    void setupUi(QDialog *About)
     {
-        if (about->objectName().isEmpty())
-            about->setObjectName(QString::fromUtf8("about"));
-        about->resize(300, 210);
+        if (About->objectName().isEmpty())
+            About->setObjectName(QString::fromUtf8("About"));
+        About->resize(300, 210);
         QSizePolicy sizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
-        sizePolicy.setHeightForWidth(about->sizePolicy().hasHeightForWidth());
-        about->setSizePolicy(sizePolicy);
-        about->setAcceptDrops(false);
-        layoutWidget = new QWidget(about);
+        sizePolicy.setHeightForWidth(About->sizePolicy().hasHeightForWidth());
+        About->setSizePolicy(sizePolicy);
+        About->setAcceptDrops(false);
+        layoutWidget = new QWidget(About);
         layoutWidget->setObjectName(QString::fromUtf8("layoutWidget"));
         layoutWidget->setGeometry(QRect(10, 0, 281, 201));
         gridLayout = new QGridLayout(layoutWidget);
@@ -81,25 +81,25 @@ public:
         gridLayout->setRowStretch(0, 8);
         gridLayout->setRowStretch(1, 1);
 
-        retranslateUi(about);
+        retranslateUi(About);
 
-        QMetaObject::connectSlotsByName(about);
+        QMetaObject::connectSlotsByName(About);
     } // setupUi
 
-    void retranslateUi(QDialog *about)
+    void retranslateUi(QDialog *About)
     {
-        about->setWindowTitle(QApplication::translate("about", "About", nullptr));
-        label->setText(QApplication::translate("about", "Video player V1.0 \n"
+        About->setWindowTitle(QApplication::translate("About", "About", nullptr));
+        label->setText(QApplication::translate("About", "Video player V1.0 \n"
 "\n"
 "Video player based on QT and FFmpeg.  Copy Right @ Steven Huang", nullptr));
-        btn_Ok->setText(QApplication::translate("about", "OK", nullptr));
-        btn_Cancel->setText(QApplication::translate("about", "Cancel", nullptr));
+        btn_Ok->setText(QApplication::translate("About", "OK", nullptr));
+        btn_Cancel->setText(QApplication::translate("About", "Cancel", nullptr));
     } // retranslateUi
 
 };
 
 namespace Ui {
-    class about: public Ui_about {};
+    class About: public Ui_About {};
 } // namespace Ui
 
 QT_END_NAMESPACE
