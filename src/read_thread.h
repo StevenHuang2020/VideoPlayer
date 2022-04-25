@@ -13,7 +13,7 @@ public:
 private:
 	VideoState* m_pPlayData;
 	QMutex m_waitMutex;
-
+	bool m_bExitThread;
 signals:
 	void frame_ready(const QImage&);
 

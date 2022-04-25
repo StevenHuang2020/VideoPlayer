@@ -192,7 +192,6 @@ typedef struct VideoState {
 	Decoder subdec;
 
 	int audio_stream;
-
 	int av_sync_type;
 
 	double audio_clock;
@@ -203,29 +202,35 @@ typedef struct VideoState {
 	int audio_diff_avg_count;
 	AVStream* audio_st;
 
-	int audio_hw_buf_size;
+	int audio_volume;
+	int muted;
+
+	int frame_drops_early;
+	int frame_drops_late;
+
+#if 0
+	int16_t sample_array[SAMPLE_ARRAY_SIZE];
+	int sample_array_index;
+
 	uint8_t* audio_buf;
 	uint8_t* audio_buf1;
 	unsigned int audio_buf_size; /* in bytes */
 	unsigned int audio_buf1_size;
 	int audio_buf_index; /* in bytes */
 	int audio_write_buf_size;
-	int audio_volume;
-	int muted;
-	struct AudioParams audio_src;
-#if CONFIG_AVFILTER
-	struct AudioParams audio_filter_src;
-#endif
-	struct AudioParams audio_tgt;
+
+	int audio_hw_buf_size;
+
 	struct SwrContext* swr_ctx;
-	int frame_drops_early;
-	int frame_drops_late;
+
+	struct AudioParams audio_src;
+	struct AudioParams audio_tgt;
 
 	enum ShowMode {
 		SHOW_MODE_NONE = -1, SHOW_MODE_VIDEO = 0, SHOW_MODE_WAVES, SHOW_MODE_RDFT, SHOW_MODE_NB
 	} show_mode;
-	int16_t sample_array[SAMPLE_ARRAY_SIZE];
-	int sample_array_index;
+#endif
+
 	int last_i_start;
 	//RDFTContext* rdft;
 	int rdft_bits;
@@ -260,11 +265,16 @@ typedef struct VideoState {
 	// SDL_cond* continue_read_thread;
 
 	QWaitCondition* continue_read_thread;
+	int read_thread_exit;
 	void* read_tid; //read thread pointer
 } VideoState;
 
 
+#if !NDEBUG
 #define PRINT_PACKETQUEUE_INFO  1
+#else
+#define PRINT_PACKETQUEUE_INFO  0
+#endif
 
 /***************PacketQueue operations*****************/
 int packet_queue_init(PacketQueue* q);
@@ -332,9 +342,5 @@ void print_state_info(VideoState* is);
 int is_realtime(AVFormatContext* s);
 int stream_has_enough_packets(AVStream* st, int stream_id, PacketQueue* queue);
 
-
-int audio_decode_frame(VideoState* is);
-int synchronize_audio(VideoState* is, int nb_samples);
-int audio_open(void* opaque, int64_t wanted_channel_layout, int wanted_nb_channels, int wanted_sample_rate, struct AudioParams* audio_hw_params);
 
 #endif /* PACKETS_SYNC_H */

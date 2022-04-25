@@ -34,6 +34,7 @@ public:
     QAction *actionHide;
     QAction *actionFullscreen;
     QAction *actionYoutube;
+    QAction *actionAspect_Ratio;
     QWidget *centralwidget;
     QLabel *label_Video;
     QMenuBar *menubar;
@@ -84,6 +85,8 @@ public:
         actionFullscreen->setCheckable(true);
         actionYoutube = new QAction(MainWindow);
         actionYoutube->setObjectName(QString::fromUtf8("actionYoutube"));
+        actionAspect_Ratio = new QAction(MainWindow);
+        actionAspect_Ratio->setObjectName(QString::fromUtf8("actionAspect_Ratio"));
         centralwidget = new QWidget(MainWindow);
         centralwidget->setObjectName(QString::fromUtf8("centralwidget"));
         label_Video = new QLabel(centralwidget);
@@ -115,6 +118,7 @@ public:
         menuMedia->addAction(actionStop);
         menuMedia->addAction(actionQuit);
         menuView->addAction(actionHide);
+        menuView->addAction(actionAspect_Ratio);
         menuView->addAction(actionFullscreen);
         menuHelp->addAction(actionAbout);
 
@@ -136,8 +140,9 @@ public:
         actionTest->setText(QApplication::translate("MainWindow", "Test", nullptr));
         actionStop->setText(QApplication::translate("MainWindow", "Stop", nullptr));
         actionHide->setText(QApplication::translate("MainWindow", "Hide Status", nullptr));
-        actionFullscreen->setText(QApplication::translate("MainWindow", "Fullscreen", nullptr));
+        actionFullscreen->setText(QApplication::translate("MainWindow", "Full screen", nullptr));
         actionYoutube->setText(QApplication::translate("MainWindow", "OpenYoutube", nullptr));
+        actionAspect_Ratio->setText(QApplication::translate("MainWindow", "Aspect Ratio", nullptr));
         label_Video->setText(QString());
         menuMedia->setTitle(QApplication::translate("MainWindow", "Media", nullptr));
         menuView->setTitle(QApplication::translate("MainWindow", "View", nullptr));

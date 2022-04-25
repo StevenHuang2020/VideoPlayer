@@ -8,7 +8,6 @@
 #include <QQueue>
 #include <QFile>
 #include <QDebug>
-#include <QMutex>
 #include <QWaitCondition>
 #include "packets_sync.h"
 
@@ -17,6 +16,12 @@ extern "C" {
 #include <libavutil/samplefmt.h>
 }
 
+
+typedef struct Audio_Resample {
+	//AVFrame* pFrame;
+	//uint8_t* buffer;
+	struct SwrContext* swrCtx;
+}Audio_Resample;
 
 class AudioPlayThread : public QThread
 {
@@ -30,10 +35,14 @@ private:
 	QIODevice* m_audioDevice;
 private:
 	VideoState* m_pState;
-	QMutex m_mutex;
+
+	Audio_Resample m_audioResample;
+	bool m_bExitThread;
 protected:
 	void run() override;
 
+private:
+	int audio_decode_frame(VideoState* is);
 public:
 	void print_device();
 	bool init_device(int sample_rate = 8000, int channel = 1, AVSampleFormat sample_fmt = AV_SAMPLE_FMT_S16);
@@ -46,6 +55,7 @@ public slots:
 	void pause_thread();
 	void wait_stop_thread();
 public:
-
+	bool init_resample_param(AVCodecContext* pAudio);
+	void final_resample_param();
 };
 #endif

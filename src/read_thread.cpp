@@ -9,6 +9,7 @@ static int64_t duration = AV_NOPTS_VALUE;
 ReadThread::ReadThread(QObject* parent, VideoState* pState)
 	: QThread(parent)
 	, m_pPlayData(pState)
+	, m_bExitThread(false)
 {
 }
 
@@ -44,8 +45,13 @@ int ReadThread::loop_read()
 		return -1;
 	}
 
+	is->read_thread_exit = 0;
+
 	for (;;)
 	{
+		if (m_bExitThread)
+			break;
+
 		if (is->abort_request)
 			break;
 		if (is->paused != is->last_paused) {
@@ -137,7 +143,7 @@ int ReadThread::loop_read()
 					packet_queue_put_nullpacket(&is->subtitleq, pkt, is->subtitle_stream);
 				is->eof = 1;
 
-				// break; //add steven for auto exit read thread
+				break; //add steven for auto exit read thread
 			}
 			if (is->ic->pb && is->ic->pb->error) {
 				break;
@@ -194,6 +200,7 @@ void ReadThread::run()
 
 void ReadThread::stop_thread()
 {
+
 }
 
 void ReadThread::pause_thread()

@@ -7,6 +7,7 @@ static int64_t audio_callback_time;
 VideoPlayThread::VideoPlayThread(QObject* parent, VideoState* pState)
 	: QThread(parent)
 	, m_pState(pState)
+	, m_bExitThread(false)
 {
 	memset(&m_Resample, 0, sizeof(Video_Resample));
 }
@@ -21,20 +22,20 @@ void VideoPlayThread::run()
 {
 	assert(m_pState);
 	VideoState* is = m_pState;
+	double remaining_time = 0.0;
 
 	for (;;)
 	{
-		double remaining_time = 0.0;
+		if (m_bExitThread)
+			break;
 
-		m_mutex.lock();
 		if (is->abort_request)
 			break;
-		m_mutex.unlock();
 
-		m_mutex.lock();
-		if (is->paused)
-			msleep(1000);
-		m_mutex.unlock();
+		if (is->paused)	{
+			msleep(10);
+			continue;
+		}
 
 		if (remaining_time > 0.0)
 			av_usleep((int64_t)(remaining_time * 1000000.0));
@@ -61,6 +62,7 @@ void VideoPlayThread::video_refresh(VideoState* is, double* remaining_time)
 	retry:
 		if (frame_queue_nb_remaining(&is->pictq) == 0) {
 			// nothing to do, no picture to display in the queue
+			*remaining_time = REFRESH_RATE;
 		}
 		else {
 			double last_duration, duration, delay;
@@ -171,6 +173,7 @@ void VideoPlayThread::video_display(VideoState* is)
 
 void VideoPlayThread::video_audio_display(VideoState* s)
 {
+#if 0
 	int i, i_start, x, y1, y, ys, delay, n, nb_display_channels;
 	int ch, channels, h, h2;
 	int64_t time_diff;
@@ -315,6 +318,7 @@ void VideoPlayThread::video_audio_display(VideoState* s)
 			s->xpos++;
 	}
 #endif
+#endif
 }
 
 
@@ -399,6 +403,8 @@ void VideoPlayThread::final_resample_param()
 
 void VideoPlayThread::stop_thread()
 {
+	m_bExitThread = true;
+	wait();
 }
 
 void VideoPlayThread::pause_thread()

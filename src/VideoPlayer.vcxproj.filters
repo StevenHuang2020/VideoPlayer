@@ -96,6 +96,9 @@
     <ClCompile Include="subtitle_decode_thread.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="log.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="mainwindow.h">

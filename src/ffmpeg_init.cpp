@@ -22,10 +22,6 @@ int ffmpeg_init()
 {
 	av_log_set_flags(AV_LOG_SKIP_REPEATED);
 
-#if CONFIG_AVDEVICE
-	avdevice_register_all();
-#endif
-
 	av_log_set_level(32);
 	av_log_set_callback(log_callback);
 	return 0;

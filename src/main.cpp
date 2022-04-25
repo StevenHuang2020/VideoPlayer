@@ -4,10 +4,13 @@
 #include <QLocale>
 #include <QTranslator>
 #include "vld.h"  // memory leak detector
+#include "log.h"
 
 int main(int argc, char* argv[])
 {
 	QApplication a(argc, argv);
+
+	qInstallMessageHandler(logOutput); //log
 
 	QTranslator translator;
 	const QStringList uiLanguages = QLocale::system().uiLanguages();

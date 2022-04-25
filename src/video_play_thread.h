@@ -3,7 +3,6 @@
 #include <QThread>
 #include <QDebug>
 #include <QImage>
-#include <QMutex>
 #include "packets_sync.h"
 
 
@@ -25,7 +24,7 @@ private:
 	VideoState* m_pState;
 
 	Video_Resample m_Resample;
-	QMutex m_mutex;
+	bool m_bExitThread;
 protected:
 	void run() override;
 

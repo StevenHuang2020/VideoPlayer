@@ -1,5 +1,5 @@
 /**
- * @file packets_sync.h
+ * @file video_state.h
  * @author Steven Huang
  */
 

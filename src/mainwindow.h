@@ -7,6 +7,7 @@
 #include <QFileDialog>
 #include <QThread>
 #include <QDesktopWidget>
+#include <QSizePolicy>
 
 //#include "decode_thread.h"
 #include "video_decode_thread.h"
@@ -46,6 +47,8 @@ private:
 	void keyPressEvent(QKeyEvent* event) override;
 	bool eventFilter(QObject* obj, QEvent* event) override;
 	//QSize sizeHint() const override;
+	//int heightForWidth(int) const override;
+
 private slots:
 	void on_actionOpen_triggered();
 	void on_actionQuit_triggered();
@@ -55,6 +58,7 @@ private slots:
 	void on_actionHide_triggered();
 	void on_actionFullscreen_triggered();
 	void on_actionYoutube_triggered();
+	void on_actionAspect_Ratio_triggered();
 
 public slots:
 	void update_image(const QImage&);
@@ -70,7 +74,6 @@ signals:
 	void stop_video_play_thread();
 	void stop_decode_thread();
 	void stop_read_packet_thread();
-	void pause_play();
 
 	void wait_stop_audio_play_thread();
 	void wait_stop_video_play_thread();
@@ -80,7 +83,7 @@ signals:
 
 private:
 	void resize_window(int weight = 800, int height = 480);
-	void center_window();
+	void center_window(QRect screen_rec);
 	void show_fullscreen(bool bFullscreen = true);
 	void hide_statusbar(bool bHide = true);
 	void hide_menubar(bool bHide = true);
@@ -89,6 +92,7 @@ private:
 private:
 	void start_play();
 	void stop_play();
+	void pause_play();
 	// void terminate_threads();
 	void set_default_bkground();
 
@@ -100,6 +104,8 @@ private:
 	bool create_decode_audio_thread(); //decode audio thread
 	bool create_video_play_thread(); //video play thread
 	bool create_audio_play_thread(); //audio play thread
+public:
+	void keep_aspect_ratio(bool bWidth = true);
 
 };
 #endif // MAINWINDOW_H

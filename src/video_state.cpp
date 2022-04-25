@@ -4,7 +4,7 @@
  */
 
  /**
-  * @file packets_sync.cpp
+  * @file video_state.cpp
   * Utilties for ffmpeg decoded packets synchronization.
   * Code reference from ffplay.c in ffmpeg library.
   * @author Steven Huang
@@ -309,6 +309,7 @@ VideoState* VideoStateData::stream_open(const char* filename, const AVInputForma
 	is->muted = 0;
 	is->av_sync_type = av_sync_type;
 	is->read_tid = m_pReadThreadId;
+	is->read_thread_exit = -1;
 
 	/*is->read_tid = SDL_CreateThread(read_thread, "read_thread", is);
 	if (!is->read_tid) {
@@ -328,8 +329,11 @@ void VideoStateData::stream_close(VideoState* is)
 	/* XXX: use a special url_shutdown call to abort parse cleanly */
 	is->abort_request = 1;
 
-	// SDL_WaitThread(is->read_tid, NULL);
-	((QThread*)(is->read_tid))->wait();
+	if (is->read_thread_exit == 0)
+	{
+		// SDL_WaitThread(is->read_tid, NULL);
+		((QThread*)(is->read_tid))->wait();
+	}
 
 	/* close each stream */
 	if (is->audio_stream >= 0)
@@ -448,17 +452,17 @@ int VideoStateData::stream_component_open(VideoState* is, int stream_index)
 		nb_channels = avctx->channels;
 		channel_layout = avctx->channel_layout;
 
-		is->audio_hw_buf_size = ret;
-		is->audio_src = is->audio_tgt;
-		is->audio_buf_size = 0;
-		is->audio_buf_index = 0;
+		//is->audio_hw_buf_size = ret;
+		//is->audio_src = is->audio_tgt;
+		//is->audio_buf_size = 0;
+		//is->audio_buf_index = 0;
 
 		/* init averaging filter */
 		is->audio_diff_avg_coef = exp(log(0.01) / AUDIO_DIFF_AVG_NB);
 		is->audio_diff_avg_count = 0;
 		/* since we do not have a precise anough audio FIFO fullness,
 		   we correct audio sync only if larger than this threshold */
-		is->audio_diff_threshold = (double)(is->audio_hw_buf_size) / is->audio_tgt.bytes_per_sec;
+		   //is->audio_diff_threshold = (double)(is->audio_hw_buf_size) / is->audio_tgt.bytes_per_sec;
 
 		is->audio_stream = stream_index;
 		is->audio_st = ic->streams[stream_index];
@@ -544,10 +548,10 @@ void VideoStateData::stream_component_close(VideoState* is, int stream_index)
 		//SDL_CloseAudioDevice(audio_dev);
 		decoder_destroy(&is->auddec);
 
-		swr_free(&is->swr_ctx);
-		av_freep(&is->audio_buf1);
-		is->audio_buf1_size = 0;
-		is->audio_buf = NULL;
+		//swr_free(&is->swr_ctx);
+		//av_freep(&is->audio_buf1);
+		//is->audio_buf1_size = 0;
+		//is->audio_buf = NULL;
 
 		/*if (is->rdft) {
 			av_rdft_end(is->rdft);

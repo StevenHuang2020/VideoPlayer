@@ -1,19 +1,21 @@
 #include "audio_play_thread.h"
-#include "ffmpeg_decode.h"
 
 
 AudioPlayThread::AudioPlayThread(QObject* parent, VideoState* pState)
-	: QThread(parent),
-	m_pDevice(NULL),
-	m_pOutput(NULL),
-	m_pState(pState)
+	: QThread(parent)
+	, m_pDevice(NULL)
+	, m_pOutput(NULL)
+	, m_pState(pState)
+	, m_bExitThread(false)
 {
+	memset(&m_audioResample, 0, sizeof(Audio_Resample));
 }
 
 AudioPlayThread::~AudioPlayThread()
 {
 	stop_thread();
 	stop_device();
+	final_resample_param();
 }
 
 void AudioPlayThread::print_device()
@@ -65,7 +67,7 @@ bool AudioPlayThread::init_device(int sample_rate, int channel, AVSampleFormat s
 	format.setByteOrder(QAudioFormat::LittleEndian);
 	format.setSampleType(QAudioFormat::SignedInt);
 
-	qDebug("sample size=%d\n", 8 * av_get_bytes_per_sample(sample_fmt));
+	// qDebug("sample size=%d\n", 8 * av_get_bytes_per_sample(sample_fmt));
 	if (!m_pDevice->isFormatSupported(format)) {
 		qWarning() << "Raw audio format not supported by backend, cannot play audio.";
 		return false;
@@ -119,96 +121,100 @@ void AudioPlayThread::run()
 {
 	assert(m_pState);
 	VideoState* is = m_pState;
-	int audio_size, len1;
+	int audio_size;
 
 	for (;;) {
+		if (m_bExitThread)
+			break;
 
-		int64_t audio_callback_time = av_gettime_relative();
-
-		//m_mutex.lock();
 		if (is->abort_request)
 			break;
-		//m_mutex.unlock();
 
-		//m_mutex.lock();
-		if (is->paused)
-			msleep(1000);
-		//m_mutex.unlock();
-
-		if (is->audio_buf_index >= is->audio_buf_size) {
-			audio_size = audio_decode_frame(is);
-			if (audio_size < 0) {
-				/* if error, just output silence */
-				is->audio_buf = NULL;
-				is->audio_buf_size = 0;
-			}
-			else {
-				is->audio_buf_size = audio_size;
-			}
-			is->audio_buf_index = 0;
+		if (is->paused)	{
+			msleep(10);
+			continue;
 		}
 
-		len1 = is->audio_buf_size - is->audio_buf_index;
-		if (!is->muted && is->audio_buf && len1>0)
-		{
-			int datalen = len1 * sizeof(uint8_t);
-			uint8_t* buffer_audio = (uint8_t*)av_malloc(datalen);
-			memcpy(buffer_audio, is->audio_buf, datalen);
-			play_buf(buffer_audio, datalen);
-		}
-
-		is->audio_buf_index += len1;
-		is->audio_write_buf_size = is->audio_buf_size - is->audio_buf_index;
-
-		if (!isnan(is->audio_clock)) {
-			set_clock_at(&is->audclk, is->audio_clock - (double)(2 * is->audio_hw_buf_size + is->audio_write_buf_size) / is->audio_tgt.bytes_per_sec, is->audio_clock_serial, audio_callback_time / 1000000.0);
-			sync_clock_to_slave(&is->extclk, &is->audclk);
-		}
+		audio_size = audio_decode_frame(is);
+		if (audio_size < 0)
+			break;
 	}
 
-#if 0
-	while (len > 0) {
-		if (is->audio_buf_index >= is->audio_buf_size) {
-			audio_size = audio_decode_frame(is);
-			if (audio_size < 0) {
-				/* if error, just output silence */
-				is->audio_buf = NULL;
-				is->audio_buf_size = SDL_AUDIO_MIN_BUFFER_SIZE / is->audio_tgt.frame_size * is->audio_tgt.frame_size;
-			}
-			else {
-				if (is->show_mode != SHOW_MODE_VIDEO)
-					update_sample_display(is, (int16_t*)is->audio_buf, audio_size);
-				is->audio_buf_size = audio_size;
-			}
-			is->audio_buf_index = 0;
+	qDebug("-------- Audio play thread exit.");
+}
+
+int AudioPlayThread::audio_decode_frame(VideoState* is)
+{
+	int data_size;
+	double audio_clock0;
+	Frame* af;
+
+	do {
+#if defined(_WIN32)
+		while (frame_queue_nb_remaining(&is->sampq) == 0) {
+			av_usleep(1000);
+			//return -1;
 		}
-		len1 = is->audio_buf_size - is->audio_buf_index;
-		if (len1 > len)
-			len1 = len;
-		if (!is->muted && is->audio_buf && is->audio_volume == SDL_MIX_MAXVOLUME)
-			memcpy(stream, (uint8_t*)is->audio_buf + is->audio_buf_index, len1);
-		else {
-			memset(stream, 0, len1);
-			if (!is->muted && is->audio_buf)
-				SDL_MixAudioFormat(stream, (uint8_t*)is->audio_buf + is->audio_buf_index, AUDIO_S16SYS, len1, is->audio_volume);
-		}
-		len -= len1;
-		stream += len1;
-		is->audio_buf_index += len1;
-	}
-	is->audio_write_buf_size = is->audio_buf_size - is->audio_buf_index;
-	/* Let's assume the audio driver that is used by SDL has two periods. */
-	if (!isnan(is->audio_clock)) {
-		set_clock_at(&is->audclk, is->audio_clock - (double)(2 * is->audio_hw_buf_size + is->audio_write_buf_size) / is->audio_tgt.bytes_per_sec, is->audio_clock_serial, audio_callback_time / 1000000.0);
-		sync_clock_to_slave(&is->extclk, &is->audclk);
+#endif
+		if (!(af = frame_queue_peek_readable(&is->sampq)))
+			return -1;
+		frame_queue_next(&is->sampq);
+	} while (af->serial != is->audioq.serial);
+
+
+	struct SwrContext* swrCtx = m_audioResample.swrCtx;
+	data_size = av_samples_get_buffer_size(nullptr, af->frame->channels, af->frame->nb_samples,
+		AV_SAMPLE_FMT_S16, 0);  //AVSampleFormat(af->frame->format)
+	uint8_t* buffer_audio = (uint8_t*)av_malloc(data_size * sizeof(uint8_t));
+	swr_convert(swrCtx, &buffer_audio, af->frame->nb_samples, (const uint8_t**)(af->frame->data), af->frame->nb_samples);
+
+	play_buf(buffer_audio, data_size);
+
+	audio_clock0 = is->audio_clock;
+	/* update the audio clock with the pts */
+	if (!isnan(af->pts))
+		is->audio_clock = af->pts + (double)af->frame->nb_samples / af->frame->sample_rate;
+	else
+		is->audio_clock = NAN;
+	is->audio_clock_serial = af->serial;
+
+#if !NDEBUG
+	{
+		static double last_clock;
+		qDebug("audio: delay=%0.3f clock=%0.3f clock0=%0.3f\n",
+			is->audio_clock - last_clock,
+			is->audio_clock, audio_clock0);
+		last_clock = is->audio_clock;
 	}
 #endif
 
-	qDebug("--------audio play thread exit.");
+	return data_size;
+}
+
+bool AudioPlayThread::init_resample_param(AVCodecContext* pAudio)
+{
+	if (pAudio) {
+		struct SwrContext* swrCtx = swr_alloc_set_opts(NULL,
+			pAudio->channel_layout, AV_SAMPLE_FMT_S16, pAudio->sample_rate,
+			pAudio->channel_layout, pAudio->sample_fmt, pAudio->sample_rate,
+			0, nullptr);
+		swr_init(swrCtx);
+
+		m_audioResample.swrCtx = swrCtx;
+		return true;
+	}
+	return false;
+}
+
+void AudioPlayThread::final_resample_param()
+{
+	swr_free(&m_audioResample.swrCtx);
 }
 
 void AudioPlayThread::stop_thread()
 {
+	m_bExitThread = true;
+	wait();
 }
 
 void AudioPlayThread::wait_stop_thread()
