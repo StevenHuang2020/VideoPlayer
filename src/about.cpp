@@ -29,6 +29,7 @@ void About::init_label()
 	QString str = "";
 	str += "Video player v";
 	str += PLAYER_VERSION;
+	str += " (x64)";
 	str += "\n";
 	str += "\n";
 	str += "Video player based on QT and FFmpeg. \n Copy Right @ Steven Huang";

@@ -1,4 +1,5 @@
 :: clean all files no needed
+del log
 
 :: clean debug folder
 cd debug
@@ -22,8 +23,9 @@ rmdir /S /Q "VideoPlayer.tlog"
 cd ..
 rmdir /S /Q ".vs"
 
+del log /s
+del *.ipch/s
 del *.ncb/s
-rem del *.exe/s
 del *.exp/s
 del *.pdb/s
 del *.obj/s

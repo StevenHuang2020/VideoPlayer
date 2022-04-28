@@ -31,16 +31,18 @@ public:
     QAction *actionQuit;
     QAction *actionTest;
     QAction *actionStop;
-    QAction *actionHide;
+    QAction *actionHide_Status;
     QAction *actionFullscreen;
     QAction *actionYoutube;
     QAction *actionAspect_Ratio;
+    QAction *actionHide_Play_Ctronl;
     QWidget *centralwidget;
     QLabel *label_Video;
     QMenuBar *menubar;
     QMenu *menuMedia;
     QMenu *menuView;
     QMenu *menuHelp;
+    QMenu *menuStyle;
     QStatusBar *statusbar;
 
     void setupUi(QMainWindow *MainWindow)
@@ -49,7 +51,7 @@ public:
             MainWindow->setObjectName(QString::fromUtf8("MainWindow"));
         MainWindow->setWindowModality(Qt::ApplicationModal);
         MainWindow->setEnabled(true);
-        MainWindow->resize(800, 480);
+        MainWindow->resize(800, 481);
         QSizePolicy sizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
@@ -77,9 +79,9 @@ public:
         actionTest->setObjectName(QString::fromUtf8("actionTest"));
         actionStop = new QAction(MainWindow);
         actionStop->setObjectName(QString::fromUtf8("actionStop"));
-        actionHide = new QAction(MainWindow);
-        actionHide->setObjectName(QString::fromUtf8("actionHide"));
-        actionHide->setCheckable(true);
+        actionHide_Status = new QAction(MainWindow);
+        actionHide_Status->setObjectName(QString::fromUtf8("actionHide_Status"));
+        actionHide_Status->setCheckable(true);
         actionFullscreen = new QAction(MainWindow);
         actionFullscreen->setObjectName(QString::fromUtf8("actionFullscreen"));
         actionFullscreen->setCheckable(true);
@@ -87,6 +89,9 @@ public:
         actionYoutube->setObjectName(QString::fromUtf8("actionYoutube"));
         actionAspect_Ratio = new QAction(MainWindow);
         actionAspect_Ratio->setObjectName(QString::fromUtf8("actionAspect_Ratio"));
+        actionHide_Play_Ctronl = new QAction(MainWindow);
+        actionHide_Play_Ctronl->setObjectName(QString::fromUtf8("actionHide_Play_Ctronl"));
+        actionHide_Play_Ctronl->setCheckable(true);
         centralwidget = new QWidget(MainWindow);
         centralwidget->setObjectName(QString::fromUtf8("centralwidget"));
         label_Video = new QLabel(centralwidget);
@@ -103,6 +108,8 @@ public:
         menuView->setObjectName(QString::fromUtf8("menuView"));
         menuHelp = new QMenu(menubar);
         menuHelp->setObjectName(QString::fromUtf8("menuHelp"));
+        menuStyle = new QMenu(menubar);
+        menuStyle->setObjectName(QString::fromUtf8("menuStyle"));
         MainWindow->setMenuBar(menubar);
         statusbar = new QStatusBar(MainWindow);
         statusbar->setObjectName(QString::fromUtf8("statusbar"));
@@ -112,14 +119,17 @@ public:
 
         menubar->addAction(menuMedia->menuAction());
         menubar->addAction(menuView->menuAction());
+        menubar->addAction(menuStyle->menuAction());
         menubar->addAction(menuHelp->menuAction());
         menuMedia->addAction(actionOpen);
         menuMedia->addAction(actionYoutube);
         menuMedia->addAction(actionStop);
         menuMedia->addAction(actionQuit);
-        menuView->addAction(actionHide);
-        menuView->addAction(actionAspect_Ratio);
+        menuView->addAction(actionHide_Status);
+        menuView->addAction(actionHide_Play_Ctronl);
         menuView->addAction(actionFullscreen);
+        menuView->addSeparator();
+        menuView->addAction(actionAspect_Ratio);
         menuHelp->addAction(actionAbout);
 
         retranslateUi(MainWindow);
@@ -139,14 +149,16 @@ public:
         actionQuit->setText(QApplication::translate("MainWindow", "Quit", nullptr));
         actionTest->setText(QApplication::translate("MainWindow", "Test", nullptr));
         actionStop->setText(QApplication::translate("MainWindow", "Stop", nullptr));
-        actionHide->setText(QApplication::translate("MainWindow", "Hide Status", nullptr));
+        actionHide_Status->setText(QApplication::translate("MainWindow", "Hide Status Bar", nullptr));
         actionFullscreen->setText(QApplication::translate("MainWindow", "Full screen", nullptr));
         actionYoutube->setText(QApplication::translate("MainWindow", "OpenYoutube", nullptr));
         actionAspect_Ratio->setText(QApplication::translate("MainWindow", "Aspect Ratio", nullptr));
+        actionHide_Play_Ctronl->setText(QApplication::translate("MainWindow", "Hide Play Control", nullptr));
         label_Video->setText(QString());
         menuMedia->setTitle(QApplication::translate("MainWindow", "Media", nullptr));
         menuView->setTitle(QApplication::translate("MainWindow", "View", nullptr));
         menuHelp->setTitle(QApplication::translate("MainWindow", "Help", nullptr));
+        menuStyle->setTitle(QApplication::translate("MainWindow", "Style", nullptr));
 #ifndef QT_NO_TOOLTIP
         statusbar->setToolTip(QString());
 #endif // QT_NO_TOOLTIP

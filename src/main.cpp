@@ -6,6 +6,7 @@
 #include "vld.h"  // memory leak detector
 #include "log.h"
 
+
 int main(int argc, char* argv[])
 {
 	QApplication a(argc, argv);
@@ -21,6 +22,7 @@ int main(int argc, char* argv[])
 			break;
 		}
 	}
+
 	MainWindow w;
 	w.show();
 	return a.exec();

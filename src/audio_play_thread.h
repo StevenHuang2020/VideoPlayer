@@ -40,7 +40,8 @@ private:
 	bool m_bExitThread;
 protected:
 	void run() override;
-
+signals:
+	void update_play_time();
 private:
 	int audio_decode_frame(VideoState* is);
 public:

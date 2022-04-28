@@ -8,6 +8,7 @@
 #include <QThread>
 #include <QDesktopWidget>
 #include <QSizePolicy>
+#include <QElapsedTimer>
 
 //#include "decode_thread.h"
 #include "video_decode_thread.h"
@@ -16,6 +17,7 @@
 #include "video_play_thread.h"
 #include "read_thread.h"
 #include "video_state.h"
+#include "play_control_window.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -34,20 +36,18 @@ private:
 	Ui::MainWindow* ui;
 	QString m_videoFile;
 
-	VideoStateData* m_pVideoState;	//for sync packets
 	ReadThread* m_pPacketReadThread; //read packets thread
 	VideoDecodeThread* m_pDecodeVideoThread; //decode video thread
 	AudioDecodeThread* m_pDecodeAudioThread; //decode audio thread
 	//DecodeThread* m_pDecodeAudioThread; //decode audio thread
-
+public:
+	VideoStateData* m_pVideoState;	//for sync packets
 	AudioPlayThread* m_pAudioPlayThread; //audio play thread
 	VideoPlayThread* m_pVideoPlayThread; //video play thread
 private:
 	void resizeEvent(QResizeEvent* event) override;
 	void keyPressEvent(QKeyEvent* event) override;
 	bool eventFilter(QObject* obj, QEvent* event) override;
-	//QSize sizeHint() const override;
-	//int heightForWidth(int) const override;
 
 private slots:
 	void on_actionOpen_triggered();
@@ -55,10 +55,13 @@ private slots:
 	void on_actionHelp_triggered();
 	void on_actionAbout_triggered();
 	void on_actionStop_triggered();
-	void on_actionHide_triggered();
+	void on_actionHide_Status_triggered();
 	void on_actionFullscreen_triggered();
+	void on_actionHide_Play_Ctronl_triggered();
 	void on_actionYoutube_triggered();
 	void on_actionAspect_Ratio_triggered();
+	void on_actionSystemStyle_triggered();
+	void on_actionCustomStyle_triggered();
 
 public slots:
 	void update_image(const QImage&);
@@ -68,18 +71,16 @@ public slots:
 	void audio_play_stopped();
 	void video_play_stopped();
 	void read_packet_stopped();
-
+	void update_play_time();
+	void play_started(bool ret);
+	void play_seek(int value);
 signals:
 	void stop_audio_play_thread();
 	void stop_video_play_thread();
 	void stop_decode_thread();
 	void stop_read_packet_thread();
-
 	void wait_stop_audio_play_thread();
 	void wait_stop_video_play_thread();
-
-	// void receive_image_signal(const QImage&);
-	// void audio_receive_sinal(uint8_t* buffer, int bufsize);
 
 private:
 	void resize_window(int weight = 800, int height = 480);
@@ -89,11 +90,18 @@ private:
 	void hide_menubar(bool bHide = true);
 	void check_hide_menubar(QMouseEvent* mouseEvent);
 	void displayStatusMessage(const QString& message);
+	void hide_play_control(bool bHide = true);
+	void set_paly_control_wnd(bool set = true);
+	void print_size();
+	void keep_aspect_ratio(bool bWidth = true);
+	void create_style_menu();
+	QLabel* get_video_label();
+	QObject* get_object(const QString name);
+	void create_play_control();
 private:
-	void start_play();
 	void stop_play();
 	void pause_play();
-	// void terminate_threads();
+	void play_control_key(Qt::Key key);
 	void set_default_bkground();
 
 	bool create_video_state(const char* filename, QThread* pThread);
@@ -104,8 +112,8 @@ private:
 	bool create_decode_audio_thread(); //decode audio thread
 	bool create_video_play_thread(); //video play thread
 	bool create_audio_play_thread(); //audio play thread
+	void all_thread_start();
 public:
-	void keep_aspect_ratio(bool bWidth = true);
-
+	void start_play();
 };
 #endif // MAINWINDOW_H

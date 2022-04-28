@@ -1,5 +1,6 @@
 #include "ffmpeg_init.h"
 
+#define OPEN_FFMPEG_LOG 0
 
 static void log_callback(void* ptr, int level, const char* fmt, va_list vl)
 {
@@ -14,8 +15,10 @@ static void log_callback(void* ptr, int level, const char* fmt, va_list vl)
 	av_log_format_line(ptr, level, fmt, vl2, line, sizeof(line), &print_prefix);
 	va_end(vl2);
 
+#if OPEN_FFMPEG_LOG
 	// printf("FFMPEG:%s\n", line);
-	qDebug("FFMPEG:%s", line);
+	qInfo("FFMPEG:%s", line);
+#endif
 }
 
 int ffmpeg_init()

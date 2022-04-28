@@ -99,6 +99,15 @@
     <ClCompile Include="log.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="play_control_window.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="start_play_thread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="player_skin.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="mainwindow.h">
@@ -128,6 +137,12 @@
     <QtMoc Include="subtitle_decode_thread.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <QtMoc Include="play_control_window.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="start_play_thread.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="debug\moc_predefs.h.cbt">
@@ -147,6 +162,9 @@
       <Filter>Form Files</Filter>
     </QtUic>
     <QtUic Include="youtube_url_dlg.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="play_control_window.ui">
       <Filter>Form Files</Filter>
     </QtUic>
   </ItemGroup>

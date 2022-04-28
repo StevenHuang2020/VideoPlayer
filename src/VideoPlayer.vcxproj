@@ -208,7 +208,10 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mainwindow.cpp" />
     <ClCompile Include="packets_sync.cpp" />
+    <ClCompile Include="player_skin.cpp" />
+    <ClCompile Include="play_control_window.cpp" />
     <ClCompile Include="read_thread.cpp" />
+    <ClCompile Include="start_play_thread.cpp" />
     <ClCompile Include="subtitle_decode_thread.cpp" />
     <ClCompile Include="video_decode_thread.cpp" />
     <ClCompile Include="video_play_thread.cpp" />
@@ -245,6 +248,7 @@
     <QtUic Include="about.ui" />
     <QtUic Include="mainwindow.ui">
     </QtUic>
+    <QtUic Include="play_control_window.ui" />
     <QtUic Include="youtube_url_dlg.ui" />
   </ItemGroup>
   <ItemGroup>
@@ -269,6 +273,8 @@
     <QtMoc Include="video_decode_thread.h" />
     <QtMoc Include="read_thread.h" />
     <QtMoc Include="subtitle_decode_thread.h" />
+    <QtMoc Include="play_control_window.h" />
+    <QtMoc Include="start_play_thread.h" />
     <ClInclude Include="version.h" />
     <QtMoc Include="youtube_url_dlg.h" />
   </ItemGroup>

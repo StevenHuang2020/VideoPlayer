@@ -271,7 +271,7 @@ typedef struct VideoState {
 
 
 #if !NDEBUG
-#define PRINT_PACKETQUEUE_INFO  1
+#define PRINT_PACKETQUEUE_INFO  0
 #else
 #define PRINT_PACKETQUEUE_INFO  0
 #endif

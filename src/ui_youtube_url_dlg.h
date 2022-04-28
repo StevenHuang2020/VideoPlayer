@@ -25,42 +25,59 @@ QT_BEGIN_NAMESPACE
 class Ui_YoutubeUrlDlg
 {
 public:
-    QWidget *layoutWidget;
+    QWidget *gridLayoutWidget;
     QGridLayout *gridLayout;
-    QSpacerItem *verticalSpacer_2;
+    QHBoxLayout *horizontalLayout;
     QSpacerItem *horizontalSpacer_3;
+    QLabel *label;
+    QLineEdit *lineEdit;
+    QSpacerItem *horizontalSpacer_4;
     QHBoxLayout *horizontalLayout_2;
     QSpacerItem *horizontalSpacer;
     QPushButton *btn_Ok;
     QPushButton *btn_Cancel;
     QSpacerItem *horizontalSpacer_2;
-    QSpacerItem *horizontalSpacer_4;
-    QHBoxLayout *horizontalLayout;
-    QLabel *label;
-    QLineEdit *lineEdit;
+    QSpacerItem *verticalSpacer;
+    QSpacerItem *verticalSpacer_2;
 
     void setupUi(QDialog *YoutubeUrlDlg)
     {
         if (YoutubeUrlDlg->objectName().isEmpty())
             YoutubeUrlDlg->setObjectName(QString::fromUtf8("YoutubeUrlDlg"));
-        YoutubeUrlDlg->resize(400, 180);
-        YoutubeUrlDlg->setMinimumSize(QSize(400, 180));
-        YoutubeUrlDlg->setMaximumSize(QSize(400, 180));
-        layoutWidget = new QWidget(YoutubeUrlDlg);
-        layoutWidget->setObjectName(QString::fromUtf8("layoutWidget"));
-        layoutWidget->setGeometry(QRect(0, 0, 381, 191));
-        gridLayout = new QGridLayout(layoutWidget);
+        YoutubeUrlDlg->resize(384, 110);
+        YoutubeUrlDlg->setMinimumSize(QSize(384, 110));
+        YoutubeUrlDlg->setMaximumSize(QSize(384, 110));
+        gridLayoutWidget = new QWidget(YoutubeUrlDlg);
+        gridLayoutWidget->setObjectName(QString::fromUtf8("gridLayoutWidget"));
+        gridLayoutWidget->setGeometry(QRect(0, 0, 381, 108));
+        gridLayout = new QGridLayout(gridLayoutWidget);
         gridLayout->setSpacing(6);
         gridLayout->setContentsMargins(11, 11, 11, 11);
         gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
         gridLayout->setContentsMargins(0, 0, 0, 0);
-        verticalSpacer_2 = new QSpacerItem(20, 15, QSizePolicy::Minimum, QSizePolicy::Fixed);
+        horizontalLayout = new QHBoxLayout();
+        horizontalLayout->setSpacing(6);
+        horizontalLayout->setObjectName(QString::fromUtf8("horizontalLayout"));
+        horizontalSpacer_3 = new QSpacerItem(13, 20, QSizePolicy::Minimum, QSizePolicy::Minimum);
 
-        gridLayout->addItem(verticalSpacer_2, 0, 1, 1, 1);
+        horizontalLayout->addItem(horizontalSpacer_3);
 
-        horizontalSpacer_3 = new QSpacerItem(10, 20, QSizePolicy::Fixed, QSizePolicy::Minimum);
+        label = new QLabel(gridLayoutWidget);
+        label->setObjectName(QString::fromUtf8("label"));
 
-        gridLayout->addItem(horizontalSpacer_3, 1, 0, 1, 1);
+        horizontalLayout->addWidget(label);
+
+        lineEdit = new QLineEdit(gridLayoutWidget);
+        lineEdit->setObjectName(QString::fromUtf8("lineEdit"));
+
+        horizontalLayout->addWidget(lineEdit);
+
+        horizontalSpacer_4 = new QSpacerItem(13, 20, QSizePolicy::Minimum, QSizePolicy::Minimum);
+
+        horizontalLayout->addItem(horizontalSpacer_4);
+
+
+        gridLayout->addLayout(horizontalLayout, 1, 0, 1, 1);
 
         horizontalLayout_2 = new QHBoxLayout();
         horizontalLayout_2->setSpacing(6);
@@ -69,12 +86,12 @@ public:
 
         horizontalLayout_2->addItem(horizontalSpacer);
 
-        btn_Ok = new QPushButton(layoutWidget);
+        btn_Ok = new QPushButton(gridLayoutWidget);
         btn_Ok->setObjectName(QString::fromUtf8("btn_Ok"));
 
         horizontalLayout_2->addWidget(btn_Ok);
 
-        btn_Cancel = new QPushButton(layoutWidget);
+        btn_Cancel = new QPushButton(gridLayoutWidget);
         btn_Cancel->setObjectName(QString::fromUtf8("btn_Cancel"));
 
         horizontalLayout_2->addWidget(btn_Cancel);
@@ -84,27 +101,15 @@ public:
         horizontalLayout_2->addItem(horizontalSpacer_2);
 
 
-        gridLayout->addLayout(horizontalLayout_2, 2, 1, 1, 1);
+        gridLayout->addLayout(horizontalLayout_2, 3, 0, 1, 1);
 
-        horizontalSpacer_4 = new QSpacerItem(10, 20, QSizePolicy::Fixed, QSizePolicy::Minimum);
+        verticalSpacer = new QSpacerItem(20, 10, QSizePolicy::Minimum, QSizePolicy::Fixed);
 
-        gridLayout->addItem(horizontalSpacer_4, 1, 2, 1, 1);
+        gridLayout->addItem(verticalSpacer, 0, 0, 1, 1);
 
-        horizontalLayout = new QHBoxLayout();
-        horizontalLayout->setSpacing(6);
-        horizontalLayout->setObjectName(QString::fromUtf8("horizontalLayout"));
-        label = new QLabel(layoutWidget);
-        label->setObjectName(QString::fromUtf8("label"));
+        verticalSpacer_2 = new QSpacerItem(20, 12, QSizePolicy::Minimum, QSizePolicy::Fixed);
 
-        horizontalLayout->addWidget(label);
-
-        lineEdit = new QLineEdit(layoutWidget);
-        lineEdit->setObjectName(QString::fromUtf8("lineEdit"));
-
-        horizontalLayout->addWidget(lineEdit);
-
-
-        gridLayout->addLayout(horizontalLayout, 1, 1, 1, 1);
+        gridLayout->addItem(verticalSpacer_2, 2, 0, 1, 1);
 
 
         retranslateUi(YoutubeUrlDlg);
@@ -115,9 +120,9 @@ public:
     void retranslateUi(QDialog *YoutubeUrlDlg)
     {
         YoutubeUrlDlg->setWindowTitle(QApplication::translate("YoutubeUrlDlg", "Open Youtube", nullptr));
+        label->setText(QApplication::translate("YoutubeUrlDlg", "Youtube Url:", nullptr));
         btn_Ok->setText(QApplication::translate("YoutubeUrlDlg", "Ok", nullptr));
         btn_Cancel->setText(QApplication::translate("YoutubeUrlDlg", "Cancel", nullptr));
-        label->setText(QApplication::translate("YoutubeUrlDlg", "Youtube Url:", nullptr));
     } // retranslateUi
 
 };

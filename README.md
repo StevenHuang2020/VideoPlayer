@@ -9,6 +9,9 @@ A simple video player based on QT and FFmpeg. This is just a rough product for p
 
 ##### History
 
+- v1.1.2, 29/04/22
+    - play start thread; progressbar; skin;
+
 - v1.1.0, 23/04/22
     - A/V sync control
 
@@ -21,3 +24,5 @@ A simple video player based on QT and FFmpeg. This is just a rough product for p
 
  - A/V library [FFmpeg.](https://ffmpeg.org/) <br/>
  - GUI framework [QT.](https://www.qt.io/)
+ - QT skins [github.](https://github.com/GTRONICK/QSS)
+ - [youtube-dl.](https://youtube-dl.org/)

@@ -168,17 +168,26 @@ int AudioPlayThread::audio_decode_frame(VideoState* is)
 	uint8_t* buffer_audio = (uint8_t*)av_malloc(data_size * sizeof(uint8_t));
 	swr_convert(swrCtx, &buffer_audio, af->frame->nb_samples, (const uint8_t**)(af->frame->data), af->frame->nb_samples);
 
+	if (is->muted && data_size > 0)
+		memset(buffer_audio, 0, data_size); //mute
+	
 	play_buf(buffer_audio, data_size);
 
 	audio_clock0 = is->audio_clock;
 	/* update the audio clock with the pts */
 	if (!isnan(af->pts))
+	{
 		is->audio_clock = af->pts + (double)af->frame->nb_samples / af->frame->sample_rate;
-	else
+		// qDebug("audio: clock=%0.3f pts=%0.3f, frame:%0.3f\n", is->audio_clock, af->pts, (double)af->frame->nb_samples / af->frame->sample_rate);
+	}
+	else {
 		is->audio_clock = NAN;
+	}
 	is->audio_clock_serial = af->serial;
 
-#if !NDEBUG
+	emit update_play_time();
+
+#if (!NDEBUG && PRINT_PACKETQUEUE_INFO)
 	{
 		static double last_clock;
 		qDebug("audio: delay=%0.3f clock=%0.3f clock0=%0.3f\n",
