@@ -9,6 +9,7 @@
 #include <QDesktopWidget>
 #include <QSizePolicy>
 #include <QElapsedTimer>
+#include <QTimer>
 
 //#include "decode_thread.h"
 #include "video_decode_thread.h"
@@ -40,12 +41,15 @@ private:
 	VideoDecodeThread* m_pDecodeVideoThread; //decode video thread
 	AudioDecodeThread* m_pDecodeAudioThread; //decode audio thread
 	//DecodeThread* m_pDecodeAudioThread; //decode audio thread
+
+	QTimer m_timer; //mouse moving timer
 public:
 	VideoStateData* m_pVideoState;	//for sync packets
 	AudioPlayThread* m_pAudioPlayThread; //audio play thread
 	VideoPlayThread* m_pVideoPlayThread; //video play thread
 private:
 	void resizeEvent(QResizeEvent* event) override;
+	void moveEvent(QMoveEvent* event) override;
 	void keyPressEvent(QKeyEvent* event) override;
 	bool eventFilter(QObject* obj, QEvent* event) override;
 
@@ -73,7 +77,12 @@ public slots:
 	void read_packet_stopped();
 	void update_play_time();
 	void play_started(bool ret);
-	void play_seek(int value);
+	//void play_seek(int value);
+	void play_seek();
+	void play_seek_pre();
+	void play_seek_next();
+	void play_mute(bool mute);
+	void set_volume(int volume);
 signals:
 	void stop_audio_play_thread();
 	void stop_video_play_thread();
@@ -89,18 +98,23 @@ private:
 	void hide_statusbar(bool bHide = true);
 	void hide_menubar(bool bHide = true);
 	void check_hide_menubar(QMouseEvent* mouseEvent);
+	void check_hide_play_control();
+	void auto_hide_play_control(bool bHide = true);
 	void displayStatusMessage(const QString& message);
 	void hide_play_control(bool bHide = true);
 	void set_paly_control_wnd(bool set = true);
+	void update_paly_control_volume();
+	void update_paly_control_status();
+	void update_paly_control_muted();
 	void print_size();
 	void keep_aspect_ratio(bool bWidth = true);
 	void create_style_menu();
 	QLabel* get_video_label();
 	QObject* get_object(const QString name);
 	void create_play_control();
+	void update_play_control();
+	void set_volume_updown(bool bUp = true, float unit = 0.2);
 private:
-	void stop_play();
-	void pause_play();
 	void play_control_key(Qt::Key key);
 	void set_default_bkground();
 
@@ -113,7 +127,11 @@ private:
 	bool create_video_play_thread(); //video play thread
 	bool create_audio_play_thread(); //audio play thread
 	void all_thread_start();
+
+	void video_seek(bool seek_by_bytes, double incr);
 public:
 	void start_play();
+	void stop_play();
+	void pause_play();
 };
 #endif // MAINWINDOW_H

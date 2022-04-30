@@ -330,7 +330,7 @@ void check_external_clock_speed(VideoState* is);
 void stream_seek(VideoState* is, int64_t pos, int64_t rel, int seek_by_bytes);
 void stream_toggle_pause(VideoState* is);
 void toggle_pause(VideoState* is);
-void toggle_mute(VideoState* is);
+void toggle_mute(VideoState* is, bool mute);
 void update_volume(VideoState* is, int sign, double step);
 void step_to_next_frame(VideoState* is);
 double compute_target_delay(double delay, VideoState* is);

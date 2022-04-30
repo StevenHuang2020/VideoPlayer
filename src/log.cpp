@@ -67,7 +67,7 @@ void logOutput(QtMsgType type, const QMessageLogContext& context, const QString&
 	txt = QString("[%1][%2]%3 (file:%4:%5, fun:%6)").arg(time, type_str, msg.toLocal8Bit().constData(),
 		file.fileName(), QString::number(context.line), context.function);
 
-	QString output = txt+"\n"; //output to debug window
+	QString output = txt + "\n"; //output to debug window
 	Output(output.toStdWString().c_str());
 #else
 	if (type == QtDebugMsg)

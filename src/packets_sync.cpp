@@ -669,17 +669,24 @@ void stream_toggle_pause(VideoState* is)
 	}
 	set_clock(&is->extclk, get_clock(&is->extclk), is->extclk.serial);
 	is->paused = is->audclk.paused = is->vidclk.paused = is->extclk.paused = !is->paused;
+	is->step = 0;
 }
 
 void toggle_pause(VideoState* is)
 {
 	stream_toggle_pause(is);
-	is->step = 0;
 }
 
-void toggle_mute(VideoState* is)
+void toggle_mute(VideoState* is, bool mute)
 {
+#if 1
+	bool muted = !!is->muted;
+	if (muted != mute ) {
+		is->muted = mute;
+	}
+#else
 	is->muted = !is->muted;
+#endif
 }
 
 void update_volume(VideoState* is, int sign, double step)

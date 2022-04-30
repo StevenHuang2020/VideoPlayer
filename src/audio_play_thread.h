@@ -58,5 +58,7 @@ public slots:
 public:
 	bool init_resample_param(AVCodecContext* pAudio);
 	void final_resample_param();
+	float get_device_volume();
+	void set_device_volume(float volume);
 };
 #endif

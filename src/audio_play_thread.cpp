@@ -74,8 +74,25 @@ bool AudioPlayThread::init_device(int sample_rate, int channel, AVSampleFormat s
 	}
 
 	m_pOutput = new QAudioOutput(*m_pDevice, format);
+	set_device_volume(0.8);
+
 	m_audioDevice = m_pOutput->start();
 	return true;
+}
+
+float AudioPlayThread::get_device_volume()
+{
+	if (m_pOutput) {
+		return m_pOutput->volume();
+	}
+	return 0;
+}
+
+void AudioPlayThread::set_device_volume(float volume)
+{
+	if (m_pOutput) {
+		m_pOutput->setVolume(volume);
+	}
 }
 
 void AudioPlayThread::stop_device()
@@ -178,7 +195,7 @@ int AudioPlayThread::audio_decode_frame(VideoState* is)
 	if (!isnan(af->pts))
 	{
 		is->audio_clock = af->pts + (double)af->frame->nb_samples / af->frame->sample_rate;
-		// qDebug("audio: clock=%0.3f pts=%0.3f, frame:%0.3f\n", is->audio_clock, af->pts, (double)af->frame->nb_samples / af->frame->sample_rate);
+		//qDebug("audio: clock=%0.3f pts=%0.3f, frame:%0.3f\n", is->audio_clock, af->pts, (double)af->frame->nb_samples / af->frame->sample_rate);
 	}
 	else {
 		is->audio_clock = NAN;
