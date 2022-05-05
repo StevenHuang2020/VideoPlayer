@@ -6,7 +6,7 @@
 
 A simple video player based on QT and FFmpeg. This is just a rough product for personal entertainment. Please find the release player [here.](https://github.com/StevenHuang2020/VideoPlayer/releases)
 
-<img src="src/res/player.png" width="320" height="240" />
+<img src="src/res/player.png" width="320" height="205" />
 
 ##### History
 
