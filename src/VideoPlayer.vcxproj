@@ -210,6 +210,7 @@
     <ClCompile Include="packets_sync.cpp" />
     <ClCompile Include="player_skin.cpp" />
     <ClCompile Include="play_control_window.cpp" />
+    <ClCompile Include="qimage_operation.cpp" />
     <ClCompile Include="read_thread.cpp" />
     <ClCompile Include="start_play_thread.cpp" />
     <ClCompile Include="subtitle_decode_thread.cpp" />

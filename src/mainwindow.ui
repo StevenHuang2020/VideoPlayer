@@ -124,8 +124,15 @@
      <string>Style</string>
     </property>
    </widget>
+   <widget class="QMenu" name="menuCV">
+    <property name="title">
+     <string>CV</string>
+    </property>
+    <addaction name="actionGrayscale"/>
+   </widget>
    <addaction name="menuMedia"/>
    <addaction name="menuView"/>
+   <addaction name="menuCV"/>
    <addaction name="menuStyle"/>
    <addaction name="menuHelp"/>
   </widget>
@@ -202,6 +209,14 @@
    </property>
    <property name="text">
     <string>Hide Play Control</string>
+   </property>
+  </action>
+  <action name="actionGrayscale">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Grayscale</string>
    </property>
   </action>
  </widget>

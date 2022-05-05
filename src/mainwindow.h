@@ -43,6 +43,7 @@ private:
 	//DecodeThread* m_pDecodeAudioThread; //decode audio thread
 
 	QTimer m_timer; //mouse moving timer
+	bool m_bGrayscale;
 public:
 	VideoStateData* m_pVideoState;	//for sync packets
 	AudioPlayThread* m_pAudioPlayThread; //audio play thread
@@ -64,10 +65,11 @@ private slots:
 	void on_actionHide_Play_Ctronl_triggered();
 	void on_actionYoutube_triggered();
 	void on_actionAspect_Ratio_triggered();
-	void on_actionSystemStyle_triggered();
-	void on_actionCustomStyle_triggered();
-
+	void on_actionSystemStyle();
+	void on_actionCustomStyle();
+	void on_actionGrayscale_triggered();
 public slots:
+	void image_ready(const QImage&);
 	void update_image(const QImage&);
 	void print_decodeContext(const AVCodecContext* pVideo, bool bVideo = true);
 	void decode_video_stopped();
@@ -92,7 +94,7 @@ signals:
 	void wait_stop_video_play_thread();
 
 private:
-	void resize_window(int weight = 800, int height = 480);
+	void resize_window(int width = 800, int height = 480);
 	void center_window(QRect screen_rec);
 	void show_fullscreen(bool bFullscreen = true);
 	void hide_statusbar(bool bHide = true);
@@ -128,9 +130,10 @@ private:
 	bool create_audio_play_thread(); //audio play thread
 	void all_thread_start();
 
-	void video_seek(bool seek_by_bytes, double incr);
+	void video_seek_inc(double incr);
+	void video_seek(double pos = 0, double incr = 0);
 public:
-	void start_play();
+	bool start_play();
 	void stop_play();
 	void pause_play();
 };

@@ -38,15 +38,12 @@ play_control_window::play_control_window(QWidget* parent)
 	connect(ui->btn_stop, &QPushButton::clicked, (MainWindow*)parent, &MainWindow::stop_play);
 	connect(ui->btn_play, &QPushButton::clicked, (MainWindow*)parent, &MainWindow::pause_play);
 	connect(ui->slider_vol, &QSlider::valueChanged, (MainWindow*)parent, &MainWindow::set_volume);
-
 	connect(ui->btn_pre, &QPushButton::clicked, (MainWindow*)parent, &MainWindow::play_seek_pre);
 	connect(ui->btn_next, &QPushButton::clicked, (MainWindow*)parent, &MainWindow::play_seek_next);
-	
 	connect(ui->progress_slider, &QSlider::sliderReleased, (MainWindow*)parent, &MainWindow::play_seek);
+	connect(ui->progress_slider, &QSlider::sliderPressed, (MainWindow*)parent, &MainWindow::pause_play);
 
 	clear_all();
-
-	//setAttribute(Qt::WA_ShowWithoutActivating);
 }
 
 play_control_window::~play_control_window()

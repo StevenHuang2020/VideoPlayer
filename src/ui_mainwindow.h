@@ -36,6 +36,7 @@ public:
     QAction *actionYoutube;
     QAction *actionAspect_Ratio;
     QAction *actionHide_Play_Ctronl;
+    QAction *actionGrayscale;
     QWidget *centralwidget;
     QLabel *label_Video;
     QMenuBar *menubar;
@@ -43,6 +44,7 @@ public:
     QMenu *menuView;
     QMenu *menuHelp;
     QMenu *menuStyle;
+    QMenu *menuCV;
     QStatusBar *statusbar;
 
     void setupUi(QMainWindow *MainWindow)
@@ -92,6 +94,9 @@ public:
         actionHide_Play_Ctronl = new QAction(MainWindow);
         actionHide_Play_Ctronl->setObjectName(QString::fromUtf8("actionHide_Play_Ctronl"));
         actionHide_Play_Ctronl->setCheckable(true);
+        actionGrayscale = new QAction(MainWindow);
+        actionGrayscale->setObjectName(QString::fromUtf8("actionGrayscale"));
+        actionGrayscale->setCheckable(true);
         centralwidget = new QWidget(MainWindow);
         centralwidget->setObjectName(QString::fromUtf8("centralwidget"));
         label_Video = new QLabel(centralwidget);
@@ -110,6 +115,8 @@ public:
         menuHelp->setObjectName(QString::fromUtf8("menuHelp"));
         menuStyle = new QMenu(menubar);
         menuStyle->setObjectName(QString::fromUtf8("menuStyle"));
+        menuCV = new QMenu(menubar);
+        menuCV->setObjectName(QString::fromUtf8("menuCV"));
         MainWindow->setMenuBar(menubar);
         statusbar = new QStatusBar(MainWindow);
         statusbar->setObjectName(QString::fromUtf8("statusbar"));
@@ -119,6 +126,7 @@ public:
 
         menubar->addAction(menuMedia->menuAction());
         menubar->addAction(menuView->menuAction());
+        menubar->addAction(menuCV->menuAction());
         menubar->addAction(menuStyle->menuAction());
         menubar->addAction(menuHelp->menuAction());
         menuMedia->addAction(actionOpen);
@@ -131,6 +139,7 @@ public:
         menuView->addSeparator();
         menuView->addAction(actionAspect_Ratio);
         menuHelp->addAction(actionAbout);
+        menuCV->addAction(actionGrayscale);
 
         retranslateUi(MainWindow);
 
@@ -154,11 +163,13 @@ public:
         actionYoutube->setText(QApplication::translate("MainWindow", "OpenYoutube", nullptr));
         actionAspect_Ratio->setText(QApplication::translate("MainWindow", "Aspect Ratio", nullptr));
         actionHide_Play_Ctronl->setText(QApplication::translate("MainWindow", "Hide Play Control", nullptr));
+        actionGrayscale->setText(QApplication::translate("MainWindow", "Grayscale", nullptr));
         label_Video->setText(QString());
         menuMedia->setTitle(QApplication::translate("MainWindow", "Media", nullptr));
         menuView->setTitle(QApplication::translate("MainWindow", "View", nullptr));
         menuHelp->setTitle(QApplication::translate("MainWindow", "Help", nullptr));
         menuStyle->setTitle(QApplication::translate("MainWindow", "Style", nullptr));
+        menuCV->setTitle(QApplication::translate("MainWindow", "CV", nullptr));
 #ifndef QT_NO_TOOLTIP
         statusbar->setToolTip(QString());
 #endif // QT_NO_TOOLTIP

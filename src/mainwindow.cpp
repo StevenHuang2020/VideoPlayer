@@ -5,6 +5,7 @@
 #include "youtube_url_dlg.h"
 #include "start_play_thread.h"
 #include "player_skin.h"
+#include "qimage_operation.h"
 
 
 MainWindow::MainWindow(QWidget* parent)
@@ -17,6 +18,7 @@ MainWindow::MainWindow(QWidget* parent)
 	, m_pAudioPlayThread(NULL)
 	, m_pVideoPlayThread(NULL)
 	, m_pPacketReadThread(NULL)
+	, m_bGrayscale(false)
 {
 	ui->setupUi(this);
 
@@ -78,7 +80,7 @@ void MainWindow::create_style_menu()
 		action->setText(QApplication::translate("MainWindow", style.toStdString().c_str(), nullptr));
 		pMenu->addAction(action);
 
-		connect(action, &QAction::triggered, this, &MainWindow::on_actionSystemStyle_triggered);
+		connect(action, &QAction::triggered, this, &MainWindow::on_actionSystemStyle);
 		alignmentGroup->addAction(action);
 	}
 
@@ -104,7 +106,7 @@ void MainWindow::create_style_menu()
 		action->setText(QApplication::translate("MainWindow", filename.toStdString().c_str(), nullptr));
 		pMenu->addAction(action);
 
-		connect(action, &QAction::triggered, this, &MainWindow::on_actionCustomStyle_triggered);
+		connect(action, &QAction::triggered, this, &MainWindow::on_actionCustomStyle);
 		alignmentGroup->addAction(action);
 	}
 }
@@ -130,6 +132,7 @@ void MainWindow::create_play_control()
 	//pLayout->addItem(new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Expanding));
 	//pLayout->addWidget(pPlayControl);
 	hide_play_control(false);
+	//update_play_control();
 }
 
 void MainWindow::update_play_control()
@@ -154,7 +157,7 @@ void MainWindow::update_play_control()
 		if (pStatusBar->isVisible())
 			pt -= QPoint(0, szStatusBar.height());
 
-		qDebug("statusbar pt(%d,%d)", pt.x(), pt.y());
+		//qDebug("statusbar pt(%d,%d)", pt.x(), pt.y());
 		pPlayControl->move(pt);
 	}
 }
@@ -227,6 +230,7 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
 		ui->actionFullscreen->setChecked(false);
 	}
 	break;
+
 	default:
 		qDebug("key:%s(%d) pressed!\n", qUtf8Printable(event->text()), event->key());
 		QWidget::keyPressEvent(event);
@@ -246,6 +250,7 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* event)
 			m_timer.start();
 			auto_hide_play_control(false);
 		}
+		setCursor(Qt::ArrowCursor);
 	}
 	return false;
 }
@@ -264,6 +269,7 @@ void MainWindow::check_hide_menubar(QMouseEvent* mouseEvent)
 void MainWindow::check_hide_play_control()
 {
 	auto_hide_play_control();
+	setCursor(Qt::BlankCursor);
 }
 
 void MainWindow::auto_hide_play_control(bool bHide)
@@ -303,7 +309,14 @@ void MainWindow::on_actionOpen_triggered()
 		// qDebug("file:%s\n", qUtf8Printable(fileNames[0]));
 		m_videoFile = fileNames[0];
 
-		start_play();
+		bool ret = start_play();
+		if (!ret) {
+			QMessageBox msgBox;
+
+			msgBox.move(geometry().center() - msgBox.rect().center()); //center parent window
+			msgBox.setText("File play failed.");
+			msgBox.exec();
+		}
 	}
 }
 
@@ -325,7 +338,7 @@ void MainWindow::on_actionAspect_Ratio_triggered()
 	keep_aspect_ratio();
 }
 
-void MainWindow::on_actionSystemStyle_triggered()
+void MainWindow::on_actionSystemStyle()
 {
 	QAction* act = qobject_cast<QAction*>(sender());
 	QString str = act->data().toString();
@@ -334,13 +347,18 @@ void MainWindow::on_actionSystemStyle_triggered()
 	set_system_style(str);
 }
 
-void MainWindow::on_actionCustomStyle_triggered()
+void MainWindow::on_actionCustomStyle()
 {
 	QAction* act = qobject_cast<QAction*>(sender());
 	QString str = act->data().toString();
 
 	qDebug("custom style menu clicked:%s", qUtf8Printable(str));
 	set_custom_style(str);
+}
+
+void MainWindow::on_actionGrayscale_triggered()
+{
+	m_bGrayscale = ui->actionGrayscale->isChecked();
 }
 
 void MainWindow::on_actionQuit_triggered()
@@ -361,6 +379,7 @@ void MainWindow::on_actionHide_Status_triggered()
 {
 	bool bHide = ui->actionHide_Status->isChecked();
 	hide_statusbar(bHide);
+	update_play_control();
 }
 
 void MainWindow::on_actionHide_Play_Ctronl_triggered()
@@ -375,16 +394,21 @@ void MainWindow::on_actionFullscreen_triggered()
 	show_fullscreen(bFullscrren);
 }
 
-void MainWindow::resize_window(int weight, int height)
+void MainWindow::resize_window(int width, int height)
 {
-	resize(weight, height);
-
 	QPoint pt = this->pos();
-	QDesktopWidget* pDesktop = QApplication::desktop();
-	QRect screen_rec = pDesktop->screenGeometry();
-	if (pt.x() + weight > screen_rec.width() ||
-		pt.y() + height > screen_rec.height())
-	{
+	QRect screen_rec = QApplication::desktop()->screenGeometry();
+
+	if (width > screen_rec.width() ||
+		height > screen_rec.height()) {
+		showMaximized();
+		return;
+	}
+
+	resize(width, height);
+
+	if (pt.x() + width > screen_rec.width() ||
+		pt.y() + height > screen_rec.height()) {
 		center_window(screen_rec);
 	}
 }
@@ -401,6 +425,7 @@ void MainWindow::show_fullscreen(bool bFullscreen)
 {
 	if (bFullscreen) {
 		showFullScreen();
+		resize(size());
 	}
 	else
 	{
@@ -571,7 +596,7 @@ void MainWindow::update_play_time()
 	}
 }
 
-void MainWindow::video_seek(bool seek_by_bytes, double incr) //incr seconds
+void MainWindow::video_seek_inc(double incr) //incr seconds
 {
 	VideoState* pState = NULL;
 	if (m_pVideoState) {
@@ -581,44 +606,41 @@ void MainWindow::video_seek(bool seek_by_bytes, double incr) //incr seconds
 	if (pState == NULL)
 		return;
 
-	double pos;
-	if (seek_by_bytes) {
-		pos = -1;
-		if (pos < 0 && pState->video_stream >= 0)
-			pos = frame_queue_last_pos(&pState->pictq);
-		if (pos < 0 && pState->audio_stream >= 0)
-			pos = frame_queue_last_pos(&pState->sampq);
-		if (pos < 0)
-			pos = avio_tell(pState->ic->pb);
-		if (pState->ic->bit_rate)
-			incr *= pState->ic->bit_rate / 8.0;
-		else
-			incr *= 180000.0;
+	double pos = get_master_clock(pState);
 
-		qDebug("seek_by_bytes pos=%lf,incr=%lf", pos, incr);
+	if (isnan(pos))
+		pos = (double)pState->seek_pos / AV_TIME_BASE;
 
-		pos += incr;
-		stream_seek(pState, pos, incr, 1);
+	qDebug("!seek_by_bytes pos=%lf", pos);
+
+	pos += incr;
+	video_seek(pos, incr);
+}
+
+void MainWindow::video_seek(double pos, double incr)
+{
+	VideoState* pState = NULL;
+	if (m_pVideoState) {
+		pState = m_pVideoState->get_state();
 	}
-	else {
-		pos = get_master_clock(pState);
 
-		if (isnan(pos))
-			pos = (double)pState->seek_pos / AV_TIME_BASE;
+	if (pState == NULL)
+		return;
 
-		qDebug("!seek_by_bytes pos=%lf", pos);
-
-		pos += incr;
-		if (pState->ic->start_time != AV_NOPTS_VALUE && pos < pState->ic->start_time / (double)AV_TIME_BASE)
-			pos = pState->ic->start_time / (double)AV_TIME_BASE;
-		stream_seek(pState, (int64_t)(pos * AV_TIME_BASE), (int64_t)(incr * AV_TIME_BASE), 0);
+	if (pState->ic->start_time != AV_NOPTS_VALUE && pos < pState->ic->start_time / (double)AV_TIME_BASE)
+	{
+		//qDebug("!seek_by_bytes pos=%lf, start_time=%lf, %lf", pos, pState->ic->start_time, pState->ic->start_time / (double)AV_TIME_BASE);
+		pos = pState->ic->start_time / (double)AV_TIME_BASE;
 	}
+
+	stream_seek(pState, (int64_t)(pos * AV_TIME_BASE), (int64_t)(incr * AV_TIME_BASE), 0);
 }
 
 void MainWindow::play_seek()
 {
 	//qDebug("seek value:%d", value);
 	//return;
+	pause_play();
 
 	play_control_window* pPlayControl = (play_control_window*)get_object("play_control");
 	if (pPlayControl) {
@@ -633,18 +655,18 @@ void MainWindow::play_seek()
 		}
 
 		qDebug("seek value:%d, maxValue:%d, total_time:%d, seek_time:%d", value, maxValue, total_time, seek_time);
-		video_seek(false, seek_time); //
+		video_seek(seek_time); //
 	}
 }
 
 void MainWindow::play_seek_pre()
 {
-	video_seek(false, -5);
+	video_seek_inc(-2);
 }
 
 void MainWindow::play_seek_next()
 {
-	video_seek(false, 5);
+	video_seek_inc(2);
 }
 
 void MainWindow::play_mute(bool mute)
@@ -678,24 +700,17 @@ void MainWindow::hide_statusbar(bool bHide)
 
 	QSize sz_status = statusBar()->size();
 	QSize sz_center = centralWidget()->size();
-	if (isFullScreen())
-	{
-		//centralWidget()->resize(sz_center);
-		resize(size());
-	}
-	else {
 
-		bool bVisible = statusBar()->isVisible();
-		if (bVisible)
-		{
-			//centralWidget()->resize(sz_center + QSize(0, sz_status.height()));
-			resize(size() + QSize(0, sz_status.height()));
-		}
-		else
-		{
-			//centralWidget()->resize(sz_center - QSize(0, sz_status.height()));
-			resize(size() - QSize(0, sz_status.height()));
-		}
+	bool bVisible = statusBar()->isVisible();
+	if (bVisible)
+	{
+		//centralWidget()->resize(sz_center + QSize(0, sz_status.height()));
+		resize(size() + QSize(0, sz_status.height()));
+	}
+	else
+	{
+		//centralWidget()->resize(sz_center - QSize(0, sz_status.height()));
+		resize(size() - QSize(0, sz_status.height()));
 	}
 }
 
@@ -706,8 +721,7 @@ void MainWindow::hide_menubar(bool bHide)
 	{
 		menuBar()->setVisible(!bHide);
 	}
-	//updateGeometry();
-	//adjustSize();
+
 	update_play_control();
 }
 
@@ -728,7 +742,7 @@ void MainWindow::play_started(bool ret)
 	all_thread_start();
 }
 
-void MainWindow::start_play()
+bool MainWindow::start_play()
 {
 	//QElapsedTimer timer;
 	//timer.start();
@@ -744,17 +758,19 @@ void MainWindow::start_play()
 		qDebug("VideoState=%p, PacketRead=%p\n", m_pVideoState, m_pPacketReadThread);
 		qDebug("VideoDecode=%p, AudioDecode=%p\n", m_pDecodeVideoThread, m_pDecodeAudioThread);
 		qDebug("VideoPlay=%p, AudioPlay=%p\n", m_pVideoPlayThread, m_pAudioPlayThread);
-		return;
+		return ret;
 	}
 
 	QString msg = QString("Start to play file:%1").arg(m_videoFile);
+	qInfo("");
+	qInfo("%s", qPrintable(msg)); //qUtf8Printable(msg)
 	displayStatusMessage(msg);
 
 	std::string str = m_videoFile.toStdString();
 	const char* filename = str.c_str();
 	if (filename && !filename[0]) {
 		qWarning("filename is invalid, please select a valid media file.");
-		return;
+		return ret;
 	}
 
 	resize_window();  // set default window size
@@ -765,7 +781,7 @@ void MainWindow::start_play()
 	ret = create_read_thread();
 	if (!ret) {
 		qWarning("packet read thread create failed.\n");
-		return;
+		return ret;
 	}
 
 	//qDebug("---------------------------------%d milliseconds", timer.elapsed());
@@ -774,7 +790,9 @@ void MainWindow::start_play()
 	ret = create_video_state(filename, m_pPacketReadThread);
 	if (!ret) {
 		qWarning("video state create failed.\n");
-		return;
+
+		read_packet_stopped();
+		return ret;
 	}
 
 	//qDebug("---------------------------------%d milliseconds", timer.elapsed());
@@ -792,13 +810,13 @@ void MainWindow::start_play()
 		ret = create_decode_video_thread();
 		if (!ret) {
 			qWarning("video decode thread create failed.\n");
-			return;
+			return ret;
 		}
 
 		ret = create_video_play_thread();
 		if (!ret) {
 			qWarning("video play thread create failed.\n");
-			return;
+			return ret;
 		}
 	}
 
@@ -809,7 +827,7 @@ void MainWindow::start_play()
 		ret = create_decode_audio_thread();
 		if (!ret) {
 			qWarning("audio decode thread create failed.\n");
-			return;
+			return ret;
 		}
 
 		//qDebug("---------------------------------%d milliseconds", timer.elapsed());
@@ -817,7 +835,7 @@ void MainWindow::start_play()
 		ret = create_audio_play_thread();
 		if (!ret) {
 			qWarning("audio play thread create failed.\n");
-			return;
+			return ret;
 		}
 	}
 
@@ -831,11 +849,14 @@ void MainWindow::start_play()
 	//all_thread_start();
 	// 
 	//qDebug("---------------------------------%d milliseconds", timer.elapsed());
+	return true;
 }
 
 void MainWindow::all_thread_start()
 {
-	hide_play_control(false);
+	bool bHide = ui->actionHide_Play_Ctronl->isChecked();
+	hide_play_control(bHide);
+
 	set_paly_control_wnd();
 	update_paly_control_volume();
 	update_paly_control_status();
@@ -875,7 +896,6 @@ void MainWindow::stop_play()
 	emit stop_video_play_thread();	//stop video play thread
 
 	delete_video_state();
-
 	set_paly_control_wnd(false);
 }
 
@@ -1044,7 +1064,7 @@ bool MainWindow::create_video_play_thread() //video play thread
 			m_pVideoPlayThread = new VideoPlayThread(this, pState);
 
 			connect(m_pVideoPlayThread, &VideoPlayThread::finished, this, &MainWindow::video_play_stopped);
-			connect(m_pVideoPlayThread, &VideoPlayThread::frame_ready, this, &MainWindow::update_image);
+			connect(m_pVideoPlayThread, &VideoPlayThread::frame_ready, this, &MainWindow::image_ready);
 			connect(this, &MainWindow::stop_video_play_thread, m_pVideoPlayThread, &VideoPlayThread::stop_thread);
 
 			AVCodecContext* pVideo = m_pVideoState->get_contex(AVMEDIA_TYPE_VIDEO);
@@ -1085,12 +1105,6 @@ bool MainWindow::create_audio_play_thread()
 
 			AVCodecContext* pAudio = m_pVideoState->get_contex(AVMEDIA_TYPE_AUDIO);
 			print_decodeContext(pAudio, false);
-			/*int ret = -1;
-			if ((ret = audio_open(pState, pAudio->channel_layout, pAudio->channels, pAudio->sample_rate, &pState->audio_tgt)) < 0)
-			{
-				qDebug("audio play thread device format init failed.");
-				return false;
-			}*/
 
 #if 1
 			StartPlayThread* startWorker = new StartPlayThread(this);
@@ -1125,6 +1139,17 @@ QLabel* MainWindow::get_video_label()
 QObject* MainWindow::get_object(const QString name)
 {
 	return findChild<QObject*>(name);
+}
+
+void MainWindow::image_ready(const QImage& img)
+{
+	QImage image = img.copy();
+
+	if (m_bGrayscale) {
+		grey_image(image);
+	}
+
+	update_image(image);
 }
 
 void MainWindow::update_image(const QImage& img)

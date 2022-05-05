@@ -155,6 +155,14 @@ void AudioPlayThread::run()
 		audio_size = audio_decode_frame(is);
 		if (audio_size < 0)
 			break;
+
+		if (!isnan(is->audio_clock)) {
+			AVCodecContext*pAudioCodex = is->auddec.avctx;
+			int bytes_per_sec = av_samples_get_buffer_size(NULL, pAudioCodex->channels, pAudioCodex->sample_rate, AV_SAMPLE_FMT_S16, 1);
+			int64_t audio_callback_time = av_gettime_relative();
+			set_clock_at(&is->audclk, is->audio_clock - (double)(audio_size) / bytes_per_sec, is->audio_clock_serial, audio_callback_time / 1000000.0);
+			sync_clock_to_slave(&is->extclk, &is->audclk);
+		}
 	}
 
 	qDebug("-------- Audio play thread exit.");
