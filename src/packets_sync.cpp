@@ -439,6 +439,10 @@ int decoder_decode_frame(Decoder* d, AVFrame* frame, AVSubtitle* sub) {
 							frame->pts = frame->pkt_dts;
 						}
 					}
+					if (frame->format == AV_PIX_FMT_DXVA2_VLD)
+					{
+
+					}
 					break;
 				case AVMEDIA_TYPE_AUDIO:
 					ret = avcodec_receive_frame(d->avctx, frame);

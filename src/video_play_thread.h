@@ -51,7 +51,7 @@ public:
 	void pause_thread();
 	bool paused();
 
-	bool init_resample_param(AVCodecContext* pVideo);
+	bool init_resample_param(AVCodecContext* pVideo, bool bHardware = false);
 
 };
 #endif

@@ -43,7 +43,7 @@ void AudioDecodeThread::run()
 			av_frame_move_ref(af->frame, frame);
 			frame_queue_push(&is->sampq);
 
-#if PRINT_PACKETQUEUE_INFO
+#if PRINT_PACKETQUEUE_AUDIO_INFO
 			//int64 lld, double lf
 			qDebug("queue audio sample, pts:%lf, duration:%lf, pos:%lld, serial:%d",
 				af->pts, af->duration, af->pos, af->serial);

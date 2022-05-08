@@ -78,7 +78,7 @@ void grey_image(QImage& img)
 void random_image(QImage& img)
 {
 #if 1
-	int depth = sizeof(QRgb);//img.depth() / 8; 4;
+	int depth = img.depth() / 8;
 	for (int i = 0; i < img.height(); i++) {
 		uchar* scan = img.scanLine(i);
 		for (int j = 0; j < img.width(); j++) {
@@ -119,13 +119,13 @@ void random_image(QImage& img)
 #endif
 }
 
-void splt_image(QImage& img, QImage& r_img, QImage& b_img, QImage& g_img)
+void split_image(QImage& img, QImage& r_img, QImage& b_img, QImage& g_img)
 {
 	Q_ASSERT(img.size() == r_img.size());
 	Q_ASSERT(r_img.size() == b_img.size());
 	Q_ASSERT(r_img.size() == g_img.size());
 
-	int depth = sizeof(QRgb);//img.depth() / 8; 4;
+	int depth = img.depth() / 8;
 	for (int i = 0; i < img.height(); i++) {
 		uchar* scan = img.scanLine(i);
 
@@ -177,5 +177,79 @@ void scale_image(QImage& img, int width, int height)
 
 void transform_image(QImage& img, const QTransform& matrix, Qt::TransformationMode mode)
 {
+	img = img.transformed(matrix, mode);
+}
 
+QImage gamma_image(const QImage& img, double exp)
+{
+	QImage retImg(img);
+
+	int depth = img.depth() / 8;
+	for (int i = 0; i < img.height(); i++) {
+		const uchar* scan = img.scanLine(i);
+		uchar* ret_scan = retImg.scanLine(i);
+
+		for (int j = 0; j < img.width(); j++) {
+			const QRgb* rgbpixel = reinterpret_cast<const QRgb*>(scan + j * depth);
+
+			QRgb* ret_rgbpixel = reinterpret_cast<QRgb*>(ret_scan + j * depth);
+
+			const double r = qRed(*rgbpixel) / 255.0;
+			const double g = qGreen(*rgbpixel) / 255.0;
+			const double b = qBlue(*rgbpixel) / 255.0;
+
+			*ret_rgbpixel = QColor(
+				255 * std::pow(r, exp),
+				255 * std::pow(g, exp),
+				255 * std::pow(b, exp)).rgb();
+		}
+	}
+
+	return retImg;
+}
+
+QImage applyEffectToImage(QImage& src, QGraphicsEffect* effect, int extent)
+{
+	QGraphicsScene scene;
+	QGraphicsPixmapItem item;
+	item.setPixmap(QPixmap::fromImage(src));
+	item.setGraphicsEffect(effect);
+	scene.addItem(&item);
+	QImage res(src.size() + QSize(extent * 2, extent * 2), QImage::Format_ARGB32);
+	res.fill(Qt::transparent);
+	QPainter ptr(&res);
+	scene.render(&ptr, QRectF(), QRectF(-extent, -extent, src.width() + extent * 2, src.height() + extent * 2));
+	return res;
+}
+
+QImage blur_img(QImage& img, int radius, int extent)
+{
+	QGraphicsBlurEffect* e = new QGraphicsBlurEffect();
+	e->setBlurRadius(radius);
+	return applyEffectToImage(img, e, extent);
+}
+
+QImage dropshadow_img(QImage& img, int radius, int offsetX, int offsetY, QColor color, int extent)
+{
+	QGraphicsDropShadowEffect* e = new QGraphicsDropShadowEffect();
+	e->setColor(color);
+	e->setOffset(offsetX, offsetY);
+	e->setBlurRadius(radius);
+	return applyEffectToImage(img, e, extent);
+}
+
+QImage colorize_img(QImage& img, QColor color, double strength)
+{
+	QGraphicsColorizeEffect* e = new QGraphicsColorizeEffect();
+	e->setColor(color);
+	e->setStrength(strength);
+	return applyEffectToImage(img, e);
+}
+
+QImage opacity_img(QImage& img, double opacity)
+{
+	QGraphicsOpacityEffect* e = new QGraphicsOpacityEffect();
+	e->setOpacity(opacity);
+	//e->setOpacityMask();
+	return applyEffectToImage(img, e);
 }

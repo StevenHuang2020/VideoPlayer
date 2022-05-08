@@ -212,7 +212,7 @@ int AudioPlayThread::audio_decode_frame(VideoState* is)
 
 	emit update_play_time();
 
-#if (!NDEBUG && PRINT_PACKETQUEUE_INFO)
+#if (!NDEBUG && PRINT_PACKETQUEUE_AUDIO_INFO)
 	{
 		static double last_clock;
 		qDebug("audio: delay=%0.3f clock=%0.3f clock0=%0.3f\n",

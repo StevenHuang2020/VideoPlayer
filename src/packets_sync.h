@@ -196,10 +196,7 @@ typedef struct VideoState {
 
 	double audio_clock;
 	int audio_clock_serial;
-	double audio_diff_cum; /* used for AV difference average computation */
-	double audio_diff_avg_coef;
-	double audio_diff_threshold;
-	int audio_diff_avg_count;
+	
 	AVStream* audio_st;
 
 	int audio_volume;
@@ -209,6 +206,11 @@ typedef struct VideoState {
 	int frame_drops_late;
 
 #if 0
+	double audio_diff_avg_coef;
+	int audio_diff_avg_count;
+	double audio_diff_cum; /* used for AV difference average computation */
+	double audio_diff_threshold;
+
 	int16_t sample_array[SAMPLE_ARRAY_SIZE];
 	int sample_array_index;
 
@@ -271,9 +273,11 @@ typedef struct VideoState {
 
 
 #if !NDEBUG
-#define PRINT_PACKETQUEUE_INFO  0
+#define PRINT_PACKETQUEUE_INFO  1
+#define PRINT_PACKETQUEUE_AUDIO_INFO  0
 #else
 #define PRINT_PACKETQUEUE_INFO  0
+#define PRINT_PACKETQUEUE_AUDIO_INFO  0
 #endif
 
 /***************PacketQueue operations*****************/

@@ -331,8 +331,12 @@ void VideoPlayThread::video_image_display(VideoState* is)
 	AVFrame* pFrameRGB = pResample->pFrameRGB; // dst
 	AVCodecContext* pVideoCtx = is->viddec.avctx;
 	AVFrame* pFrame = vp->frame;
-	// AVPixelFormat fmt = (AVPixelFormat)pFrame->format; // 0
-	// const char* fmt_name = av_get_sample_fmt_name(fmt);
+	
+	//AVPixelFormat fmt = (AVPixelFormat)pFrame->format; // 0
+	//const char* fmt_name = av_get_pix_fmt_name(fmt);
+
+	AVHWFramesContext* ctx = (AVHWFramesContext*)pVideoCtx->hw_frames_ctx->data;
+	AVPixelFormat sw_fmt = ctx->sw_format;
 
 	sws_scale(pResample->sws_ctx, (uint8_t const* const*)pFrame->data, pFrame->linesize, 0,
 		pVideoCtx->height, pFrameRGB->data, pFrameRGB->linesize);
@@ -345,15 +349,21 @@ void VideoPlayThread::video_image_display(VideoState* is)
 	emit frame_ready(img);
 }
 
-bool VideoPlayThread::init_resample_param(AVCodecContext* pVideo)
+bool VideoPlayThread::init_resample_param(AVCodecContext* pVideo, bool bHardware)
 {
 	Video_Resample* pResample = &m_Resample;
 	if (pVideo)
 	{
+		enum AVPixelFormat pix_fmt = pVideo->pix_fmt;// frame format after decode
+		if (bHardware)
+		{
+			pix_fmt = AV_PIX_FMT_NV12;
+		}
+
 		struct SwsContext* sws_ctx = sws_getContext(
 			pVideo->width,
 			pVideo->height,
-			pVideo->pix_fmt,
+			pix_fmt,// AV_PIX_FMT_YUV420P
 			pVideo->width,
 			pVideo->height,
 			AV_PIX_FMT_RGB24,   // sws_scale destination color scheme

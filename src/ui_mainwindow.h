@@ -37,6 +37,9 @@ public:
     QAction *actionAspect_Ratio;
     QAction *actionHide_Play_Ctronl;
     QAction *actionGrayscale;
+    QAction *actionMirro;
+    QAction *actionTransform;
+    QAction *actionHardware_decode;
     QWidget *centralwidget;
     QLabel *label_Video;
     QMenuBar *menubar;
@@ -45,6 +48,7 @@ public:
     QMenu *menuHelp;
     QMenu *menuStyle;
     QMenu *menuCV;
+    QMenu *menuTools;
     QStatusBar *statusbar;
 
     void setupUi(QMainWindow *MainWindow)
@@ -97,6 +101,15 @@ public:
         actionGrayscale = new QAction(MainWindow);
         actionGrayscale->setObjectName(QString::fromUtf8("actionGrayscale"));
         actionGrayscale->setCheckable(true);
+        actionMirro = new QAction(MainWindow);
+        actionMirro->setObjectName(QString::fromUtf8("actionMirro"));
+        actionMirro->setCheckable(true);
+        actionTransform = new QAction(MainWindow);
+        actionTransform->setObjectName(QString::fromUtf8("actionTransform"));
+        actionTransform->setCheckable(true);
+        actionHardware_decode = new QAction(MainWindow);
+        actionHardware_decode->setObjectName(QString::fromUtf8("actionHardware_decode"));
+        actionHardware_decode->setCheckable(true);
         centralwidget = new QWidget(MainWindow);
         centralwidget->setObjectName(QString::fromUtf8("centralwidget"));
         label_Video = new QLabel(centralwidget);
@@ -117,6 +130,8 @@ public:
         menuStyle->setObjectName(QString::fromUtf8("menuStyle"));
         menuCV = new QMenu(menubar);
         menuCV->setObjectName(QString::fromUtf8("menuCV"));
+        menuTools = new QMenu(menubar);
+        menuTools->setObjectName(QString::fromUtf8("menuTools"));
         MainWindow->setMenuBar(menubar);
         statusbar = new QStatusBar(MainWindow);
         statusbar->setObjectName(QString::fromUtf8("statusbar"));
@@ -126,6 +141,7 @@ public:
 
         menubar->addAction(menuMedia->menuAction());
         menubar->addAction(menuView->menuAction());
+        menubar->addAction(menuTools->menuAction());
         menubar->addAction(menuCV->menuAction());
         menubar->addAction(menuStyle->menuAction());
         menubar->addAction(menuHelp->menuAction());
@@ -140,6 +156,9 @@ public:
         menuView->addAction(actionAspect_Ratio);
         menuHelp->addAction(actionAbout);
         menuCV->addAction(actionGrayscale);
+        menuCV->addAction(actionMirro);
+        menuCV->addAction(actionTransform);
+        menuTools->addAction(actionHardware_decode);
 
         retranslateUi(MainWindow);
 
@@ -164,12 +183,16 @@ public:
         actionAspect_Ratio->setText(QApplication::translate("MainWindow", "Aspect Ratio", nullptr));
         actionHide_Play_Ctronl->setText(QApplication::translate("MainWindow", "Hide Play Control", nullptr));
         actionGrayscale->setText(QApplication::translate("MainWindow", "Grayscale", nullptr));
+        actionMirro->setText(QApplication::translate("MainWindow", "Mirro", nullptr));
+        actionTransform->setText(QApplication::translate("MainWindow", "Transform", nullptr));
+        actionHardware_decode->setText(QApplication::translate("MainWindow", "Use dxva2", nullptr));
         label_Video->setText(QString());
         menuMedia->setTitle(QApplication::translate("MainWindow", "Media", nullptr));
         menuView->setTitle(QApplication::translate("MainWindow", "View", nullptr));
         menuHelp->setTitle(QApplication::translate("MainWindow", "Help", nullptr));
         menuStyle->setTitle(QApplication::translate("MainWindow", "Style", nullptr));
         menuCV->setTitle(QApplication::translate("MainWindow", "CV", nullptr));
+        menuTools->setTitle(QApplication::translate("MainWindow", "Tools", nullptr));
 #ifndef QT_NO_TOOLTIP
         statusbar->setToolTip(QString());
 #endif // QT_NO_TOOLTIP

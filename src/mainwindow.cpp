@@ -131,7 +131,7 @@ void MainWindow::create_play_control()
 	//pPlayControl->show();
 	//pLayout->addItem(new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Expanding));
 	//pLayout->addWidget(pPlayControl);
-	hide_play_control(false);
+	//hide_play_control(false);
 	//update_play_control();
 }
 
@@ -950,10 +950,11 @@ void MainWindow::play_control_key(Qt::Key key)
 
 bool MainWindow::create_video_state(const char* filename, QThread* pThread)
 {
+	bool use_hardware = ui->actionHardware_decode->isChecked();
 	assert(m_pVideoState == NULL);
 	if (m_pVideoState == NULL)
 	{
-		m_pVideoState = new VideoStateData(pThread);
+		m_pVideoState = new VideoStateData(pThread, use_hardware);
 		int ret = m_pVideoState->create_video_state(filename);
 		m_pVideoState->print_state();
 		if (ret < 0) {
@@ -1068,7 +1069,7 @@ bool MainWindow::create_video_play_thread() //video play thread
 			connect(this, &MainWindow::stop_video_play_thread, m_pVideoPlayThread, &VideoPlayThread::stop_thread);
 
 			AVCodecContext* pVideo = m_pVideoState->get_contex(AVMEDIA_TYPE_VIDEO);
-
+			bool bHardware = m_pVideoState->is_hardware_decode();
 			print_decodeContext(pVideo);
 
 			if (pVideo) {
@@ -1079,7 +1080,7 @@ bool MainWindow::create_video_play_thread() //video play thread
 				resize_window(window_size.width(), window_size.height()); // Adjust window size
 			}
 
-			bool ret = m_pVideoPlayThread->init_resample_param(pVideo);
+			bool ret = m_pVideoPlayThread->init_resample_param(pVideo, bHardware);
 			if (!ret) {
 				qWarning("init_resample_param failed.");
 				return false;
@@ -1145,8 +1146,40 @@ void MainWindow::image_ready(const QImage& img)
 {
 	QImage image = img.copy();
 
-	if (m_bGrayscale) {
+	if (ui->actionGrayscale->isChecked()) {
 		grey_image(image);
+		//invert_image(image);
+		//mirro_image(image); 
+		//swap_image(image);
+		//gamma_image(image); //too slow
+		//blur_img(image);
+		//QColor c = QColor(40, 40, 40, 255);
+		//dropshadow_img(image, 100, 0, 10, c, 200);
+		//colorize_img(image);
+		//opacity_img(image);
+	}
+
+	if (ui->actionMirro->isChecked()) {
+		mirro_image(image);
+	}
+
+	if (ui->actionTransform->isChecked()) {
+		double pi = 3.14;
+
+		double a = pi / 180 * 45.0;
+		double sina = sin(a);
+		double cosa = cos(a);
+
+		QMatrix translationMatrix(1, 0, 0, 1, 50.0, 50.0);
+		QMatrix rotationMatrix(cosa, sina, -sina, cosa, 0, 0);
+		QMatrix scalingMatrix(0.5, 0, 0, 1.0, 0, 0);
+
+		QMatrix matrix;
+		matrix = scalingMatrix * rotationMatrix * translationMatrix;
+
+		QTransform trans(rotationMatrix);
+		//QTransform trans(matrix);
+		transform_image(image, trans);
 	}
 
 	update_image(image);

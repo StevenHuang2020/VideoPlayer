@@ -129,9 +129,18 @@
      <string>CV</string>
     </property>
     <addaction name="actionGrayscale"/>
+    <addaction name="actionMirro"/>
+    <addaction name="actionTransform"/>
+   </widget>
+   <widget class="QMenu" name="menuTools">
+    <property name="title">
+     <string>Tools</string>
+    </property>
+    <addaction name="actionHardware_decode"/>
    </widget>
    <addaction name="menuMedia"/>
    <addaction name="menuView"/>
+   <addaction name="menuTools"/>
    <addaction name="menuCV"/>
    <addaction name="menuStyle"/>
    <addaction name="menuHelp"/>
@@ -217,6 +226,30 @@
    </property>
    <property name="text">
     <string>Grayscale</string>
+   </property>
+  </action>
+  <action name="actionMirro">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Mirro</string>
+   </property>
+  </action>
+  <action name="actionTransform">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Transform</string>
+   </property>
+  </action>
+  <action name="actionHardware_decode">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Use dxva2</string>
    </property>
   </action>
  </widget>
