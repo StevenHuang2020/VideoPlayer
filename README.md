@@ -12,6 +12,7 @@ Please find the release player [here.](https://github.com/StevenHuang2020/VideoP
 
 ##### History
 
+- v1.1.6, app settings; loop play;
 - v1.1.5, dxva2 decode support; recent files;
 - v1.1.4, play seek bug fixed;
 - v1.1.2, 29/04/22
