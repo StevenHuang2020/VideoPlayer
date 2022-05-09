@@ -146,6 +146,7 @@
      <string>Tools</string>
     </property>
     <addaction name="actionHardware_decode"/>
+    <addaction name="actionLoop_Play"/>
    </widget>
    <addaction name="menuMedia"/>
    <addaction name="menuView"/>
@@ -258,12 +259,20 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Use dxva2</string>
+    <string>Use DXVA2</string>
    </property>
   </action>
   <action name="actionAbout_QT">
    <property name="text">
     <string>About Qt</string>
+   </property>
+  </action>
+  <action name="actionLoop_Play">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Loop Play</string>
    </property>
   </action>
  </widget>

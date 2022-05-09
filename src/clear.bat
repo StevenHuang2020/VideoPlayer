@@ -23,7 +23,9 @@ rmdir /S /Q "VideoPlayer.tlog"
 cd ..
 rmdir /S /Q ".vs"
 
-del log /s
+del log 
+del VideoPlayer.ini
+
 del *.ipch/s
 del *.ncb/s
 del *.exp/s
@@ -38,7 +40,5 @@ del *.tmp/s
 del *.ilk/s
 del *.log/s
 del *.recipe/s
-
-cd ..
 
 pause

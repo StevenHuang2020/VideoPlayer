@@ -41,6 +41,7 @@ public:
     QAction *actionTransform;
     QAction *actionHardware_decode;
     QAction *actionAbout_QT;
+    QAction *actionLoop_Play;
     QWidget *centralwidget;
     QLabel *label_Video;
     QMenuBar *menubar;
@@ -114,6 +115,9 @@ public:
         actionHardware_decode->setCheckable(true);
         actionAbout_QT = new QAction(MainWindow);
         actionAbout_QT->setObjectName(QString::fromUtf8("actionAbout_QT"));
+        actionLoop_Play = new QAction(MainWindow);
+        actionLoop_Play->setObjectName(QString::fromUtf8("actionLoop_Play"));
+        actionLoop_Play->setCheckable(true);
         centralwidget = new QWidget(MainWindow);
         centralwidget->setObjectName(QString::fromUtf8("centralwidget"));
         label_Video = new QLabel(centralwidget);
@@ -169,6 +173,7 @@ public:
         menuCV->addAction(actionMirro);
         menuCV->addAction(actionTransform);
         menuTools->addAction(actionHardware_decode);
+        menuTools->addAction(actionLoop_Play);
 
         retranslateUi(MainWindow);
 
@@ -195,8 +200,9 @@ public:
         actionGrayscale->setText(QApplication::translate("MainWindow", "Grayscale", nullptr));
         actionMirro->setText(QApplication::translate("MainWindow", "Mirro", nullptr));
         actionTransform->setText(QApplication::translate("MainWindow", "Transform", nullptr));
-        actionHardware_decode->setText(QApplication::translate("MainWindow", "Use dxva2", nullptr));
+        actionHardware_decode->setText(QApplication::translate("MainWindow", "Use DXVA2", nullptr));
         actionAbout_QT->setText(QApplication::translate("MainWindow", "About Qt", nullptr));
+        actionLoop_Play->setText(QApplication::translate("MainWindow", "Loop Play", nullptr));
         label_Video->setText(QString());
         menuMedia->setTitle(QApplication::translate("MainWindow", "Media", nullptr));
         menuRecent_Files->setTitle(QApplication::translate("MainWindow", "Recent Files", nullptr));

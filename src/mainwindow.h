@@ -20,6 +20,7 @@
 #include "read_thread.h"
 #include "video_state.h"
 #include "play_control_window.h"
+#include "app_settings.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -44,6 +45,8 @@ private:
 	//DecodeThread* m_pDecodeAudioThread; //decode audio thread
 
 	QTimer m_timer; //mouse moving timer
+
+	AppSettings m_settings;
 private:
 	enum { MaxRecentFiles = 10 };	// keep recent play files
 	QAction* recentFileActs[MaxRecentFiles];
@@ -127,6 +130,10 @@ private:
 	void remove_recentfiles(const QString& fileName);
 	void update_recentfile_actions();
 	QString stripped_name(const QString& fullFileName);
+	void save_settings();
+	void read_settings();
+	QString get_selected_style();
+	void set_style_action(const QString& style);
 private:
 	void play_control_key(Qt::Key key);
 	void set_default_bkground();

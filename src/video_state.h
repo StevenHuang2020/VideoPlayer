@@ -10,7 +10,7 @@
 
 class VideoStateData {
 public:
-	VideoStateData(QThread* pThread, bool use_hardware = false);
+	VideoStateData(QThread* pThread, bool use_hardware = false, bool loop_play = false);
 	~VideoStateData();
 private:
 	VideoState* m_pState;
@@ -30,7 +30,7 @@ private:
 	bool m_bHardwareSuccess;
 	//AVBufferRef* m_hw_device_ctx;
 	//enum AVPixelFormat m_hw_pix_fmt;
-
+	bool m_bLoopPlay;
 private:
 	VideoState* stream_open(const char* filename, const AVInputFormat* iformat = NULL);
 	void stream_close(VideoState* is);

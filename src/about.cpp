@@ -1,5 +1,5 @@
 #include "about.h"
-#include "version.h"
+#include "ui_about.h"
 #include "ffmpeg_init.h"
 
 

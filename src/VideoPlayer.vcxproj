@@ -201,6 +201,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="about.cpp" />
+    <ClCompile Include="app_settings.cpp" />
     <ClCompile Include="audio_decode_thread.cpp" />
     <ClCompile Include="audio_play_thread.cpp" />
     <ClCompile Include="ffmpeg_init.cpp" />

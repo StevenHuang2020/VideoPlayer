@@ -86,7 +86,7 @@ typedef struct PacketQueue {
 
 #define VIDEO_PICTURE_QUEUE_SIZE 3
 #define SUBPICTURE_QUEUE_SIZE 16
-#define SAMPLE_QUEUE_SIZE 9
+#define SAMPLE_QUEUE_SIZE 20
 #define FRAME_QUEUE_SIZE FFMAX(SAMPLE_QUEUE_SIZE, FFMAX(VIDEO_PICTURE_QUEUE_SIZE, SUBPICTURE_QUEUE_SIZE))
 
 typedef struct AudioParams {
@@ -256,6 +256,7 @@ typedef struct VideoState {
 	struct SwsContext* img_convert_ctx;
 	struct SwsContext* sub_convert_ctx;
 	int eof;
+	int loop;
 
 	char* filename;
 	int width, height, xleft, ytop;

@@ -46,11 +46,14 @@ MainWindow::MainWindow(QWidget* parent)
 	connect(&m_timer, &QTimer::timeout, this, &MainWindow::check_hide_play_control);
 
 	connect(ui->actionAbout_QT, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
+
+	read_settings();
 }
 
 MainWindow::~MainWindow()
 {
 	stop_play();
+	save_settings();
 	delete ui;
 }
 
@@ -139,41 +142,38 @@ void MainWindow::set_current_file(const QString& fileName)
 {
 	setWindowFilePath(fileName);
 
-	QSettings settings("VideoPlayer.ini", QSettings::IniFormat);
-	QStringList files = settings.value("recentFileList/list").toStringList();
+	QStringList files = m_settings.get_recentfiles();
 	files.removeAll(fileName);
 	files.prepend(fileName);
 	while (files.size() > MaxRecentFiles)
 		files.removeLast();
-	settings.setValue("recentFileList/list", files);
+
+	m_settings.set_recentfiles(files);
 
 	update_recentfile_actions();
 }
 
 void MainWindow::clear_recentfiles()
 {
-	QSettings settings("VideoPlayer.ini", QSettings::IniFormat);
-	QStringList files = settings.value("recentFileList/list").toStringList();
+	QStringList files = m_settings.get_recentfiles();
 	files.clear();
-	settings.setValue("recentFileList/list", files);
+	m_settings.set_recentfiles(files);
 
 	update_recentfile_actions();
 }
 
 void MainWindow::remove_recentfiles(const QString& fileName)
 {
-	QSettings settings("VideoPlayer.ini", QSettings::IniFormat);
-	QStringList files = settings.value("recentFileList/list").toStringList();
+	QStringList files = m_settings.get_recentfiles();
 	files.removeAll(fileName);
-	settings.setValue("recentFileList/list", files);
+	m_settings.set_recentfiles(files);
 
 	update_recentfile_actions();
 }
 
 void MainWindow::update_recentfile_actions()
 {
-	QSettings settings("VideoPlayer.ini", QSettings::IniFormat);
-	QStringList files = settings.value("recentFileList/list").toStringList();
+	QStringList files = m_settings.get_recentfiles();
 
 	int numRecentFiles = qMin(files.size(), (int)MaxRecentFiles);
 
@@ -796,6 +796,7 @@ void MainWindow::on_actionAbout_triggered()
 	About dlg;
 	QRect hostRect = this->geometry();
 	dlg.move(hostRect.center() - dlg.rect().center());
+	dlg.setModal(true);
 	dlg.exec();
 }
 
@@ -818,6 +819,7 @@ void MainWindow::start_to_play(const QString& file)
 		msgBox.move(geometry().center() - msgBox.rect().center()); //center parent window
 		QString str = QString("File play failed, file: %1").arg(m_videoFile);
 		msgBox.setText(str);
+		msgBox.setModal(true);
 		msgBox.exec();
 
 		remove_recentfiles(file);
@@ -837,7 +839,7 @@ bool MainWindow::start_play()
 		|| m_pDecodeVideoThread || m_pDecodeAudioThread \
 		|| m_pAudioPlayThread || m_pVideoPlayThread)
 	{
-		qWarning("Now playing, please waiting or stop the current playing.\n");
+		qWarning("Now file is playing, please wait or stop the current playing.\n");
 		qDebug("VideoState=%p, PacketRead=%p\n", m_pVideoState, m_pPacketReadThread);
 		qDebug("VideoDecode=%p, AudioDecode=%p\n", m_pDecodeVideoThread, m_pDecodeAudioThread);
 		qDebug("VideoPlay=%p, AudioPlay=%p\n", m_pVideoPlayThread, m_pAudioPlayThread);
@@ -947,27 +949,27 @@ void MainWindow::all_thread_start()
 	//start all threads
 	if (m_pPacketReadThread) {
 		m_pPacketReadThread->start();  //QThread::Priority::HighPriority
-		qInfo("++++++++++ Read  packets thread started.");
+		qDebug("++++++++++ Read  packets thread started.");
 	}
 
 	if (m_pDecodeVideoThread) {
 		m_pDecodeVideoThread->start();
-		qInfo("++++++++++ Decode video thread started.");
+		qDebug("++++++++++ Decode video thread started.");
 	}
 
 	if (m_pDecodeAudioThread) {
 		m_pDecodeAudioThread->start(QThread::Priority::HighPriority);
-		qInfo("++++++++++ Decode audio thread started.");
+		qDebug("++++++++++ Decode audio thread started.");
 	}
 
 	if (m_pVideoPlayThread) {
 		m_pVideoPlayThread->start();
-		qInfo("++++++++++ Video play thread started.");
+		qDebug("++++++++++ Video play thread started.");
 	}
 
 	if (m_pAudioPlayThread) {
 		m_pAudioPlayThread->start();
-		qInfo("++++++++++ Audio play thread started.");
+		qDebug("++++++++++ Audio play thread started.");
 	}
 }
 
@@ -1034,10 +1036,11 @@ void MainWindow::play_control_key(Qt::Key key)
 bool MainWindow::create_video_state(const char* filename, QThread* pThread)
 {
 	bool use_hardware = ui->actionHardware_decode->isChecked();
+	bool loop = ui->actionLoop_Play->isChecked();
 	assert(m_pVideoState == NULL);
 	if (m_pVideoState == NULL)
 	{
-		m_pVideoState = new VideoStateData(pThread, use_hardware);
+		m_pVideoState = new VideoStateData(pThread, use_hardware, loop);
 		int ret = m_pVideoState->create_video_state(filename);
 		m_pVideoState->print_state();
 		if (ret < 0) {
@@ -1282,7 +1285,7 @@ void MainWindow::read_packet_stopped()
 	{
 		delete m_pPacketReadThread;
 		m_pPacketReadThread = NULL;
-		qInfo("************* Read  packets thread stopped.");
+		qDebug("************* Read  packets thread stopped.");
 	}
 
 	if (m_pVideoState)
@@ -1302,7 +1305,7 @@ void MainWindow::decode_video_stopped()
 	{
 		delete m_pDecodeVideoThread;
 		m_pDecodeVideoThread = NULL;
-		qInfo("************* Video decode thread stopped.");
+		qDebug("************* Video decode thread stopped.");
 	}
 }
 
@@ -1312,7 +1315,7 @@ void MainWindow::decode_audio_stopped()
 	{
 		delete m_pDecodeAudioThread;
 		m_pDecodeAudioThread = NULL;
-		qInfo("************* Audio decode thread stopped.");
+		qDebug("************* Audio decode thread stopped.");
 	}
 }
 
@@ -1322,7 +1325,7 @@ void MainWindow::audio_play_stopped()
 	{
 		delete m_pAudioPlayThread;
 		m_pAudioPlayThread = NULL;
-		qInfo("************* Audio play stopped.");
+		qDebug("************* Audio play stopped.");
 	}
 
 	set_default_bkground();
@@ -1334,7 +1337,7 @@ void MainWindow::video_play_stopped()
 	{
 		delete m_pVideoPlayThread;
 		m_pVideoPlayThread = NULL;
-		qInfo("************* Aideo play stopped.");
+		qDebug("************* Aideo play stopped.");
 	}
 
 	set_default_bkground();
@@ -1364,5 +1367,109 @@ void MainWindow::print_decodeContext(const AVCodecContext* pDecodeCtx, bool bVid
 		qInfo("sample_rate:%d, channels:%d, sample_fmt:%d", pDecodeCtx->sample_rate, pDecodeCtx->channels, pDecodeCtx->sample_fmt);
 		qInfo("frame_size:%d, frame_number:%d, block_align:%d", pDecodeCtx->frame_size, pDecodeCtx->frame_number, pDecodeCtx->block_align);
 		qInfo("***************Audio decode context end*****************\n");
+	}
+}
+
+void MainWindow::save_settings()
+{
+	bool res = ui->actionHide_Status->isChecked();
+	m_settings.set_general(QStringList(QString::number(int(res))), "hideStatus");
+	res = ui->actionHide_Play_Ctronl->isChecked();
+	m_settings.set_general(QStringList(QString::number(int(res))), "hidePlayContrl");
+	res = ui->actionFullscreen->isChecked();
+	m_settings.set_general(QStringList(QString::number(int(res))), "fullScreen");
+
+	res = ui->actionHardware_decode->isChecked();
+	m_settings.set_general(QStringList(QString::number(int(res))), "isDXVA2");
+	res = ui->actionLoop_Play->isChecked();
+	m_settings.set_general(QStringList(QString::number(int(res))), "loopPlay");
+
+	QString style = get_selected_style();
+	m_settings.set_general(QStringList(style), "style");
+
+	m_settings.set_info(QStringList("Video player"), "software");
+	m_settings.set_info(QStringList(PLAYER_VERSION), "version");
+	m_settings.set_info(QStringList("Steven Huang"), "author");
+}
+
+void MainWindow::read_settings()
+{
+	int value;
+	QStringList values = m_settings.get_general("hideStatus");
+	if (values.size() > 0) {
+		value = values[0].toInt();
+		if (value) {
+			ui->actionHide_Status->setChecked(!!value);
+			hide_statusbar(value);
+		}
+	}
+
+	values = m_settings.get_general("hidePlayContrl");
+	if (values.size() > 0) {
+		value = values[0].toInt();
+		if (value) {
+			ui->actionHide_Play_Ctronl->setChecked(!!value);
+			hide_play_control(value);
+		}
+	}
+
+	values = m_settings.get_general("fullScreen");
+	if (values.size() > 0) {
+		value = values[0].toInt();
+		ui->actionFullscreen->setChecked(!!value);
+		show_fullscreen(value);
+	}
+
+	values = m_settings.get_general("isDXVA2");
+	if (values.size() > 0) {
+		value = values[0].toInt();
+		if (value) {
+			ui->actionHardware_decode->setChecked(!!value);
+		}
+	}
+
+	values = m_settings.get_general("loopPlay");
+	if (values.size() > 0) {
+		value = values[0].toInt();
+		if (value) {
+			ui->actionLoop_Play->setChecked(!!value);
+		}
+	}
+
+	values = m_settings.get_general("style");
+	if (values.size() > 0) {
+		QString style = values[0];
+		set_style_action(style);
+
+		if (get_style().contains(style)) {
+			set_system_style(style);
+		}
+		else {
+			set_custom_style(style);
+		}
+	}
+}
+
+QString MainWindow::get_selected_style()
+{
+	QMenu* pMenu = ui->menuStyle;
+	foreach(QAction * action, pMenu->actions()) {
+		if (!action->isSeparator() && !action->menu()) {
+			qDebug("action: %s", qUtf8Printable(action->text()));
+			if (action->isChecked())
+				return action->data().toString();
+		}
+	}
+	return QString("");
+}
+
+void MainWindow::set_style_action(const QString& style)
+{
+	QMenu* pMenu = ui->menuStyle;
+	foreach(QAction * action, pMenu->actions()) {
+		if (!action->isSeparator() && !action->menu()) {
+			if (action->data().toString() == style)
+				action->setChecked(true);
+		}
 	}
 }

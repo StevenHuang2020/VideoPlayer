@@ -111,6 +111,9 @@
     <ClCompile Include="qimage_operation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="app_settings.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="mainwindow.h">

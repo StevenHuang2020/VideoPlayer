@@ -118,20 +118,6 @@ int ReadThread::loop_read()
 			continue;
 		}
 
-#if 0
-		if (!is->paused &&
-			(!is->audio_st || (is->auddec.finished == is->audioq.serial && frame_queue_nb_remaining(&is->sampq) == 0)) &&
-			(!is->video_st || (is->viddec.finished == is->videoq.serial && frame_queue_nb_remaining(&is->pictq) == 0))) {
-			if (loop != 1 && (!loop || --loop)) {
-				stream_seek(is, start_time != AV_NOPTS_VALUE ? start_time : 0, 0, 0);
-			}
-			else if (autoexit) {
-				ret = AVERROR_EOF;
-				goto fail;
-			}
-		}
-#endif
-
 		ret = av_read_frame(is->ic, pkt);
 		if (ret < 0) {
 			if ((ret == AVERROR_EOF || avio_feof(is->ic->pb)) && !is->eof) {
@@ -141,9 +127,15 @@ int ReadThread::loop_read()
 					packet_queue_put_nullpacket(&is->audioq, pkt, is->audio_stream);
 				if (is->subtitle_stream >= 0)
 					packet_queue_put_nullpacket(&is->subtitleq, pkt, is->subtitle_stream);
-				is->eof = 1;
-
-				break; //add steven for auto exit read thread
+				
+				if (true) { //loop
+					stream_seek(is, 0, 0, 0);
+				}
+				else {
+					is->eof = 1;
+				}
+				
+				//break; //add steven for auto exit read thread
 			}
 			if (is->ic->pb && is->ic->pb->error) {
 				break;

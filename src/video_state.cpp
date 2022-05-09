@@ -59,9 +59,10 @@ int64_t start_time = AV_NOPTS_VALUE;
 static AVBufferRef* hw_device_ctx = NULL;
 static enum AVPixelFormat hw_pix_fmt;
 
-VideoStateData::VideoStateData(QThread* pThread, bool use_hardware) : m_pState(NULL)
+VideoStateData::VideoStateData(QThread* pThread, bool use_hardware, bool loop_play) : m_pState(NULL)
 , m_pReadThreadId(pThread)
 , m_bUseHardware(use_hardware)
+, m_bLoopPlay(loop_play)
 {
 	m_bHasVideo = false;
 	m_bHasAudio = false;
@@ -321,7 +322,7 @@ VideoState* VideoStateData::stream_open(const char* filename, const AVInputForma
 	is->av_sync_type = av_sync_type;
 	is->read_tid = m_pReadThreadId;
 	is->read_thread_exit = -1;
-
+	is->loop = int(m_bLoopPlay);
 	return is;
 fail:
 	stream_close(is);
@@ -464,11 +465,11 @@ int VideoStateData::stream_component_open(VideoState* is, int stream_index)
 			const char* hardware_device = "dxva2"; //device = <vaapi|vdpau|dxva2|d3d11va>
 			ret = open_hardware(avctx, codec, hardware_device);
 			if (!ret) {
-				qWarning("hardware decode opened failed, device:%s", hardware_device);
+				qWarning("hardware-accelerated opened failed, device:%s", hardware_device);
 				goto fail;
 			}
 
-			qInfo("hardware decode opened, device:%s", hardware_device);
+			qInfo("hardware-accelerated opened, device:%s", hardware_device);
 			m_bHardwareSuccess = true;
 		}
 		break;
