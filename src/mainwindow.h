@@ -74,6 +74,8 @@ private slots:
 	void on_actionSystemStyle();
 	void on_actionCustomStyle();
 	void on_actionGrayscale_triggered();
+	void on_actionLoop_Play_triggered();
+
 	void open_recentFile();
 	void clear_recentfiles();
 public slots:

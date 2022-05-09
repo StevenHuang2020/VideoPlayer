@@ -462,6 +462,16 @@ void MainWindow::on_actionFullscreen_triggered()
 	show_fullscreen(bFullscrren);
 }
 
+void MainWindow::on_actionLoop_Play_triggered()
+{
+	if (m_pVideoState) {
+		VideoState* pState = m_pVideoState->get_state();
+		if (pState) {
+			pState->loop = int(ui->actionLoop_Play->isChecked());
+		}
+	}
+}
+
 void MainWindow::resize_window(int width, int height)
 {
 	QPoint pt = this->pos();

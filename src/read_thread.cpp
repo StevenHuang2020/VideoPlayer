@@ -128,14 +128,13 @@ int ReadThread::loop_read()
 				if (is->subtitle_stream >= 0)
 					packet_queue_put_nullpacket(&is->subtitleq, pkt, is->subtitle_stream);
 				
-				if (true) { //loop
+				if (is->loop) { //loop
 					stream_seek(is, 0, 0, 0);
 				}
 				else {
 					is->eof = 1;
-				}
-				
-				//break; //add steven for auto exit read thread
+					break; //add steven for auto exit read thread
+				}				
 			}
 			if (is->ic->pb && is->ic->pb->error) {
 				break;
