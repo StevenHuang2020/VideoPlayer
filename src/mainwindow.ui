@@ -12,8 +12,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>481</height>
+    <width>480</width>
+    <height>288</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -90,7 +90,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>480</width>
      <height>18</height>
     </rect>
    </property>
@@ -98,8 +98,16 @@
     <property name="title">
      <string>Media</string>
     </property>
+    <widget class="QMenu" name="menuRecent_Files">
+     <property name="title">
+      <string>Recent Files</string>
+     </property>
+    </widget>
     <addaction name="actionOpen"/>
     <addaction name="actionYoutube"/>
+    <addaction name="separator"/>
+    <addaction name="menuRecent_Files"/>
+    <addaction name="separator"/>
     <addaction name="actionStop"/>
     <addaction name="actionQuit"/>
    </widget>
@@ -118,6 +126,7 @@
      <string>Help</string>
     </property>
     <addaction name="actionAbout"/>
+    <addaction name="actionAbout_QT"/>
    </widget>
    <widget class="QMenu" name="menuStyle">
     <property name="title">
@@ -204,7 +213,7 @@
   </action>
   <action name="actionYoutube">
    <property name="text">
-    <string>OpenYoutube</string>
+    <string>Open Youtube</string>
    </property>
   </action>
   <action name="actionAspect_Ratio">
@@ -250,6 +259,11 @@
    </property>
    <property name="text">
     <string>Use dxva2</string>
+   </property>
+  </action>
+  <action name="actionAbout_QT">
+   <property name="text">
+    <string>About Qt</string>
    </property>
   </action>
  </widget>

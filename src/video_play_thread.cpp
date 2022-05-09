@@ -335,8 +335,8 @@ void VideoPlayThread::video_image_display(VideoState* is)
 	//AVPixelFormat fmt = (AVPixelFormat)pFrame->format; // 0
 	//const char* fmt_name = av_get_pix_fmt_name(fmt);
 
-	AVHWFramesContext* ctx = (AVHWFramesContext*)pVideoCtx->hw_frames_ctx->data;
-	AVPixelFormat sw_fmt = ctx->sw_format;
+	//AVHWFramesContext* ctx = (AVHWFramesContext*)pVideoCtx->hw_frames_ctx->data;
+	//AVPixelFormat sw_fmt = ctx->sw_format;
 
 	sws_scale(pResample->sws_ctx, (uint8_t const* const*)pFrame->data, pFrame->linesize, 0,
 		pVideoCtx->height, pFrameRGB->data, pFrameRGB->linesize);

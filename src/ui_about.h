@@ -16,6 +16,7 @@
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QPushButton>
+#include <QtWidgets/QSpacerItem>
 #include <QtWidgets/QWidget>
 
 QT_BEGIN_NAMESPACE
@@ -29,12 +30,13 @@ public:
     QHBoxLayout *horizontalLayout;
     QPushButton *btn_Ok;
     QPushButton *btn_Cancel;
+    QSpacerItem *verticalSpacer;
 
     void setupUi(QDialog *About)
     {
         if (About->objectName().isEmpty())
             About->setObjectName(QString::fromUtf8("About"));
-        About->resize(300, 210);
+        About->resize(340, 220);
         QSizePolicy sizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
@@ -77,6 +79,10 @@ public:
 
 
         gridLayout->addLayout(horizontalLayout, 1, 0, 1, 2);
+
+        verticalSpacer = new QSpacerItem(20, 10, QSizePolicy::Minimum, QSizePolicy::Fixed);
+
+        gridLayout->addItem(verticalSpacer, 2, 0, 1, 2);
 
         gridLayout->setRowStretch(0, 8);
         gridLayout->setRowStretch(1, 1);

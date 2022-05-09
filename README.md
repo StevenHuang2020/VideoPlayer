@@ -4,12 +4,15 @@
 ![QT Version](https://img.shields.io/badge/QT-5-green)
 ![FFmpeg Version](https://img.shields.io/badge/FFmpeg--blue)
 
-A simple video player based on QT and FFmpeg. This is just a rough product for personal entertainment. Please find the release player [here.](https://github.com/StevenHuang2020/VideoPlayer/releases)
+A simple video player based on QT and FFmpeg. This is just a rough product for personal entertainment.
+
+Please find the release player [here.](https://github.com/StevenHuang2020/VideoPlayer/releases)
 
 <img src="src/res/player.png" width="320" height="205" />
 
 ##### History
 
+- v1.1.5, dxva2 decode support; recent files;
 - v1.1.4, play seek bug fixed;
 - v1.1.2, 29/04/22
     - play start thread; progressbar; skin;

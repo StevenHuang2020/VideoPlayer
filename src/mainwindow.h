@@ -10,6 +10,7 @@
 #include <QSizePolicy>
 #include <QElapsedTimer>
 #include <QTimer>
+#include <QSettings>
 
 //#include "decode_thread.h"
 #include "video_decode_thread.h"
@@ -43,7 +44,9 @@ private:
 	//DecodeThread* m_pDecodeAudioThread; //decode audio thread
 
 	QTimer m_timer; //mouse moving timer
-	bool m_bGrayscale;
+private:
+	enum { MaxRecentFiles = 10 };	// keep recent play files
+	QAction* recentFileActs[MaxRecentFiles];
 public:
 	VideoStateData* m_pVideoState;	//for sync packets
 	AudioPlayThread* m_pAudioPlayThread; //audio play thread
@@ -68,6 +71,8 @@ private slots:
 	void on_actionSystemStyle();
 	void on_actionCustomStyle();
 	void on_actionGrayscale_triggered();
+	void open_recentFile();
+	void clear_recentfiles();
 public slots:
 	void image_ready(const QImage&);
 	void update_image(const QImage&);
@@ -116,6 +121,12 @@ private:
 	void create_play_control();
 	void update_play_control();
 	void set_volume_updown(bool bUp = true, float unit = 0.2);
+
+	void create_recentfiles_menu();
+	void set_current_file(const QString& fileName);
+	void remove_recentfiles(const QString& fileName);
+	void update_recentfile_actions();
+	QString stripped_name(const QString& fullFileName);
 private:
 	void play_control_key(Qt::Key key);
 	void set_default_bkground();
@@ -133,6 +144,7 @@ private:
 	void video_seek_inc(double incr);
 	void video_seek(double pos = 0, double incr = 0);
 public:
+	void start_to_play(const QString& file);
 	bool start_play();
 	void stop_play();
 	void pause_play();

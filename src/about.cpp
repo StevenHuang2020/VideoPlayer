@@ -1,11 +1,15 @@
 #include "about.h"
 #include "version.h"
+#include "ffmpeg_init.h"
+
 
 About::About(QWidget* parent)
 	: QDialog(parent)
 	, ui(new Ui::About)
 {
 	ui->setupUi(this);
+
+	setLayout(ui->gridLayout);
 	setWindowFlags(windowFlags() & ~Qt::WindowMaximizeButtonHint);
 	setFixedSize(this->width(), this->height());
 	init_label();
@@ -32,10 +36,12 @@ void About::init_label()
 	str += " (x64)";
 	str += "\n";
 	str += "\n";
-	str += "Video player based on QT and FFmpeg. \n Copy Right @ Steven Huang";
+	str += "Video player based on Qt and FFmpeg. \n";
+	str += QString("Qt Version: %1\n").arg(qVersion());
+	str += QString("Ffmpeg Version: %1\n").arg(FFMPEG_VERSION);
+	str += "\nCopy Right @ Steven Huang\n";
 
 	std::string std_str = str.toStdString();
 	str = QApplication::translate("about", std_str.c_str(), nullptr);
-
 	ui->label->setText(str);
 }

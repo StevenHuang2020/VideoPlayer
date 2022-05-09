@@ -50,7 +50,7 @@ public:
     {
         if (play_control_window->objectName().isEmpty())
             play_control_window->setObjectName(QString::fromUtf8("play_control_window"));
-        play_control_window->resize(641, 184);
+        play_control_window->resize(595, 91);
         layoutWidget = new QWidget(play_control_window);
         layoutWidget->setObjectName(QString::fromUtf8("layoutWidget"));
         layoutWidget->setGeometry(QRect(0, 0, 541, 48));
@@ -207,9 +207,9 @@ public:
     void retranslateUi(QWidget *play_control_window)
     {
         play_control_window->setWindowTitle(QApplication::translate("play_control_window", "play_control_window", nullptr));
-        btn_pre->setText(QApplication::translate("play_control_window", "<", nullptr));
+        btn_pre->setText(QApplication::translate("play_control_window", "<<", nullptr));
         btn_play->setText(QApplication::translate("play_control_window", "Play", nullptr));
-        btn_next->setText(QApplication::translate("play_control_window", ">", nullptr));
+        btn_next->setText(QApplication::translate("play_control_window", ">>", nullptr));
         btn_stop->setText(QApplication::translate("play_control_window", "Stop", nullptr));
         check_mute->setText(QApplication::translate("play_control_window", "Mute", nullptr));
         label_vol->setText(QApplication::translate("play_control_window", "0", nullptr));

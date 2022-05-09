@@ -18,7 +18,6 @@ MainWindow::MainWindow(QWidget* parent)
 	, m_pAudioPlayThread(NULL)
 	, m_pVideoPlayThread(NULL)
 	, m_pPacketReadThread(NULL)
-	, m_bGrayscale(false)
 {
 	ui->setupUi(this);
 
@@ -29,6 +28,7 @@ MainWindow::MainWindow(QWidget* parent)
 
 	create_play_control();
 	create_style_menu();
+	create_recentfiles_menu();
 
 	setWindowTitle(tr("Video Player"));
 	set_default_bkground();
@@ -44,6 +44,8 @@ MainWindow::MainWindow(QWidget* parent)
 	m_timer.setInterval(5 * 1000);
 	m_timer.setSingleShot(false);
 	connect(&m_timer, &QTimer::timeout, this, &MainWindow::check_hide_play_control);
+
+	connect(ui->actionAbout_QT, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
 }
 
 MainWindow::~MainWindow()
@@ -111,15 +113,99 @@ void MainWindow::create_style_menu()
 	}
 }
 
+void MainWindow::create_recentfiles_menu()
+{
+	for (int i = 0; i < MaxRecentFiles; ++i) {
+		recentFileActs[i] = new QAction(this);
+		recentFileActs[i]->setVisible(false);
+		connect(recentFileActs[i], SIGNAL(triggered()), this, SLOT(open_recentFile()));
+	}
+
+	QAction* pClear = new QAction(this);
+	pClear->setText(QApplication::translate("MainWindow", "Clear", nullptr));
+	connect(pClear, SIGNAL(triggered()), this, SLOT(clear_recentfiles()));
+
+	QMenu* pMenu = ui->menuRecent_Files;
+	//pMenu->addSeparator();
+	for (int i = 0; i < MaxRecentFiles; ++i)
+		pMenu->addAction(recentFileActs[i]);
+	pMenu->addSeparator();
+	pMenu->addAction(pClear);
+
+	update_recentfile_actions();
+}
+
+void MainWindow::set_current_file(const QString& fileName)
+{
+	setWindowFilePath(fileName);
+
+	QSettings settings("VideoPlayer.ini", QSettings::IniFormat);
+	QStringList files = settings.value("recentFileList/list").toStringList();
+	files.removeAll(fileName);
+	files.prepend(fileName);
+	while (files.size() > MaxRecentFiles)
+		files.removeLast();
+	settings.setValue("recentFileList/list", files);
+
+	update_recentfile_actions();
+}
+
+void MainWindow::clear_recentfiles()
+{
+	QSettings settings("VideoPlayer.ini", QSettings::IniFormat);
+	QStringList files = settings.value("recentFileList/list").toStringList();
+	files.clear();
+	settings.setValue("recentFileList/list", files);
+
+	update_recentfile_actions();
+}
+
+void MainWindow::remove_recentfiles(const QString& fileName)
+{
+	QSettings settings("VideoPlayer.ini", QSettings::IniFormat);
+	QStringList files = settings.value("recentFileList/list").toStringList();
+	files.removeAll(fileName);
+	settings.setValue("recentFileList/list", files);
+
+	update_recentfile_actions();
+}
+
+void MainWindow::update_recentfile_actions()
+{
+	QSettings settings("VideoPlayer.ini", QSettings::IniFormat);
+	QStringList files = settings.value("recentFileList/list").toStringList();
+
+	int numRecentFiles = qMin(files.size(), (int)MaxRecentFiles);
+
+	QMenu* pMenu = ui->menuRecent_Files;
+	pMenu->setEnabled(numRecentFiles > 0);
+
+	for (int i = 0; i < numRecentFiles; ++i) {
+		QString text = tr("%1 %2").arg(i + 1).arg(stripped_name(files[i]));
+		recentFileActs[i]->setText(QApplication::translate("MainWindow", text.toStdString().c_str(), nullptr));
+		recentFileActs[i]->setData(files[i]);
+		recentFileActs[i]->setVisible(true);
+	}
+	for (int j = numRecentFiles; j < MaxRecentFiles; ++j)
+		recentFileActs[j]->setVisible(false);
+}
+
+QString MainWindow::stripped_name(const QString& fullFileName)
+{
+	return QFileInfo(fullFileName).fileName();
+}
+
+void MainWindow::open_recentFile()
+{
+	QAction* action = qobject_cast<QAction*>(sender());
+	if (action) {
+		QString file = action->data().toString();
+		start_to_play(file);
+	}
+}
+
 void MainWindow::create_play_control()
 {
-	//QStatusBar* pStatusBar = statusBar();
-	//QLayout* pLayout = layout();
-	//QRect rt = pStatusBar->geometry();
-	//qDebug("statusbar geometry(x:%d, y:%d, w:%d, h:%d)", rt.x(), rt.y(), rt.width(), rt.height());
-	//rt = pStatusBar->frameGeometry();
-	//qDebug("statusbar frameGeometry(x:%d, y:%d, w:%d, h:%d)", rt.x(), rt.y(), rt.width(), rt.height());
-
 	play_control_window* pPlayControl = new play_control_window(this);
 	pPlayControl->setObjectName(QString::fromUtf8("play_control"));
 	pPlayControl->setGeometry(QRect(0, 0, 10, 62));
@@ -129,8 +215,6 @@ void MainWindow::create_play_control()
 	pPlayControl->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
 	pPlayControl->setWindowFlags(Qt::Tool | Qt::FramelessWindowHint);
 	//pPlayControl->show();
-	//pLayout->addItem(new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Expanding));
-	//pLayout->addWidget(pPlayControl);
 	//hide_play_control(false);
 	//update_play_control();
 }
@@ -140,11 +224,6 @@ void MainWindow::update_play_control()
 	play_control_window* pPlayControl = (play_control_window*)get_object("play_control");
 	if (pPlayControl)
 	{
-		//QRect rt = geometry();
-		//QRect rtFrame = frameGeometry();
-		/*QMenuBar* pMenuBar = menuBar();
-		QSize szMenuBar = pMenuBar->size();*/
-
 		QSize sizeCenter = centralWidget()->size();
 		QStatusBar* pStatusBar = statusBar();
 		QSize szStatusBar = pStatusBar->size();
@@ -307,29 +386,19 @@ void MainWindow::on_actionOpen_triggered()
 	if (dialog.exec()) {
 		QStringList fileNames = dialog.selectedFiles();
 		// qDebug("file:%s\n", qUtf8Printable(fileNames[0]));
-		m_videoFile = fileNames[0];
-
-		bool ret = start_play();
-		if (!ret) {
-			QMessageBox msgBox;
-
-			msgBox.move(geometry().center() - msgBox.rect().center()); //center parent window
-			msgBox.setText("File play failed.");
-			msgBox.exec();
-		}
+		start_to_play(fileNames[0]);
 	}
 }
 
 void MainWindow::on_actionYoutube_triggered()
 {
-	//print_size();
 	YoutubeUrlDlg dialog(this);
 	int result = dialog.exec();
 	if (result == QDialog::Accepted)
 	{
-		m_videoFile = dialog.get_url();
-		if (!m_videoFile.isEmpty())
-			start_play();
+		QString file = dialog.get_url();
+		if (!file.isEmpty())
+			start_to_play(file);
 	}
 }
 
@@ -358,7 +427,6 @@ void MainWindow::on_actionCustomStyle()
 
 void MainWindow::on_actionGrayscale_triggered()
 {
-	m_bGrayscale = ui->actionGrayscale->isChecked();
 }
 
 void MainWindow::on_actionQuit_triggered()
@@ -638,8 +706,6 @@ void MainWindow::video_seek(double pos, double incr)
 
 void MainWindow::play_seek()
 {
-	//qDebug("seek value:%d", value);
-	//return;
 	pause_play();
 
 	play_control_window* pPlayControl = (play_control_window*)get_object("play_control");
@@ -742,6 +808,25 @@ void MainWindow::play_started(bool ret)
 	all_thread_start();
 }
 
+void MainWindow::start_to_play(const QString& file)
+{
+	m_videoFile = file;
+
+	bool ret = start_play();
+	if (!ret) {
+		QMessageBox msgBox;
+		msgBox.move(geometry().center() - msgBox.rect().center()); //center parent window
+		QString str = QString("File play failed, file: %1").arg(m_videoFile);
+		msgBox.setText(str);
+		msgBox.exec();
+
+		remove_recentfiles(file);
+		return;
+	}
+
+	set_current_file(file);
+}
+
 bool MainWindow::start_play()
 {
 	//QElapsedTimer timer;
@@ -752,9 +837,7 @@ bool MainWindow::start_play()
 		|| m_pDecodeVideoThread || m_pDecodeAudioThread \
 		|| m_pAudioPlayThread || m_pVideoPlayThread)
 	{
-		stop_play();
-
-		qDebug("Now playing, please waiting or stop the current playing.\n");
+		qWarning("Now playing, please waiting or stop the current playing.\n");
 		qDebug("VideoState=%p, PacketRead=%p\n", m_pVideoState, m_pPacketReadThread);
 		qDebug("VideoDecode=%p, AudioDecode=%p\n", m_pDecodeVideoThread, m_pDecodeAudioThread);
 		qDebug("VideoPlay=%p, AudioPlay=%p\n", m_pVideoPlayThread, m_pAudioPlayThread);
@@ -847,7 +930,7 @@ bool MainWindow::start_play()
 	}
 
 	//all_thread_start();
-	// 
+
 	//qDebug("---------------------------------%d milliseconds", timer.elapsed());
 	return true;
 }
@@ -959,10 +1042,10 @@ bool MainWindow::create_video_state(const char* filename, QThread* pThread)
 		m_pVideoState->print_state();
 		if (ret < 0) {
 			delete_video_state();
+			qWarning("---------- VideoState data create failed.");
 			return false;
 		}
 
-		qInfo("---------- VideoState data create success.");
 		return true;
 	}
 	return false;

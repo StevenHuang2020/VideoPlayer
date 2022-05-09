@@ -11,9 +11,15 @@
 
 #ifdef UNICODE
 void Output(LPCWSTR szFormat, ...)
+#else
+void Output(const char* szFormat, ...)
+#endif
 {
-	// example, Output(L"%ls %ls", L"Hi", L"there");
-	WCHAR  szBuff[1024];
+#ifdef UNICODE
+	WCHAR  szBuff[1024]; // Output(L"%ls %ls", L"Hi", L"there");
+#else
+	char szBuff[1024];
+#endif
 	va_list arg;
 	va_start(arg, szFormat);
 	_vsnwprintf(szBuff, sizeof(szBuff), szFormat, arg);
@@ -21,18 +27,6 @@ void Output(LPCWSTR szFormat, ...)
 
 	OutputDebugString(szBuff);
 }
-#else
-void Output(const char* szFormat, ...)
-{
-	char szBuff[1024];
-	va_list arg;
-	va_start(arg, szFormat);
-	_vsnprintf(szBuff, sizeof(szBuff), szFormat, arg);
-	va_end(arg);
-
-	OutputDebugString(szBuff);
-}
-#endif
 
 
 void logOutput(QtMsgType type, const QMessageLogContext& context, const QString& msg)
