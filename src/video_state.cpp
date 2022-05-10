@@ -32,7 +32,7 @@ static int show_status = 1;
 static int av_sync_type = AV_SYNC_AUDIO_MASTER;
 
 static int fast = 0;
-static int genpts = 1;
+//static int genpts = 1;
 static int lowres = 0;
 //static int decoder_reorder_pts = -1;
 //static int autoexit;
@@ -167,8 +167,7 @@ int VideoStateData::open_media(VideoState* is)
 
 	is->ic = pFormatCtx;
 
-	if (genpts)
-		pFormatCtx->flags |= AVFMT_FLAG_GENPTS;
+	pFormatCtx->flags |= AVFMT_FLAG_GENPTS; //gen pts
 
 	av_format_inject_global_side_data(pFormatCtx);
 

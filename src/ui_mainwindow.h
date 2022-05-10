@@ -42,6 +42,7 @@ public:
     QAction *actionHardware_decode;
     QAction *actionAbout_QT;
     QAction *actionLoop_Play;
+    QAction *actionMedia_Info;
     QWidget *centralwidget;
     QLabel *label_Video;
     QMenuBar *menubar;
@@ -118,6 +119,8 @@ public:
         actionLoop_Play = new QAction(MainWindow);
         actionLoop_Play->setObjectName(QString::fromUtf8("actionLoop_Play"));
         actionLoop_Play->setCheckable(true);
+        actionMedia_Info = new QAction(MainWindow);
+        actionMedia_Info->setObjectName(QString::fromUtf8("actionMedia_Info"));
         centralwidget = new QWidget(MainWindow);
         centralwidget->setObjectName(QString::fromUtf8("centralwidget"));
         label_Video = new QLabel(centralwidget);
@@ -174,6 +177,7 @@ public:
         menuCV->addAction(actionTransform);
         menuTools->addAction(actionHardware_decode);
         menuTools->addAction(actionLoop_Play);
+        menuTools->addAction(actionMedia_Info);
 
         retranslateUi(MainWindow);
 
@@ -203,6 +207,7 @@ public:
         actionHardware_decode->setText(QApplication::translate("MainWindow", "Use DXVA2", nullptr));
         actionAbout_QT->setText(QApplication::translate("MainWindow", "About Qt", nullptr));
         actionLoop_Play->setText(QApplication::translate("MainWindow", "Loop Play", nullptr));
+        actionMedia_Info->setText(QApplication::translate("MainWindow", "Media Info", nullptr));
         label_Video->setText(QString());
         menuMedia->setTitle(QApplication::translate("MainWindow", "Media", nullptr));
         menuRecent_Files->setTitle(QApplication::translate("MainWindow", "Recent Files", nullptr));

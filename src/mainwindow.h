@@ -75,9 +75,7 @@ private slots:
 	void on_actionCustomStyle();
 	void on_actionGrayscale_triggered();
 	void on_actionLoop_Play_triggered();
-
-	void open_recentFile();
-	void clear_recentfiles();
+	void on_actionMedia_Info_triggered();
 public slots:
 	void image_ready(const QImage&);
 	void update_image(const QImage&);
@@ -95,6 +93,10 @@ public slots:
 	void play_seek_next();
 	void play_mute(bool mute);
 	void set_volume(int volume);
+
+	void open_recentFile();
+	void clear_recentfiles();
+	void about_media_info();
 signals:
 	void stop_audio_play_thread();
 	void stop_video_play_thread();

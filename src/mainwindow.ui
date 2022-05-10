@@ -147,6 +147,7 @@
     </property>
     <addaction name="actionHardware_decode"/>
     <addaction name="actionLoop_Play"/>
+    <addaction name="actionMedia_Info"/>
    </widget>
    <addaction name="menuMedia"/>
    <addaction name="menuView"/>
@@ -273,6 +274,11 @@
    </property>
    <property name="text">
     <string>Loop Play</string>
+   </property>
+  </action>
+  <action name="actionMedia_Info">
+   <property name="text">
+    <string>Media Info</string>
    </property>
   </action>
  </widget>

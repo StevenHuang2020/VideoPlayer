@@ -204,6 +204,33 @@ void MainWindow::open_recentFile()
 	}
 }
 
+void MainWindow::about_media_info()
+{
+	if (m_pVideoState == NULL)
+		return;
+
+	VideoState* pState = m_pVideoState->get_state();
+	if (pState == NULL)
+		return;
+
+	AVFormatContext* ic = pState->ic;
+	if (ic == NULL)
+		return;
+
+	QString info = dump_format(ic, 0, pState->filename);
+
+	//qInfo("%s", qPrintable(info));
+	QMessageBox msgBox;
+	//info.replace(" ", "&nbsp;");
+	//msgBox.setTextFormat(Qt::RichText);
+	msgBox.setWindowTitle("Media information");
+	msgBox.setStyleSheet("QLabel{min-width: 760px;}");
+	msgBox.setText(info);
+	msgBox.setModal(true);
+	msgBox.move(frameGeometry().center() - msgBox.rect().center());
+	msgBox.exec();
+}
+
 void MainWindow::create_play_control()
 {
 	play_control_window* pPlayControl = new play_control_window(this);
@@ -470,6 +497,11 @@ void MainWindow::on_actionLoop_Play_triggered()
 			pState->loop = int(ui->actionLoop_Play->isChecked());
 		}
 	}
+}
+
+void MainWindow::on_actionMedia_Info_triggered()
+{
+	about_media_info();
 }
 
 void MainWindow::resize_window(int width, int height)
@@ -804,8 +836,8 @@ void MainWindow::hide_menubar(bool bHide)
 void MainWindow::on_actionAbout_triggered()
 {
 	About dlg;
-	QRect hostRect = this->geometry();
-	dlg.move(hostRect.center() - dlg.rect().center());
+	//QRect hostRect = this->geometry(); 
+	dlg.move(frameGeometry().center() - dlg.rect().center());
 	dlg.setModal(true);
 	dlg.exec();
 }
@@ -826,7 +858,7 @@ void MainWindow::start_to_play(const QString& file)
 	bool ret = start_play();
 	if (!ret) {
 		QMessageBox msgBox;
-		msgBox.move(geometry().center() - msgBox.rect().center()); //center parent window
+		msgBox.move(frameGeometry().center() - msgBox.rect().center()); //center parent window
 		QString str = QString("File play failed, file: %1").arg(m_videoFile);
 		msgBox.setText(str);
 		msgBox.setModal(true);
@@ -863,7 +895,7 @@ bool MainWindow::start_play()
 
 	std::string str = m_videoFile.toStdString();
 	const char* filename = str.c_str();
-	if (filename && !filename[0]) {
+	if (filename == NULL || (!filename[0])) {
 		qWarning("filename is invalid, please select a valid media file.");
 		return ret;
 	}
@@ -1390,7 +1422,7 @@ void MainWindow::save_settings()
 	m_settings.set_general(QStringList(QString::number(int(res))), "fullScreen");
 
 	res = ui->actionHardware_decode->isChecked();
-	m_settings.set_general(QStringList(QString::number(int(res))), "isDXVA2");
+	m_settings.set_general(QStringList(QString::number(int(res))), "openDXVA2");
 	res = ui->actionLoop_Play->isChecked();
 	m_settings.set_general(QStringList(QString::number(int(res))), "loopPlay");
 
@@ -1430,7 +1462,7 @@ void MainWindow::read_settings()
 		show_fullscreen(value);
 	}
 
-	values = m_settings.get_general("isDXVA2");
+	values = m_settings.get_general("openDXVA2");
 	if (values.size() > 0) {
 		value = values[0].toInt();
 		if (value) {
