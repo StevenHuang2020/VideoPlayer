@@ -27,6 +27,7 @@ private:
 	void paintEvent(QPaintEvent* e) override;
 private:
 	void enable_progressbar(bool enable = true);
+	void enable_slider_vol(bool enable = true);
 	const QString get_play_time(int hours, int mins, int secs);
 	int get_time_secs(int hours, int mins, int secs);
 	void clear_time();

@@ -15,6 +15,7 @@
 //#include "decode_thread.h"
 #include "video_decode_thread.h"
 #include "audio_decode_thread.h"
+#include "subtitle_decode_thread.h"
 #include "audio_play_thread.h"
 #include "video_play_thread.h"
 #include "read_thread.h"
@@ -42,11 +43,12 @@ private:
 	ReadThread* m_pPacketReadThread; //read packets thread
 	VideoDecodeThread* m_pDecodeVideoThread; //decode video thread
 	AudioDecodeThread* m_pDecodeAudioThread; //decode audio thread
-	//DecodeThread* m_pDecodeAudioThread; //decode audio thread
+	SubtitleDecodeThread* m_pDecodeSubtitleThread; //decode subtitle thread
 
 	QTimer m_timer; //mouse moving timer
 
 	AppSettings m_settings;
+	QString m_subtitle;
 private:
 	enum { MaxRecentFiles = 10 };	// keep recent play files
 	QAction* recentFileActs[MaxRecentFiles];
@@ -78,15 +80,17 @@ private slots:
 	void on_actionMedia_Info_triggered();
 public slots:
 	void image_ready(const QImage&);
+	void subtitle_ready(const QString&);
 	void update_image(const QImage&);
 	void print_decodeContext(const AVCodecContext* pVideo, bool bVideo = true);
 	void decode_video_stopped();
 	void decode_audio_stopped();
+	void decode_subtitle_stopped();
 	void audio_play_stopped();
 	void video_play_stopped();
 	void read_packet_stopped();
 	void update_play_time();
-	void play_started(bool ret);
+	void play_started(bool ret = true);
 	//void play_seek(int value);
 	void play_seek();
 	void play_seek_pre();
@@ -138,6 +142,7 @@ private:
 	void read_settings();
 	QString get_selected_style();
 	void set_style_action(const QString& style);
+	void clear_subtitle_str();
 private:
 	void play_control_key(Qt::Key key);
 	void set_default_bkground();
@@ -148,8 +153,10 @@ private:
 	bool create_read_thread(); //read packet thread
 	bool create_decode_video_thread(); //decode thread
 	bool create_decode_audio_thread(); //decode audio thread
+	bool create_decode_subtitle_thread(); //decode subtitle thread
 	bool create_video_play_thread(); //video play thread
-	bool create_audio_play_thread(); //audio play thread
+	bool create_audio_play_thread(); //audio play thread	
+	bool start_play_thread(); //this thread will init audio device to avoid frezzing ui
 	void all_thread_start();
 
 	void video_seek_inc(double incr);

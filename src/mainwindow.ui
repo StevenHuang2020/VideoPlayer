@@ -109,6 +109,7 @@
     <addaction name="menuRecent_Files"/>
     <addaction name="separator"/>
     <addaction name="actionStop"/>
+    <addaction name="separator"/>
     <addaction name="actionQuit"/>
    </widget>
    <widget class="QMenu" name="menuView">
@@ -147,6 +148,7 @@
     </property>
     <addaction name="actionHardware_decode"/>
     <addaction name="actionLoop_Play"/>
+    <addaction name="separator"/>
     <addaction name="actionMedia_Info"/>
    </widget>
    <addaction name="menuMedia"/>

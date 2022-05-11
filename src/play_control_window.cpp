@@ -62,6 +62,7 @@ void play_control_window::volume_muted(int mute)
 
 void play_control_window::set_volume_slider(float volume)
 {
+	enable_slider_vol(true);
 	int max = ui->slider_vol->maximum();
 	ui->slider_vol->setValue(int(volume * max));
 }
@@ -86,6 +87,11 @@ const QSlider* play_control_window::get_progress_slider()
 void play_control_window::enable_progressbar(bool enable)
 {
 	ui->progress_slider->setEnabled(enable);
+}
+
+void play_control_window::enable_slider_vol(bool enable)
+{
+	ui->slider_vol->setEnabled(enable);
 }
 
 void play_control_window::update_play_time(int hours, int mins, int secs)
@@ -158,9 +164,10 @@ void play_control_window::clear_time()
 void play_control_window::clear_all()
 {
 	clear_time();
-
+	enable_progressbar(false);
 	update_btn_play();
 	ui->slider_vol->setValue(0);
+	enable_slider_vol(false);
 }
 
 void play_control_window::update_btn_play(bool bPause)

@@ -66,7 +66,6 @@ extern "C" {
 
 #define USE_ONEPASS_SUBTITLE_RENDER 1
 
-static unsigned sws_flags = SWS_BICUBIC;
 
 typedef struct MyAVPacketList {
 	AVPacket* pkt;
@@ -274,7 +273,7 @@ typedef struct VideoState {
 
 
 #if !NDEBUG
-#define PRINT_PACKETQUEUE_INFO  1
+#define PRINT_PACKETQUEUE_INFO  0
 #define PRINT_PACKETQUEUE_AUDIO_INFO  0
 #else
 #define PRINT_PACKETQUEUE_INFO  0

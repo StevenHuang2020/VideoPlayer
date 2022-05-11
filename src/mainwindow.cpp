@@ -18,6 +18,7 @@ MainWindow::MainWindow(QWidget* parent)
 	, m_pAudioPlayThread(NULL)
 	, m_pVideoPlayThread(NULL)
 	, m_pPacketReadThread(NULL)
+	, m_pDecodeSubtitleThread(NULL)
 {
 	ui->setupUi(this);
 
@@ -227,6 +228,7 @@ void MainWindow::about_media_info()
 	msgBox.setStyleSheet("QLabel{min-width: 760px;}");
 	msgBox.setText(info);
 	msgBox.setModal(true);
+	msgBox.show();
 	msgBox.move(frameGeometry().center() - msgBox.rect().center());
 	msgBox.exec();
 }
@@ -399,8 +401,8 @@ void MainWindow::auto_hide_play_control(bool bHide)
 
 void MainWindow::on_actionOpen_triggered()
 {
-	const QStringList filters({ "Videos (*.mp4 *.avi *.mp3)",
-						   "Audios (*.wav *.wma *.ape)",
+	const QStringList filters({ "Videos (*.mp4 *.avi *.mkv)",
+						   "Audios (*.mp3 *.wav *.wma)",
 						   "Any files (*)"
 		});
 
@@ -858,10 +860,12 @@ void MainWindow::start_to_play(const QString& file)
 	bool ret = start_play();
 	if (!ret) {
 		QMessageBox msgBox;
-		msgBox.move(frameGeometry().center() - msgBox.rect().center()); //center parent window
+		
 		QString str = QString("File play failed, file: %1").arg(m_videoFile);
 		msgBox.setText(str);
 		msgBox.setModal(true);
+		msgBox.show();
+		msgBox.move(frameGeometry().center() - msgBox.rect().center()); //center parent window
 		msgBox.exec();
 
 		remove_recentfiles(file);
@@ -970,10 +974,20 @@ bool MainWindow::start_play()
 
 	if (m_pVideoState && bSubtitle)
 	{
-		//Add here
+		ret = create_decode_subtitle_thread();
+		if (!ret) {
+			qWarning("subtitle decode thread create failed.\n");
+			return ret;
+		}
 	}
 
-	//all_thread_start();
+	if (bAudio) {
+		start_play_thread(); //start a thread for time-consuming task
+	}
+	else {
+		// if no audio stream but video stream, start all thread 
+		play_started();
+	}
 
 	//qDebug("---------------------------------%d milliseconds", timer.elapsed());
 	return true;
@@ -1004,6 +1018,11 @@ void MainWindow::all_thread_start()
 		qDebug("++++++++++ Decode audio thread started.");
 	}
 
+	if (m_pDecodeSubtitleThread) {
+		m_pDecodeSubtitleThread->start();
+		qDebug("++++++++++ Decode subtitle thread started.");
+	}
+
 	if (m_pVideoPlayThread) {
 		m_pVideoPlayThread->start();
 		qDebug("++++++++++ Video play thread started.");
@@ -1024,6 +1043,8 @@ void MainWindow::stop_play()
 
 	delete_video_state();
 	set_paly_control_wnd(false);
+
+	clear_subtitle_str();
 }
 
 void MainWindow::pause_play()
@@ -1183,6 +1204,37 @@ bool MainWindow::create_decode_audio_thread()
 	return false;
 }
 
+bool MainWindow::create_decode_subtitle_thread() //decode subtitle thread
+{
+	assert(m_pDecodeSubtitleThread == NULL);
+	if (m_pDecodeSubtitleThread == NULL && m_pVideoState)
+	{
+		VideoState* pState = m_pVideoState->get_state();
+		if (pState) {
+			m_pDecodeSubtitleThread = new SubtitleDecodeThread(this, pState);
+
+			connect(m_pDecodeSubtitleThread, &SubtitleDecodeThread::finished, this, &MainWindow::decode_subtitle_stopped);
+
+			AVCodecContext* avctx = m_pVideoState->get_contex(AVMEDIA_TYPE_SUBTITLE);
+			int ret = -1;
+			if ((ret = decoder_init(&pState->subdec, avctx, &pState->subtitleq, pState->continue_read_thread)) < 0)
+			{
+				qWarning("decode subtitle thread decoder_init failed.");
+				return false;
+			}
+
+			if ((ret = decoder_start(&pState->subdec, m_pDecodeSubtitleThread, "subtitle_decoder_thread", pState)) < 0)
+			{
+				qWarning("decode subtitle thread decoder_init failed.");
+				return false;
+			}
+
+			return true;
+		}
+	}
+	return false;
+}
+
 bool MainWindow::create_video_play_thread() //video play thread
 {
 	assert(m_pVideoPlayThread == NULL);
@@ -1194,6 +1246,8 @@ bool MainWindow::create_video_play_thread() //video play thread
 
 			connect(m_pVideoPlayThread, &VideoPlayThread::finished, this, &MainWindow::video_play_stopped);
 			connect(m_pVideoPlayThread, &VideoPlayThread::frame_ready, this, &MainWindow::image_ready);
+			connect(m_pVideoPlayThread, &VideoPlayThread::subtitle_ready, this, &MainWindow::subtitle_ready);
+			
 			connect(this, &MainWindow::stop_video_play_thread, m_pVideoPlayThread, &VideoPlayThread::stop_thread);
 
 			AVCodecContext* pVideo = m_pVideoState->get_contex(AVMEDIA_TYPE_VIDEO);
@@ -1236,10 +1290,10 @@ bool MainWindow::create_audio_play_thread()
 			print_decodeContext(pAudio, false);
 
 #if 1
-			StartPlayThread* startWorker = new StartPlayThread(this);
+			/*StartPlayThread* startWorker = new StartPlayThread(this);
 			connect(startWorker, &StartPlayThread::finished, startWorker, &QObject::deleteLater);
 			connect(startWorker, &StartPlayThread::init_audio, this, &MainWindow::play_started);
-			startWorker->start();
+			startWorker->start();*/
 #else	//this part is time-consuming, use thread 
 			ret = m_pAudioPlayThread->init_device(pAudio->sample_rate, pAudio->channels); //pAudio->sample_fmt
 			if (!ret) {
@@ -1259,6 +1313,15 @@ bool MainWindow::create_audio_play_thread()
 	return false;
 }
 
+bool MainWindow::start_play_thread()
+{
+	StartPlayThread* startWorker = new StartPlayThread(this);
+	connect(startWorker, &StartPlayThread::finished, startWorker, &QObject::deleteLater);
+	connect(startWorker, &StartPlayThread::init_audio, this, &MainWindow::play_started);
+	startWorker->start();
+	return true;
+}
+
 QLabel* MainWindow::get_video_label()
 {
 	return ui->label_Video;
@@ -1273,6 +1336,17 @@ QObject* MainWindow::get_object(const QString name)
 void MainWindow::image_ready(const QImage& img)
 {
 	QImage image = img.copy();
+	
+	if (!m_subtitle.isEmpty()) { //subtitle
+		int height = 80;
+		//QPen pen = QPen(Qt::white);
+		QFont font = QFont("Times", 15, QFont::Bold);
+		QRect rt(0, image.height()- height, image.width(), height);
+					
+		draw_img_text(image, m_subtitle, rt, QPen(Qt::black), font); //black shadow
+		rt.adjust(-1, -1, -1, -1);
+		draw_img_text(image, m_subtitle, rt, QPen(Qt::white), font);
+	}
 
 	if (ui->actionGrayscale->isChecked()) {
 		grey_image(image);
@@ -1311,6 +1385,17 @@ void MainWindow::image_ready(const QImage& img)
 	}
 
 	update_image(image);
+}
+
+void MainWindow::subtitle_ready(const QString& text)
+{
+	m_subtitle = text;
+	qDebug("receive subtitle: %s", qUtf8Printable(m_subtitle));
+}
+
+void MainWindow::clear_subtitle_str()
+{
+	m_subtitle = "";
 }
 
 void MainWindow::update_image(const QImage& img)
@@ -1358,6 +1443,16 @@ void MainWindow::decode_audio_stopped()
 		delete m_pDecodeAudioThread;
 		m_pDecodeAudioThread = NULL;
 		qDebug("************* Audio decode thread stopped.");
+	}
+}
+
+void MainWindow::decode_subtitle_stopped()
+{
+	if (m_pDecodeSubtitleThread != NULL)
+	{
+		delete m_pDecodeSubtitleThread;
+		m_pDecodeSubtitleThread = NULL;
+		qDebug("************* Subtitle decode thread stopped.");
 	}
 }
 

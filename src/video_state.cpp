@@ -13,45 +13,41 @@
 #include "video_state.h"
 
 
-  //static AVInputFormat* file_iformat = NULL;
-  //static const char* input_filename = NULL;
-  //static const char* window_title = "aplayer";
-  //static int default_width = 640;
-  //static int default_height = 480;
-  //static int screen_width = 0;
-  //static int screen_height = 0;
+//static AVInputFormat* file_iformat = NULL;
+//static const char* input_filename = NULL;
+//static const char* window_title = "aplayer";
+//static int default_width = 640;
+//static int default_height = 480;
+//static int screen_width = 0;
+//static int screen_height = 0;
 
-static int audio_disable = 0;
-static int video_disable = 0;
-static int subtitle_disable = 0;
-static const char* wanted_stream_spec[AVMEDIA_TYPE_NB] = { 0 };
-static int seek_by_bytes = -1;
-static int borderless = 0;
-static int startup_volume = 100;
-static int show_status = 1;
-static int av_sync_type = AV_SYNC_AUDIO_MASTER;
-
-static int fast = 0;
-//static int genpts = 1;
-static int lowres = 0;
+//static int audio_disable = 0;
+//static int video_disable = 0;
+//static int subtitle_disable = 0;
 //static int decoder_reorder_pts = -1;
 //static int autoexit;
-static int exit_on_keydown;
-static int exit_on_mousedown;
-static int loop = 1;
 //static int framedrop = -1;
-
-double rdftspeed = 0.02;
-static int64_t cursor_last_shown = 0;
-static int cursor_hidden = 0;
-static int autorotate = 1;
-static int find_stream_info = 1;
-
+//static int genpts = 1;
+//static int borderless = 0;
+//static int startup_volume = 100;
+//static int show_status = 1;
+//static int lowres = 0;
+//static int exit_on_keydown;
+//static int exit_on_mousedown;
+//static int loop = 1;
+//double rdftspeed = 0.02;
+//static int64_t cursor_last_shown = 0;
+//static int cursor_hidden = 0;
+//static int autorotate = 1;
+//static int find_stream_info = 1;
 /* current context */
-static int is_full_screen = 0;
-static int64_t audio_callback_time = 0;
-
-static AVPacket flush_pkt;
+//static int is_full_screen = 0;
+//static int64_t audio_callback_time = 0;
+//static AVPacket flush_pkt;
+//static int av_sync_type = AV_SYNC_AUDIO_MASTER;
+//static const char* wanted_stream_spec[AVMEDIA_TYPE_NB] = { 0 };
+//static int seek_by_bytes = -1;
+//static int fast = 0;
 
 int infinite_buffer = -1;
 int64_t start_time = AV_NOPTS_VALUE;
@@ -106,7 +102,7 @@ bool VideoStateData::is_hardware_decode()
 int VideoStateData::create_video_state(const char* filename)
 {
 	int ret = -1;
-	if (filename && !filename[0]) {
+	if (filename == NULL || !filename[0]) {
 		qDebug("filename is invalid, please select a valid media file.");
 		return ret;
 	}
@@ -143,6 +139,7 @@ int VideoStateData::open_media(VideoState* is)
 	int ret = -1;
 	int st_index[AVMEDIA_TYPE_NB];
 	AVFormatContext* pFormatCtx = NULL;
+	const char* wanted_stream_spec[AVMEDIA_TYPE_NB] = { 0 };
 
 	memset(st_index, -1, sizeof(st_index));
 
@@ -181,8 +178,8 @@ int VideoStateData::open_media(VideoState* is)
 	if (pFormatCtx->pb)
 		pFormatCtx->pb->eof_reached = 0; // FIXME hack, ffplay maybe should not use avio_feof() to test for the end
 
-	if (seek_by_bytes < 0)
-		seek_by_bytes = (pFormatCtx->iformat->flags & AVFMT_TS_DISCONT) && strcmp("ogg", pFormatCtx->iformat->name);
+	//if (seek_by_bytes < 0)
+	//	seek_by_bytes = (pFormatCtx->iformat->flags & AVFMT_TS_DISCONT) && strcmp("ogg", pFormatCtx->iformat->name);
 
 	is->max_frame_duration = (pFormatCtx->iformat->flags & AVFMT_TS_DISCONT) ? 10.0 : 3600.0;
 
@@ -203,8 +200,7 @@ int VideoStateData::open_media(VideoState* is)
 
 	is->realtime = is_realtime(pFormatCtx);
 
-	if (show_status)
-		av_dump_format(pFormatCtx, 0, is->filename, 0);
+	av_dump_format(pFormatCtx, 0, is->filename, 0);
 
 	for (i = 0; i < pFormatCtx->nb_streams; i++) {
 		AVStream* st = pFormatCtx->streams[i];
@@ -221,14 +217,11 @@ int VideoStateData::open_media(VideoState* is)
 		}
 	}
 
-	if (!video_disable)
-		st_index[AVMEDIA_TYPE_VIDEO] =
+	st_index[AVMEDIA_TYPE_VIDEO] =
 		av_find_best_stream(pFormatCtx, AVMEDIA_TYPE_VIDEO, st_index[AVMEDIA_TYPE_VIDEO], -1, NULL, 0);
-	if (!audio_disable)
-		st_index[AVMEDIA_TYPE_AUDIO] =
+	st_index[AVMEDIA_TYPE_AUDIO] =
 		av_find_best_stream(pFormatCtx, AVMEDIA_TYPE_AUDIO, st_index[AVMEDIA_TYPE_AUDIO], st_index[AVMEDIA_TYPE_VIDEO], NULL, 0);
-	if (!video_disable && !subtitle_disable)
-		st_index[AVMEDIA_TYPE_SUBTITLE] =
+	st_index[AVMEDIA_TYPE_SUBTITLE] =
 		av_find_best_stream(pFormatCtx, AVMEDIA_TYPE_SUBTITLE, st_index[AVMEDIA_TYPE_SUBTITLE],
 			(st_index[AVMEDIA_TYPE_AUDIO] >= 0 ? st_index[AVMEDIA_TYPE_AUDIO] : st_index[AVMEDIA_TYPE_VIDEO]),
 			NULL, 0);
@@ -237,18 +230,15 @@ int VideoStateData::open_media(VideoState* is)
 	ret = -1;
 
 	if (st_index[AVMEDIA_TYPE_VIDEO] >= 0) {
-		ret = stream_component_open(is, st_index[AVMEDIA_TYPE_VIDEO]);
-		m_bHasVideo = !(ret < 0);
+		stream_component_open(is, st_index[AVMEDIA_TYPE_VIDEO]);
 	}
 
 	if (st_index[AVMEDIA_TYPE_AUDIO] >= 0) {
-		ret = stream_component_open(is, st_index[AVMEDIA_TYPE_AUDIO]);
-		m_bHasAudio = !(ret < 0);
+		stream_component_open(is, st_index[AVMEDIA_TYPE_AUDIO]);
 	}
 
 	if (st_index[AVMEDIA_TYPE_SUBTITLE] >= 0) {
-		ret = stream_component_open(is, st_index[AVMEDIA_TYPE_SUBTITLE]);
-		m_bHasSubtitle = !(ret < 0);
+		stream_component_open(is, st_index[AVMEDIA_TYPE_SUBTITLE]);
 	}
 
 	if (is->video_stream < 0 && is->audio_stream < 0) {
@@ -379,9 +369,7 @@ void VideoStateData::stream_close(VideoState* is)
 
 static enum AVPixelFormat get_hw_format(AVCodecContext* ctx, const enum AVPixelFormat* pix_fmts)
 {
-	const enum AVPixelFormat* p;
-
-	for (p = pix_fmts; *p != -1; p++) {
+	for (const enum AVPixelFormat* p = pix_fmts; *p != -1; p++) {
 		if (*p == hw_pix_fmt)
 			return *p;
 	}
@@ -433,7 +421,7 @@ int VideoStateData::stream_component_open(VideoState* is, int stream_index)
 	int sample_rate, nb_channels;
 	int64_t channel_layout;
 	int ret = 0;
-	int stream_lowres = lowres;
+	int stream_lowres = 0;
 
 	if (stream_index < 0 || stream_index >= ic->nb_streams)
 		return -1;
@@ -487,8 +475,7 @@ int VideoStateData::stream_component_open(VideoState* is, int stream_index)
 	}
 	avctx->lowres = stream_lowres;
 
-	if (fast)
-		avctx->flags2 |= AV_CODEC_FLAG2_FAST;
+	//avctx->flags2 |= AV_CODEC_FLAG2_FAST;
 
 	if ((ret = avcodec_open2(avctx, codec, &opts)) < 0) {
 		goto fail;
@@ -505,7 +492,6 @@ int VideoStateData::stream_component_open(VideoState* is, int stream_index)
 
 		is->audio_stream = stream_index;
 		is->audio_st = ic->streams[stream_index];
-
 
 		if ((is->ic->iformat->flags & (AVFMT_NOBINSEARCH | AVFMT_NOGENSEARCH | AVFMT_NO_BYTE_SEEK)) && !is->ic->iformat->read_seek) {
 			is->auddec.start_pts = is->audio_st->start_time;
@@ -649,7 +635,6 @@ enum AVHWDeviceType VideoStateData::get_hwdevice(const char* device)
 	enum AVHWDeviceType type = av_hwdevice_find_type_by_name(device);
 	if (type == AV_HWDEVICE_TYPE_NONE) {
 		av_log(NULL, AV_LOG_WARNING, "Device type %s is not supported.\n", device);
-
 
 		av_log(NULL, AV_LOG_INFO, "Available device types:");
 		while ((type = av_hwdevice_iterate_types(type)) != AV_HWDEVICE_TYPE_NONE)

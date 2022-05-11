@@ -12,10 +12,10 @@
 
 #include "packets_sync.h"
 
-static int framedrop = -1;
-static int decoder_reorder_pts = -1;
-static int display_disable = 1;
-static int64_t audio_callback_time;
+int framedrop = -1;
+//static int decoder_reorder_pts = -1;
+//static int display_disable = 1;
+//static int64_t audio_callback_time;
 
 int packet_queue_init(PacketQueue* q)
 {
@@ -421,7 +421,7 @@ void decoder_abort(Decoder* d, FrameQueue* fq)
 
 int decoder_decode_frame(Decoder* d, AVFrame* frame, AVSubtitle* sub) {
 	int ret = AVERROR(EAGAIN);
-
+	int decoder_reorder_pts = -1;
 	for (;;) {
 		if (d->queue->serial == d->pkt_serial) {
 			do {
@@ -438,10 +438,6 @@ int decoder_decode_frame(Decoder* d, AVFrame* frame, AVSubtitle* sub) {
 						else if (!decoder_reorder_pts) {
 							frame->pts = frame->pkt_dts;
 						}
-					}
-					if (frame->format == AV_PIX_FMT_DXVA2_VLD)
-					{
-
 					}
 					break;
 				case AVMEDIA_TYPE_AUDIO:

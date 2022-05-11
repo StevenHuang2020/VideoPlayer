@@ -164,6 +164,7 @@ public:
         menuMedia->addAction(menuRecent_Files->menuAction());
         menuMedia->addSeparator();
         menuMedia->addAction(actionStop);
+        menuMedia->addSeparator();
         menuMedia->addAction(actionQuit);
         menuView->addAction(actionHide_Status);
         menuView->addAction(actionHide_Play_Ctronl);
@@ -177,6 +178,7 @@ public:
         menuCV->addAction(actionTransform);
         menuTools->addAction(actionHardware_decode);
         menuTools->addAction(actionLoop_Play);
+        menuTools->addSeparator();
         menuTools->addAction(actionMedia_Info);
 
         retranslateUi(MainWindow);

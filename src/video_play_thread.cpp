@@ -1,8 +1,7 @@
 #include "video_play_thread.h"
 
 
-int framedrop = 1;
-static int64_t audio_callback_time;
+extern int framedrop;
 
 VideoPlayThread::VideoPlayThread(QObject* parent, VideoState* pState)
 	: QThread(parent)
@@ -32,7 +31,7 @@ void VideoPlayThread::run()
 		if (is->abort_request)
 			break;
 
-		if (is->paused)	{
+		if (is->paused) {
 			msleep(10);
 			continue;
 		}
@@ -125,11 +124,13 @@ void VideoPlayThread::video_refresh(VideoState* is, double* remaining_time)
 						|| (is->vidclk.pts > (sp->pts + ((float)sp->sub.end_display_time / 1000)))
 						|| (sp2 && is->vidclk.pts > (sp2->pts + ((float)sp2->sub.start_display_time / 1000))))
 					{
+#if 0
 						if (sp->uploaded) {
 							int i;
 							for (i = 0; i < sp->sub.num_rects; i++) {
-								/*AVSubtitleRect* sub_rect = sp->sub.rects[i];
-								uint8_t* pixels;
+								AVSubtitleRect* sub_rect = sp->sub.rects[i];
+
+								/*uint8_t* pixels;
 								int pitch, j;
 
 								if (!SDL_LockTexture(is->sub_texture, (SDL_Rect*)sub_rect, (void**)&pixels, &pitch)) {
@@ -139,6 +140,7 @@ void VideoPlayThread::video_refresh(VideoState* is, double* remaining_time)
 								}*/
 							}
 						}
+#endif
 						frame_queue_next(&is->subpq);
 					}
 					else {
@@ -165,15 +167,18 @@ void VideoPlayThread::video_refresh(VideoState* is, double* remaining_time)
 
 void VideoPlayThread::video_display(VideoState* is)
 {
-	if (is->audio_st && false)
+	if (is->audio_st && false) {
 		video_audio_display(is);
-	else if (is->video_st)
+	}
+	else if (is->video_st) {
 		video_image_display(is);
+	}
 }
 
 void VideoPlayThread::video_audio_display(VideoState* s)
 {
 #if 0
+	int64_t audio_callback_time = 0;
 	int i, i_start, x, y1, y, ys, delay, n, nb_display_channels;
 	int ch, channels, h, h2;
 	int64_t time_diff;
@@ -324,14 +329,86 @@ void VideoPlayThread::video_audio_display(VideoState* s)
 
 void VideoPlayThread::video_image_display(VideoState* is)
 {
+	Frame* sp = NULL;
+	Frame* vp = frame_queue_peek_last(&is->pictq);
 	Video_Resample* pResample = &m_Resample;
 
-	Frame* vp = frame_queue_peek_last(&is->pictq);
+	if (frame_queue_nb_remaining(&is->subpq) > 0) {
+		sp = frame_queue_peek(&is->subpq);
+
+		if (vp->pts >= sp->pts + ((float)sp->sub.start_display_time / 1000)) {
+			if (!sp->uploaded) {
+				uint8_t* pixels[4];
+				int pitch[4];
+				int i;
+				if (!sp->width || !sp->height) {
+					sp->width = vp->width;
+					sp->height = vp->height;
+				}
+
+				//if (realloc_texture(&is->sub_texture, SDL_PIXELFORMAT_ARGB8888, sp->width, sp->height, SDL_BLENDMODE_BLEND, 1) < 0)
+				//	return;
+#if 1
+				for (i = 0; i < sp->sub.num_rects; i++) {
+					AVSubtitleRect* sub_rect = sp->sub.rects[i];
+					if (sub_rect->type == SUBTITLE_ASS) {
+						qDebug("subtitle[%d], format:%d, type:%d, text:%s, flags:%d", i, sp->sub.format,
+							sub_rect->type, sub_rect->text, sub_rect->flags);
+						//QString ass = QString::fromUtf8(sub_rect->ass); 
+						QString ass = QString::fromLocal8Bit(QString::fromStdString(sub_rect->ass).toUtf8());
+						QStringList assList = ass.split(",");
+						if (assList.size() > 8) {
+							ass = assList[8];
+							//qDebug("ass: %s", qUtf8Printable(ass));
+							parse_subtitle_ass(ass);
+						}
+					}
+					else {
+						qWarning("not handled yet, type:%d", sub_rect->type);
+					}
+				}
+#else
+				for (i = 0; i < sp->sub.num_rects; i++) {
+					AVSubtitleRect* sub_rect = sp->sub.rects[i];
+
+					sub_rect->x = av_clip(sub_rect->x, 0, sp->width);
+					sub_rect->y = av_clip(sub_rect->y, 0, sp->height);
+					sub_rect->w = av_clip(sub_rect->w, 0, sp->width - sub_rect->x);
+					sub_rect->h = av_clip(sub_rect->h, 0, sp->height - sub_rect->y);
+
+					is->sub_convert_ctx = sws_getCachedContext(is->sub_convert_ctx,
+						sub_rect->w, sub_rect->h, AV_PIX_FMT_PAL8,
+						sub_rect->w, sub_rect->h, AV_PIX_FMT_BGRA,
+						0, NULL, NULL, NULL);
+					if (!is->sub_convert_ctx) {
+						av_log(NULL, AV_LOG_FATAL, "Cannot initialize the conversion context\n");
+						return;
+					}
+#if 1
+					sws_scale(is->sub_convert_ctx, (const uint8_t* const*)sub_rect->data, sub_rect->linesize,
+						0, sub_rect->h, pixels, pitch);
+#else
+					if (!SDL_LockTexture(is->sub_texture, (SDL_Rect*)sub_rect, (void**)pixels, pitch)) {
+						sws_scale(is->sub_convert_ctx, (const uint8_t* const*)sub_rect->data, sub_rect->linesize,
+							0, sub_rect->h, pixels, pitch);
+						SDL_UnlockTexture(is->sub_texture);
+					}
+#endif
+				}
+#endif
+				sp->uploaded = 1;
+			}
+		}
+		else {
+			sp = NULL;
+		}
+	}
+
 
 	AVFrame* pFrameRGB = pResample->pFrameRGB; // dst
 	AVCodecContext* pVideoCtx = is->viddec.avctx;
 	AVFrame* pFrame = vp->frame;
-	
+
 	//AVPixelFormat fmt = (AVPixelFormat)pFrame->format; // 0
 	//const char* fmt_name = av_get_pix_fmt_name(fmt);
 
@@ -419,4 +496,27 @@ void VideoPlayThread::stop_thread()
 
 void VideoPlayThread::pause_thread()
 {
+}
+
+void VideoPlayThread::parse_subtitle_ass(const QString& text)
+{
+	QString str = text;
+#if 0
+	int j = 0;
+	int k = 0;
+	while ((j = str.indexOf("{", j)) != -1) {
+		//qDebug() << "Found '{' at index position" << j;
+		k = str.indexOf("}", j);
+		if (k != -1) {
+			//qDebug() << j << k;
+			str = str.replace(j, k - j + 1, "");
+			j = 0;
+			//qDebug() << str;
+		}
+		++j;
+	}
+	//qDebug() << str;
+#endif
+
+	emit subtitle_ready(str);
 }

@@ -28,8 +28,8 @@ void SubtitleDecodeThread::run()
 			break;
 
 		pts = 0;
-
-		if (got_subtitle && sp->sub.format == 0) {
+		
+		if (got_subtitle && sp->sub.format == 1) {
 			if (sp->sub.pts != AV_NOPTS_VALUE)
 				pts = sp->sub.pts / (double)AV_TIME_BASE;
 			sp->pts = pts;
