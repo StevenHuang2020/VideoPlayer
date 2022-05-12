@@ -9,6 +9,8 @@
 // Debug message to file
 //
 
+#define BUFF_LEN (1024)
+
 #ifdef UNICODE
 void Output(LPCWSTR szFormat, ...)
 #else
@@ -16,14 +18,20 @@ void Output(const char* szFormat, ...)
 #endif
 {
 #ifdef UNICODE
-	WCHAR  szBuff[1024]; // Output(L"%ls %ls", L"Hi", L"there");
-#else
-	char szBuff[1024];
-#endif
+	WCHAR  szBuff[BUFF_LEN +1]; // Output(L"%ls %ls", L"Hi", L"there");
+
 	va_list arg;
 	va_start(arg, szFormat);
-	_vsnwprintf(szBuff, sizeof(szBuff), szFormat, arg);
+	_vsnwprintf(szBuff, BUFF_LEN, szFormat, arg);
 	va_end(arg);
+#else
+	char szBuff[BUFF_LEN];
+
+	va_list arg;
+	va_start(arg, szFormat);
+	_vsnprintf(szBuff, BUFF_LEN, szFormat, arg);
+	va_end(arg);
+#endif
 
 	OutputDebugString(szBuff);
 }
@@ -32,8 +40,7 @@ void Output(const char* szFormat, ...)
 void logOutput(QtMsgType type, const QMessageLogContext& context, const QString& msg)
 {
 	QString txt, type_str;
-	// QString time = QTime::currentTime().toString("hh:mm:ss.zzz");
-	QString time = QDateTime::currentDateTime().toString("dd/MM/yy hh:mm:ss.zzz");
+	QString time = QDateTime::currentDateTime().toString("dd/MM/yy hh:mm:ss.zzz"); //"hh:mm:ss.zzz"
 
 	QFileInfo file(context.file);
 

@@ -35,6 +35,7 @@ public:
 	void update_play_time(int hours, int mins, int secs);
 	void set_total_time(int hours, int mins, int secs);
 	const QSlider* get_progress_slider();
+	const QSlider* get_volume_slider();
 	void set_volume_slider(float volume);
 	void clear_all();
 	void update_btn_play(bool bPause = true);

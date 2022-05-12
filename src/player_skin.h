@@ -10,7 +10,7 @@ const QStringList get_style();
 const QStringList get_custom_styles();
 void clear_skin();
 void set_system_style(int id = 0);
-void set_system_style(QString style);
-void set_custom_style(QString file);
+void set_system_style(const QString& style);
+void set_custom_style(const QString& file);
 
 #endif /*end of PLAYER_SKIN_H*/

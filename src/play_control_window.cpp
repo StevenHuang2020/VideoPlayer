@@ -84,6 +84,11 @@ const QSlider* play_control_window::get_progress_slider()
 	return ui->progress_slider;
 }
 
+const QSlider* play_control_window::get_volume_slider()
+{
+	return ui->slider_vol;
+}
+
 void play_control_window::enable_progressbar(bool enable)
 {
 	ui->progress_slider->setEnabled(enable);

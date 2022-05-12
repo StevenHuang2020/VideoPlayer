@@ -501,7 +501,7 @@ void VideoPlayThread::pause_thread()
 void VideoPlayThread::parse_subtitle_ass(const QString& text)
 {
 	QString str = text;
-#if 0
+#if 1
 	int j = 0;
 	int k = 0;
 	while ((j = str.indexOf("{", j)) != -1) {

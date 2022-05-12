@@ -42,6 +42,7 @@ void SubtitleDecodeThread::run()
 			frame_queue_push(&is->subpq);
 		}
 		else if (got_subtitle) {
+			qWarning("Not handled subtitle type:%d", sp->sub.format);
 			avsubtitle_free(&sp->sub);
 		}
 	}

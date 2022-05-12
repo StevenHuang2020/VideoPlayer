@@ -33,6 +33,7 @@ extern "C" {
                 AV_VERSION_MICRO(version));                          \
     }                                                                \
 
+#define BUFF_MAXLEN     256
 
 int ffmpeg_init();
 void print_ffmpeg_info(int level);

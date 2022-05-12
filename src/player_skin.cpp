@@ -15,9 +15,6 @@ const QStringList get_style()
 		qDebug("style:%s", qUtf8Printable(style));
 	}*/
 
-	//windowsvista
-	//Windows
-	//Fusion
 	return QStyleFactory::keys();
 }
 
@@ -29,21 +26,20 @@ void set_system_style(int id)
 	set_system_style(style);
 }
 
-void set_system_style(QString style)
+void set_system_style(const QString& style)
 {
 	clear_skin();
 	qApp->setStyle(QStyleFactory::create(style));
 	qApp->setPalette(QApplication::style()->standardPalette());
 }
 
-void set_custom_style(QString filename)
+void set_custom_style(const QString& filename)
 {
 	QString file = g_qss_path + "/" + filename + ".qss";
 	QFile qss(file);
-	assert(QFileInfo::exists(file));
-
-	clear_skin();
+	
 	if (QFileInfo::exists(file)) {
+		clear_skin();
 		qss.open(QFile::ReadOnly);
 		qApp->setStyleSheet(qss.readAll());
 	}	
@@ -52,18 +48,5 @@ void set_custom_style(QString filename)
 const QStringList get_custom_styles()
 {
 	QDir directory(g_qss_path);
-	QStringList files = directory.entryList(QStringList() << "*.qss", QDir::Files);
-
-	/*QStringList paths;
-
-	qDebug("custom styles:");
-	for each(QString filename in files) {
-		QString path = directory.filePath(filename);
-		qDebug("custom style:%s,%s", qUtf8Printable(filename), qUtf8Printable(path));
-		paths << path;
-	}
-
-	return paths;
-	*/
-	return files;
+	return directory.entryList(QStringList() << "*.qss", QDir::Files);
 }

@@ -36,8 +36,6 @@ MainWindow::MainWindow(QWidget* parent)
 
 	qApp->installEventFilter(this);
 
-	resize_window();
-
 	ffmpeg_init();
 
 	//set mouse moving detection timer
@@ -49,6 +47,7 @@ MainWindow::MainWindow(QWidget* parent)
 	connect(ui->actionAbout_QT, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
 
 	read_settings();
+	resize_window();
 }
 
 MainWindow::~MainWindow()
@@ -351,6 +350,7 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* event)
 	{
 		QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
 		// displayStatusMessage(QString("Mouse move (%1,%2)").arg(mouseEvent->pos().x()).arg(mouseEvent->pos().y()));
+
 		check_hide_menubar(mouseEvent);
 
 		if (!ui->actionHide_Play_Ctronl->isChecked())
@@ -537,12 +537,10 @@ void MainWindow::show_fullscreen(bool bFullscreen)
 {
 	if (bFullscreen) {
 		showFullScreen();
-		resize(size());
 	}
-	else
-	{
-		hide_menubar(false);
+	else {
 		showNormal();
+		hide_menubar(false);
 	}
 }
 
@@ -801,7 +799,9 @@ void MainWindow::set_volume(int volume)
 	if (m_pAudioPlayThread == NULL)
 		return;
 
-	m_pAudioPlayThread->set_device_volume(volume * 1.0 / 100); // 100 here must equal to the maximum of volume slider
+	const QSlider* pSilder = pPlayControl->get_volume_slider();
+	int max_val = pSilder->maximum();
+	m_pAudioPlayThread->set_device_volume(volume * 1.0 / max_val);
 }
 
 void MainWindow::hide_statusbar(bool bHide)
@@ -809,28 +809,59 @@ void MainWindow::hide_statusbar(bool bHide)
 	statusBar()->setVisible(!bHide);
 
 	QSize sz_status = statusBar()->size();
-	QSize sz_center = centralWidget()->size();
 
 	bool bVisible = statusBar()->isVisible();
-	if (bVisible)
-	{
-		//centralWidget()->resize(sz_center + QSize(0, sz_status.height()));
-		resize(size() + QSize(0, sz_status.height()));
+	if (isFullScreen()) {
+
+		showFullScreen();
+		QSize sz = centralWidget()->size();
+		/*if (bVisible) {
+			sz -= QSize(0, sz_status.height());
+		}
+		else {
+			sz += QSize(0, sz_status.height());
+		}*/
+		centralWidget()->resize(sz);
 	}
-	else
-	{
-		//centralWidget()->resize(sz_center - QSize(0, sz_status.height()));
-		resize(size() - QSize(0, sz_status.height()));
+	else {
+		QSize sz = size();
+		if (bVisible) {
+			sz += QSize(0, sz_status.height());
+		}
+		else {
+			sz -= QSize(0, sz_status.height());
+		}
+
+		resize(sz);
 	}
 }
 
 void MainWindow::hide_menubar(bool bHide)
 {
+	menuBar()->setVisible(!bHide);
+
 	bool bVisible = menuBar()->isVisible();
-	if (bVisible == bHide)
-	{
-		menuBar()->setVisible(!bHide);
+#if 1
+	QSize sz_menubar = menuBar()->size();
+	QSize sz_center = centralWidget()->size();
+	if (isFullScreen()) {
+		//QSize sz = centralWidget()->size();
+		//QSize sz = size();
+		QSize sz = geometry().size();
+		/*if (bVisible)
+		{
+			sz += QSize(0, sz_menubar.height());
+		}
+		else
+		{
+			sz -= QSize(0, sz_menubar.height());
+		}*/
+		//showFullScreen();
+		
+		centralWidget()->resize(sz);
+		resize(sz);
 	}
+#endif
 
 	update_play_control();
 }
@@ -860,7 +891,7 @@ void MainWindow::start_to_play(const QString& file)
 	bool ret = start_play();
 	if (!ret) {
 		QMessageBox msgBox;
-		
+
 		QString str = QString("File play failed, file: %1").arg(m_videoFile);
 		msgBox.setText(str);
 		msgBox.setModal(true);
@@ -1247,7 +1278,7 @@ bool MainWindow::create_video_play_thread() //video play thread
 			connect(m_pVideoPlayThread, &VideoPlayThread::finished, this, &MainWindow::video_play_stopped);
 			connect(m_pVideoPlayThread, &VideoPlayThread::frame_ready, this, &MainWindow::image_ready);
 			connect(m_pVideoPlayThread, &VideoPlayThread::subtitle_ready, this, &MainWindow::subtitle_ready);
-			
+
 			connect(this, &MainWindow::stop_video_play_thread, m_pVideoPlayThread, &VideoPlayThread::stop_thread);
 
 			AVCodecContext* pVideo = m_pVideoState->get_contex(AVMEDIA_TYPE_VIDEO);
@@ -1336,13 +1367,13 @@ QObject* MainWindow::get_object(const QString name)
 void MainWindow::image_ready(const QImage& img)
 {
 	QImage image = img.copy();
-	
+
 	if (!m_subtitle.isEmpty()) { //subtitle
 		int height = 80;
 		//QPen pen = QPen(Qt::white);
 		QFont font = QFont("Times", 15, QFont::Bold);
-		QRect rt(0, image.height()- height, image.width(), height);
-					
+		QRect rt(0, image.height() - height, image.width(), height);
+
 		draw_img_text(image, m_subtitle, rt, QPen(Qt::black), font); //black shadow
 		rt.adjust(-1, -1, -1, -1);
 		draw_img_text(image, m_subtitle, rt, QPen(Qt::white), font);
@@ -1535,19 +1566,15 @@ void MainWindow::read_settings()
 	QStringList values = m_settings.get_general("hideStatus");
 	if (values.size() > 0) {
 		value = values[0].toInt();
-		if (value) {
-			ui->actionHide_Status->setChecked(!!value);
-			hide_statusbar(value);
-		}
+		ui->actionHide_Status->setChecked(!!value);
+		hide_statusbar(value);
 	}
 
 	values = m_settings.get_general("hidePlayContrl");
 	if (values.size() > 0) {
 		value = values[0].toInt();
-		if (value) {
-			ui->actionHide_Play_Ctronl->setChecked(!!value);
-			hide_play_control(value);
-		}
+		ui->actionHide_Play_Ctronl->setChecked(!!value);
+		hide_play_control(value);
 	}
 
 	values = m_settings.get_general("fullScreen");
@@ -1560,17 +1587,13 @@ void MainWindow::read_settings()
 	values = m_settings.get_general("openDXVA2");
 	if (values.size() > 0) {
 		value = values[0].toInt();
-		if (value) {
-			ui->actionHardware_decode->setChecked(!!value);
-		}
+		ui->actionHardware_decode->setChecked(!!value);
 	}
 
 	values = m_settings.get_general("loopPlay");
 	if (values.size() > 0) {
 		value = values[0].toInt();
-		if (value) {
-			ui->actionLoop_Play->setChecked(!!value);
-		}
+		ui->actionLoop_Play->setChecked(!!value);
 	}
 
 	values = m_settings.get_general("style");
