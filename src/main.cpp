@@ -1,3 +1,11 @@
+// ***********************************************************/
+// main.cpp
+//
+//      Copy Right @ Steven Huang. All rights reserved.
+//
+// Entrance of this player
+// ***********************************************************/
+
 #include "mainwindow.h"
 
 #include <QApplication>

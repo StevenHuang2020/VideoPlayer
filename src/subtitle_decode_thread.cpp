@@ -1,3 +1,11 @@
+// ***********************************************************/
+// subtitle_decode_thread.cpp
+//
+//      Copy Right @ Steven Huang. All rights reserved.
+//
+// Subtitles decode thread. 
+// ***********************************************************/
+
 #include "subtitle_decode_thread.h"
 
 
@@ -9,7 +17,6 @@ SubtitleDecodeThread::SubtitleDecodeThread(QObject* parent, VideoState* pState)
 
 SubtitleDecodeThread::~SubtitleDecodeThread()
 {
-	stop_thread();
 }
 
 void SubtitleDecodeThread::run()
@@ -28,7 +35,7 @@ void SubtitleDecodeThread::run()
 			break;
 
 		pts = 0;
-		
+
 		if (got_subtitle && sp->sub.format == 1) {
 			if (sp->sub.pts != AV_NOPTS_VALUE)
 				pts = sp->sub.pts / (double)AV_TIME_BASE;
@@ -49,18 +56,4 @@ void SubtitleDecodeThread::run()
 
 	qDebug("-------- subtitle decode thread exit.");
 	return;
-}
-
-void SubtitleDecodeThread::stop_thread()
-{
-	//add here
-}
-
-void SubtitleDecodeThread::pause_thread()
-{
-}
-
-bool SubtitleDecodeThread::paused()
-{
-	return false;
 }

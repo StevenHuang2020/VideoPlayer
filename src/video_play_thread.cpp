@@ -1,3 +1,13 @@
+// ***********************************************************/
+// video_play_thread.cpp
+//
+//      Copy Right @ Steven Huang. All rights reserved.
+//
+// Video play thread. This section includes key code for 
+// synchronizing video frames and audio using pts/dts,
+//  as well as subtitle processing.
+// ***********************************************************/
+
 #include "video_play_thread.h"
 
 
@@ -338,9 +348,9 @@ void VideoPlayThread::video_image_display(VideoState* is)
 
 		if (vp->pts >= sp->pts + ((float)sp->sub.start_display_time / 1000)) {
 			if (!sp->uploaded) {
-				uint8_t* pixels[4];
-				int pitch[4];
-				int i;
+				//uint8_t* pixels[4];
+				//int pitch[4];
+		
 				if (!sp->width || !sp->height) {
 					sp->width = vp->width;
 					sp->height = vp->height;
@@ -349,7 +359,7 @@ void VideoPlayThread::video_image_display(VideoState* is)
 				//if (realloc_texture(&is->sub_texture, SDL_PIXELFORMAT_ARGB8888, sp->width, sp->height, SDL_BLENDMODE_BLEND, 1) < 0)
 				//	return;
 #if 1
-				for (i = 0; i < sp->sub.num_rects; i++) {
+				for (unsigned int i = 0; i < sp->sub.num_rects; i++) {
 					AVSubtitleRect* sub_rect = sp->sub.rects[i];
 					if (sub_rect->type == SUBTITLE_ASS) {
 						qDebug("subtitle[%d], format:%d, type:%d, text:%s, flags:%d", i, sp->sub.format,
@@ -492,10 +502,6 @@ void VideoPlayThread::stop_thread()
 {
 	m_bExitThread = true;
 	wait();
-}
-
-void VideoPlayThread::pause_thread()
-{
 }
 
 void VideoPlayThread::parse_subtitle_ass(const QString& text)

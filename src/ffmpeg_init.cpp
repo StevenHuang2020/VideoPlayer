@@ -1,3 +1,11 @@
+// ***********************************************************/
+// ffmpeg_init.cpp
+//
+//      Copy Right @ Steven Huang. All rights reserved.
+//
+// FFmpeg utils.
+// ***********************************************************/
+
 #include "ffmpeg_init.h"
 
 #define OPEN_FFMPEG_LOG 0
@@ -49,7 +57,6 @@ const QString dump_format(AVFormatContext* ic, int index, const char* url, int i
 {
 	QString str = "";
 	char tmp[BUFF_MAXLEN + 1] = { 0 };
-	int i;
 	const char* indent = "  ";
 
 	if (ic == NULL)	{
@@ -120,7 +127,7 @@ const QString dump_format(AVFormatContext* ic, int index, const char* url, int i
 		str += tmp;
 	}
 
-	for (int i = 0; i < ic->nb_chapters; i++) {
+	for (unsigned int i = 0; i < ic->nb_chapters; i++) {
 		const AVChapter* ch = ic->chapters[i];
 		snprintf(tmp, BUFF_MAXLEN, "    Chapter #%d:%d: start %f, end %f\n", index, i,
 			ch->start * av_q2d(ch->time_base),
@@ -131,7 +138,7 @@ const QString dump_format(AVFormatContext* ic, int index, const char* url, int i
 	}
 
 	if (ic->nb_programs) {
-		int j, k, total = 0;
+		unsigned int j, k, total = 0;
 		for (j = 0; j < ic->nb_programs; j++) {
 			const AVProgram* program = ic->programs[j];
 			const AVDictionaryEntry* name = av_dict_get(program->metadata, "name", NULL, 0);
@@ -151,7 +158,7 @@ const QString dump_format(AVFormatContext* ic, int index, const char* url, int i
 		}
 	}
 
-	for (i = 0; i < ic->nb_streams; i++) {
+	for (unsigned int i = 0; i < ic->nb_streams; i++) {
 		if (!printed[i]) {
 			str += dump_stream_format(ic, i, index, is_output);
 		}
@@ -213,7 +220,7 @@ const QString dump_stream_format(const AVFormatContext* ic, int i, int index, in
 	const AVDictionaryEntry* lang = av_dict_get(st->metadata, "language", NULL, 0);
 	const char* separator = (const char*)ic->dump_separator;
 	AVCodecContext* avctx;
-	AVCodecContext* st_avctx = (AVCodecContext*)st->priv_data;
+	//AVCodecContext* st_avctx = (AVCodecContext*)st->priv_data;
 	int ret;
 
 	avctx = avcodec_alloc_context3(NULL);

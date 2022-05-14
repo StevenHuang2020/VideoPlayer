@@ -23,7 +23,6 @@ private:
 	int m_mins;
 	int m_secs;
 private:
-	//void resizeEvent(QResizeEvent* event) override;
 	void paintEvent(QPaintEvent* e) override;
 private:
 	void enable_progressbar(bool enable = true);
@@ -31,6 +30,7 @@ private:
 	const QString get_play_time(int hours, int mins, int secs);
 	int get_time_secs(int hours, int mins, int secs);
 	void clear_time();
+	void enable_play_buttons(bool enable = true);
 public:
 	void update_play_time(int hours, int mins, int secs);
 	void set_total_time(int hours, int mins, int secs);

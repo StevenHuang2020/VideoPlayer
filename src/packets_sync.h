@@ -18,6 +18,7 @@ extern "C" {
 #include <libswscale/swscale.h>
 #include <libavutil/fifo.h>
 #include <libavutil/time.h>
+#include <libavutil/samplefmt.h>
 #include <libswresample/swresample.h>
 }
 
@@ -195,7 +196,7 @@ typedef struct VideoState {
 
 	double audio_clock;
 	int audio_clock_serial;
-	
+
 	AVStream* audio_st;
 
 	int audio_volume;

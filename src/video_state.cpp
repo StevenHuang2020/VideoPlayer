@@ -1,53 +1,14 @@
-/*
- * decoded packets A/V synchronization state
- * Copyright (c) Steven Huang
- */
-
- /**
-  * @file video_state.cpp
-  * Utilties for ffmpeg decoded packets synchronization.
-  * Code reference from ffplay.c in ffmpeg library.
-  * @author Steven Huang
-  */
+// ***********************************************************/
+// video_state.cpp
+//
+//      Copy Right @ Steven Huang. All rights reserved.
+//
+// A/V synchronization state. This code is referenced 
+// from ffplay.c in Ffmpeg library.
+// ***********************************************************/
 
 #include "video_state.h"
 
-
-//static AVInputFormat* file_iformat = NULL;
-//static const char* input_filename = NULL;
-//static const char* window_title = "aplayer";
-//static int default_width = 640;
-//static int default_height = 480;
-//static int screen_width = 0;
-//static int screen_height = 0;
-
-//static int audio_disable = 0;
-//static int video_disable = 0;
-//static int subtitle_disable = 0;
-//static int decoder_reorder_pts = -1;
-//static int autoexit;
-//static int framedrop = -1;
-//static int genpts = 1;
-//static int borderless = 0;
-//static int startup_volume = 100;
-//static int show_status = 1;
-//static int lowres = 0;
-//static int exit_on_keydown;
-//static int exit_on_mousedown;
-//static int loop = 1;
-//double rdftspeed = 0.02;
-//static int64_t cursor_last_shown = 0;
-//static int cursor_hidden = 0;
-//static int autorotate = 1;
-//static int find_stream_info = 1;
-/* current context */
-//static int is_full_screen = 0;
-//static int64_t audio_callback_time = 0;
-//static AVPacket flush_pkt;
-//static int av_sync_type = AV_SYNC_AUDIO_MASTER;
-//static const char* wanted_stream_spec[AVMEDIA_TYPE_NB] = { 0 };
-//static int seek_by_bytes = -1;
-//static int fast = 0;
 
 int infinite_buffer = -1;
 int64_t start_time = AV_NOPTS_VALUE;
@@ -56,9 +17,9 @@ static AVBufferRef* hw_device_ctx = NULL;
 static enum AVPixelFormat hw_pix_fmt;
 
 VideoStateData::VideoStateData(QThread* pThread, bool use_hardware, bool loop_play) : m_pState(NULL)
-, m_pReadThreadId(pThread)
-, m_bUseHardware(use_hardware)
-, m_bLoopPlay(loop_play)
+	, m_pReadThreadId(pThread)
+	, m_bUseHardware(use_hardware)
+	, m_bLoopPlay(loop_play)
 {
 	m_bHasVideo = false;
 	m_bHasAudio = false;
@@ -108,8 +69,7 @@ int VideoStateData::create_video_state(const char* filename)
 	}
 
 	m_pState = stream_open(filename);
-	if (m_pState == NULL)
-	{
+	if (m_pState == NULL) {
 		return ret;
 	}
 

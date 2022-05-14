@@ -1,3 +1,12 @@
+// ***********************************************************/
+// app_settings.cpp
+//
+//      Copy Right @ Steven Huang. All rights reserved.
+//
+// app settings load and save
+// ***********************************************************/
+
+
 #include "app_settings.h"
 
 

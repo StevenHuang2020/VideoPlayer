@@ -1,3 +1,11 @@
+// ***********************************************************/
+// play_control_window.cpp
+//
+//      Copy Right @ Steven Huang. All rights reserved.
+//
+// video play control panel.
+// ***********************************************************/
+
 #include "play_control_window.h"
 #include "ui_play_control_window.h"
 #include "mainwindow.h"
@@ -13,6 +21,8 @@ play_control_window::play_control_window(QWidget* parent)
 	ui->setupUi(this);
 
 	setLayout(ui->gridLayout); //gridLayout
+	ui->gridLayout->setContentsMargins(0, 0, 0, 0);
+
 #if 0
 	/*setStyleSheet("QSlider::groove:horizontal {background-color: #000000; height:4px;}"
 		"QSlider::handle:horizontal {background-color:blue; height:16px; width: 16px;}"
@@ -67,11 +77,6 @@ void play_control_window::set_volume_slider(float volume)
 	ui->slider_vol->setValue(int(volume * max));
 }
 
-//void play_control_window::resizeEvent(QResizeEvent* event)
-//{
-//	QWidget::resizeEvent(event);
-//}
-//
 void play_control_window::paintEvent(QPaintEvent* e)
 {
 	//QPainter painter(this);
@@ -126,7 +131,10 @@ int play_control_window::get_total_time()
 
 void play_control_window::set_total_time(int hours, int mins, int secs)
 {
-	enable_progressbar(true);
+	enable_progressbar();
+	enable_play_buttons();
+	ui->check_mute->setEnabled(true);
+	ui->slider_vol->setEnabled(true);
 
 	m_hours = hours;
 	m_mins = mins;
@@ -159,8 +167,6 @@ void play_control_window::clear_time()
 	m_mins = 0;
 	m_secs = 0;
 
-	enable_progressbar(false);
-
 	ui->progress_slider->setValue(0);
 	ui->label_totalTime->setText("--:--");
 	ui->label_curTime->setText("--:--");
@@ -171,8 +177,12 @@ void play_control_window::clear_all()
 	clear_time();
 	enable_progressbar(false);
 	update_btn_play();
-	ui->slider_vol->setValue(0);
+	
 	enable_slider_vol(false);
+	enable_play_buttons(false);
+	ui->check_mute->setEnabled(false);
+	ui->slider_vol->setEnabled(false);
+	ui->slider_vol->setValue(0);
 }
 
 void play_control_window::update_btn_play(bool bPause)
@@ -183,4 +193,12 @@ void play_control_window::update_btn_play(bool bPause)
 	else {
 		ui->btn_play->setText("Pause");
 	}
+}
+
+void play_control_window::enable_play_buttons(bool enable)
+{
+	ui->btn_next->setEnabled(enable);
+	ui->btn_pre->setEnabled(enable);
+	ui->btn_play->setEnabled(enable);
+	ui->btn_stop->setEnabled(enable);
 }

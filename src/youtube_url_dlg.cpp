@@ -1,3 +1,11 @@
+// ***********************************************************/
+// youtube_url_dlg.cpp
+//
+//      Copy Right @ Steven Huang. All rights reserved.
+//
+// Youtube Url open dialog
+// ***********************************************************/
+
 #include "youtube_url_dlg.h"
 #include "ui_youtube_url_dlg.h"
 

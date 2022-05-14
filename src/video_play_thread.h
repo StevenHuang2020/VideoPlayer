@@ -48,10 +48,6 @@ private:
 	}
 	void parse_subtitle_ass(const QString& text);
 public:
-	bool thread_init();
-	void pause_thread();
-	bool paused();
-
 	bool init_resample_param(AVCodecContext* pVideo, bool bHardware = false);
 
 };

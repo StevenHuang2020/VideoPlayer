@@ -1,3 +1,11 @@
+// ***********************************************************/
+// audio_play_thread.cpp
+//
+//      Copy Right @ Steven Huang. All rights reserved.
+//
+// audio play thread
+// ***********************************************************/
+
 #include "audio_play_thread.h"
 
 
@@ -249,12 +257,4 @@ void AudioPlayThread::stop_thread()
 {
 	m_bExitThread = true;
 	wait();
-}
-
-void AudioPlayThread::wait_stop_thread()
-{
-}
-
-void AudioPlayThread::pause_thread()
-{
 }

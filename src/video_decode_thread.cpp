@@ -1,3 +1,12 @@
+// ***********************************************************/
+// video_decode_thread.cpp
+//
+//      Copy Right @ Steven Huang. All rights reserved.
+//
+// Video decode thread. This section includes queues 
+// and dxva2 hardware transmit decoded frame.
+// ***********************************************************/
+
 #include "video_decode_thread.h"
 
 
@@ -9,12 +18,6 @@ VideoDecodeThread::VideoDecodeThread(QObject* parent, VideoState* pState)
 
 VideoDecodeThread::~VideoDecodeThread()
 {
-	stop_thread();
-}
-
-bool VideoDecodeThread::thread_init()
-{
-	return false;
 }
 
 void VideoDecodeThread::run()
@@ -59,13 +62,13 @@ void VideoDecodeThread::run()
 
 			tmp_frame = sw_frame;
 		}
-		
+
 		duration = (frame_rate.num && frame_rate.den ? av_q2d({ frame_rate.den , frame_rate.num }) : 0);
 		pts = (tmp_frame->pts == AV_NOPTS_VALUE) ? NAN : tmp_frame->pts * av_q2d(tb);
 		ret = queue_picture(is, tmp_frame, pts, duration, tmp_frame->pkt_pos, is->viddec.pkt_serial);
 		av_frame_unref(tmp_frame);
 #endif
-	
+
 		if (ret < 0)
 			goto the_end;
 	}
@@ -75,18 +78,4 @@ the_end:
 	av_frame_free(&sw_frame);
 	qDebug("-------- video decode thread exit.");
 	return;
-}
-
-void VideoDecodeThread::stop_thread()
-{
-	//add here
-}
-
-void VideoDecodeThread::pause_thread()
-{
-}
-
-bool VideoDecodeThread::paused()
-{
-	return false;
 }

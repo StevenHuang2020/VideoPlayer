@@ -12,11 +12,6 @@
 #include "packets_sync.h"
 
 
-extern "C" {
-#include <libavutil/samplefmt.h>
-}
-
-
 typedef struct Audio_Resample {
 	//AVFrame* pFrame;
 	//uint8_t* buffer;
@@ -53,8 +48,6 @@ public:
 
 public slots:
 	void stop_thread();
-	void pause_thread();
-	void wait_stop_thread();
 public:
 	bool init_resample_param(AVCodecContext* pAudio);
 	void final_resample_param();

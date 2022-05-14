@@ -1,3 +1,11 @@
+// ***********************************************************/
+// audio_decode_thread.cpp
+//
+//      Copy Right @ Steven Huang. All rights reserved.
+//
+// audio decode thread
+// ***********************************************************/
+
 #include "audio_decode_thread.h"
 
 
@@ -9,7 +17,6 @@ AudioDecodeThread::AudioDecodeThread(QObject* parent, VideoState* pState)
 
 AudioDecodeThread::~AudioDecodeThread()
 {
-	stop_thread();
 }
 
 void AudioDecodeThread::run()
@@ -56,18 +63,4 @@ the_end:
 	av_frame_free(&frame);
 	qDebug("-------- audio decode thread exit.");
 	return;
-}
-
-void AudioDecodeThread::stop_thread()
-{
-	//add here
-}
-
-void AudioDecodeThread::pause_thread()
-{
-}
-
-bool AudioDecodeThread::paused()
-{
-	return false;
 }

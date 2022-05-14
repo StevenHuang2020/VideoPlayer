@@ -17,12 +17,4 @@ signals:
 
 protected:
 	void run() override;
-
-public slots:
-	void stop_thread();
-
-public:
-	bool thread_init();
-	void pause_thread();
-	bool paused();
 };

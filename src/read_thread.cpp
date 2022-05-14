@@ -1,3 +1,11 @@
+// ***********************************************************/
+// read_thread.cpp
+//
+//      Copy Right @ Steven Huang. All rights reserved.
+//
+// read packets thread. 
+// ***********************************************************/
+
 #include "read_thread.h"
 
 
@@ -9,13 +17,11 @@ static int64_t duration = AV_NOPTS_VALUE;
 ReadThread::ReadThread(QObject* parent, VideoState* pState)
 	: QThread(parent)
 	, m_pPlayData(pState)
-	, m_bExitThread(false)
 {
 }
 
 ReadThread::~ReadThread()
 {
-	stop_thread();
 }
 
 void ReadThread::set_video_state(VideoState* pState)
@@ -49,9 +55,6 @@ int ReadThread::loop_read()
 
 	for (;;)
 	{
-		if (m_bExitThread)
-			break;
-
 		if (is->abort_request)
 			break;
 		if (is->paused != is->last_paused) {
@@ -187,18 +190,4 @@ void ReadThread::run()
 	else {
 		qDebug("-------- Read  packets thread exit.");
 	}
-}
-
-void ReadThread::stop_thread()
-{
-
-}
-
-void ReadThread::pause_thread()
-{
-}
-
-bool ReadThread::paused()
-{
-	return false;
 }

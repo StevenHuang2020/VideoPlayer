@@ -1,3 +1,11 @@
+// ***********************************************************/
+// player_skin.cpp
+//
+//      Copy Right @ Steven Huang. All rights reserved.
+//
+// Player skin module.
+// ***********************************************************/
+
 #include "player_skin.h"
 
 const static QString g_qss_path = "./res/qss";

@@ -1,3 +1,12 @@
+// ***********************************************************/
+// about.cpp
+//
+//      Copy Right @ Steven Huang. All rights reserved.
+//
+// About dialog
+// ***********************************************************/
+
+
 #include "about.h"
 #include "ui_about.h"
 #include "ffmpeg_init.h"

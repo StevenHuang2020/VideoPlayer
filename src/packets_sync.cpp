@@ -1,14 +1,11 @@
-/*
- *decoded packets A/V synchronization data definition
- * Copyright (c) Steven Huang
- */
-
- /**
-  * @file packets_sync.cpp
-  * Utilties for ffmpeg decoded packets synchronization.
-  * This code refers to the ffplay.c from FFmpeg.
-  * @author Steven Huang
-  */
+// ***********************************************************/
+// packets_sync.cpp
+//
+//      Copy Right @ Steven Huang. All rights reserved.
+//
+// packets A/V synchronization struct and operations definition.
+// This code is referenced from ffplay.c in Ffmpeg library.
+// ***********************************************************/
 
 #include "packets_sync.h"
 

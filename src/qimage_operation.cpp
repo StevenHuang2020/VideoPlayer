@@ -1,3 +1,11 @@
+// ***********************************************************/
+// qimage_operation.cpp
+//
+//      Copy Right @ Steven Huang. All rights reserved.
+//
+// QImage processing for CV effects. 
+// ***********************************************************/
+
 #include "qimage_operation.h"
 
 

@@ -1,13 +1,15 @@
-#include "log.h"
-#include <Windows.h>
-#include <iostream>
-
+// ***********************************************************/
 // log.cpp
 //
 //      Copy Right @ Steven Huang. All rights reserved.
 //
-// Debug message to file
-//
+// Log handling module.
+// ***********************************************************/
+
+#include "log.h"
+#include <Windows.h>
+#include <iostream>
+
 
 #define BUFF_LEN (1024)
 
