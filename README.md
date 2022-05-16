@@ -12,6 +12,7 @@ Please find the release player [here.](https://github.com/StevenHuang2020/VideoP
 
 ##### History
 
+- v2.0.0, add cv effects by using OpenCV;
 - v1.1.8, bugs fixed;
 - v1.1.6, app settings; loop play; media info;
 - v1.1.5, dxva2 decode support; recent files;
@@ -31,3 +32,4 @@ Please find the release player [here.](https://github.com/StevenHuang2020/VideoP
  - GUI framework [QT.](https://www.qt.io/)
  - QT skins [github.](https://github.com/GTRONICK/QSS)
  - [youtube-dl.](https://youtube-dl.org/)
+ - [OpenCV](https://opencv.org/)

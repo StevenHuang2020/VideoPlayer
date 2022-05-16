@@ -10,6 +10,7 @@
 #include "about.h"
 #include "ui_about.h"
 #include "ffmpeg_init.h"
+#include <opencv2/opencv.hpp>
 
 
 About::About(QWidget* parent)
@@ -20,7 +21,7 @@ About::About(QWidget* parent)
 
 	setLayout(ui->gridLayout);
 	setWindowFlags(windowFlags() & ~Qt::WindowMaximizeButtonHint);
-	setFixedSize(this->width(), this->height());
+	setFixedSize(360, 250);
 	init_label();
 }
 
@@ -48,6 +49,7 @@ void About::init_label()
 	str += "Video player based on Qt and FFmpeg. \n";
 	str += QString("Qt Version: %1\n").arg(qVersion());
 	str += QString("Ffmpeg Version: %1\n").arg(FFMPEG_VERSION);
+	str += QString("OpenCV version: %1\n").arg(CV_VERSION);
 	str += "\nCopy Right @ Steven Huang\n";
 
 	std::string std_str = str.toStdString();

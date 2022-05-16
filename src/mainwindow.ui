@@ -141,6 +141,25 @@
     <addaction name="actionGrayscale"/>
     <addaction name="actionMirro"/>
     <addaction name="actionTransform"/>
+    <addaction name="separator"/>
+    <addaction name="actionRotate"/>
+    <addaction name="actionRepeat"/>
+    <addaction name="actionEqualizeHist"/>
+    <addaction name="actionThreshold"/>
+    <addaction name="actionThreshold_Adaptive"/>
+    <addaction name="actionReverse"/>
+    <addaction name="actionColorReduce"/>
+    <addaction name="actionGamma"/>
+    <addaction name="actionContrastBright"/>
+    <addaction name="actionCanny"/>
+    <addaction name="actionBlur"/>
+    <addaction name="actionSobel"/>
+    <addaction name="actionLaplacian"/>
+    <addaction name="actionScharr"/>
+    <addaction name="actionPrewitt"/>
+    <addaction name="actionRemoveCV"/>
+    <addaction name="separator"/>
+    <addaction name="actionTest_CV"/>
    </widget>
    <widget class="QMenu" name="menuTools">
     <property name="title">
@@ -281,6 +300,142 @@
   <action name="actionMedia_Info">
    <property name="text">
     <string>Media Info</string>
+   </property>
+  </action>
+  <action name="actionTest_CV">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Test_CV</string>
+   </property>
+  </action>
+  <action name="actionRotate">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Rotation</string>
+   </property>
+  </action>
+  <action name="actionRepeat">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Repeat</string>
+   </property>
+  </action>
+  <action name="actionEqualizeHist">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Histogram Equalization</string>
+   </property>
+  </action>
+  <action name="actionThreshold">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Binary Threshold</string>
+   </property>
+  </action>
+  <action name="actionThreshold_Adaptive">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Adaptive Threshold</string>
+   </property>
+  </action>
+  <action name="actionReverse">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Reverse</string>
+   </property>
+  </action>
+  <action name="actionColorReduce">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Color Reduce</string>
+   </property>
+  </action>
+  <action name="actionGamma">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Gamma</string>
+   </property>
+  </action>
+  <action name="actionContrastBright">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Contrast Bright</string>
+   </property>
+  </action>
+  <action name="actionCanny">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Canny </string>
+   </property>
+  </action>
+  <action name="actionBlur">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Smooth</string>
+   </property>
+  </action>
+  <action name="actionSobel">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Sobel</string>
+   </property>
+  </action>
+  <action name="actionLaplacian">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Laplacian</string>
+   </property>
+  </action>
+  <action name="actionScharr">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Scharr</string>
+   </property>
+  </action>
+  <action name="actionPrewitt">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Prewitt</string>
+   </property>
+  </action>
+  <action name="actionRemoveCV">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>No Selection</string>
    </property>
   </action>
  </widget>

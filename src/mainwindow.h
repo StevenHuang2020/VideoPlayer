@@ -75,7 +75,6 @@ private slots:
 	void on_actionAspect_Ratio_triggered();
 	void on_actionSystemStyle();
 	void on_actionCustomStyle();
-	void on_actionGrayscale_triggered();
 	void on_actionLoop_Play_triggered();
 	void on_actionMedia_Info_triggered();
 public slots:
@@ -101,6 +100,8 @@ public slots:
 	void open_recentFile();
 	void clear_recentfiles();
 	void about_media_info();
+
+	void image_cv(QImage&);
 signals:
 	void stop_audio_play_thread();
 	void stop_video_play_thread();
@@ -143,6 +144,8 @@ private:
 	QString get_selected_style();
 	void set_style_action(const QString& style);
 	void clear_subtitle_str();
+
+	void create_cv_action_group();
 private:
 	void play_control_key(Qt::Key key);
 	void set_default_bkground();

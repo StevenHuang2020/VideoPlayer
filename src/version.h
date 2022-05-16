@@ -1,18 +1,18 @@
-//
+// ***********************************************************/
 // version.h
 //
 //      Copy Right @ Steven Huang. All rights reserved.
 //
 // Defines the version of this software.
-//
+// ***********************************************************/
+// 
 
+#ifndef _H_VERSION_H_
+#define _H_VERSION_H_
 
-#ifndef _H_VERSION_H
-#define _H_VERSION_H
-
-#define VERSION_MAJOR  1
-#define VERSION_MINOR  1
-#define VERSION_MICRO  8
+#define VERSION_MAJOR  2
+#define VERSION_MINOR  0
+#define VERSION_MICRO  0
 
 
 #define VERSION_DOT(a, b, c)   a ##.## b ##.## c
@@ -27,4 +27,4 @@
 
 #define PLAYER_VERSION STR(PLAYER_VERSION_NUMBER)
 
-#endif /* _H_VERSION_H */
+#endif /* _H_VERSION_H_ */

@@ -14,6 +14,8 @@
 #include "start_play_thread.h"
 #include "player_skin.h"
 #include "qimage_operation.h"
+#include "qimage_convert_mat.h"
+#include "imagecv_operations.h"
 
 
 MainWindow::MainWindow(QWidget* parent)
@@ -38,6 +40,7 @@ MainWindow::MainWindow(QWidget* parent)
 	create_play_control();
 	create_style_menu();
 	create_recentfiles_menu();
+	create_cv_action_group();
 
 	setWindowTitle(tr("Video Player"));
 	set_default_bkground();
@@ -122,6 +125,40 @@ void MainWindow::create_style_menu()
 		connect(action, &QAction::triggered, this, &MainWindow::on_actionCustomStyle);
 		alignmentGroup->addAction(action);
 	}
+}
+
+void MainWindow::create_cv_action_group()
+{
+	QMenu* pMenuCV = ui->menuCV;
+	pMenuCV->setToolTipsVisible(true);
+
+	QActionGroup* alignmentGroup = new QActionGroup(this);
+	alignmentGroup->addAction(ui->actionRotate);
+	alignmentGroup->addAction(ui->actionRepeat);
+	alignmentGroup->addAction(ui->actionEqualizeHist);
+	alignmentGroup->addAction(ui->actionThreshold);
+	alignmentGroup->addAction(ui->actionThreshold_Adaptive);
+	alignmentGroup->addAction(ui->actionReverse);
+	alignmentGroup->addAction(ui->actionColorReduce);
+	alignmentGroup->addAction(ui->actionGamma);
+	alignmentGroup->addAction(ui->actionContrastBright);
+	alignmentGroup->addAction(ui->actionCanny);
+	alignmentGroup->addAction(ui->actionBlur);
+	alignmentGroup->addAction(ui->actionSobel);
+	alignmentGroup->addAction(ui->actionLaplacian);
+	alignmentGroup->addAction(ui->actionScharr);
+	alignmentGroup->addAction(ui->actionPrewitt);
+	alignmentGroup->addAction(ui->actionRemoveCV);
+
+#if NDEBUG
+	ui->actionTest_CV->setVisible(false);
+#endif
+
+	ui->actionRemoveCV->setChecked(true);
+	QString tips = "Please be careful to enable these features, some of them may "
+		"cause this program to freezing if your CPU is not real-time capable. "
+		"But you can select a low-resolution video for testing these features.";
+	ui->actionRemoveCV->setToolTip(tips);
 }
 
 void MainWindow::create_recentfiles_menu()
@@ -434,8 +471,9 @@ void MainWindow::on_actionYoutube_triggered()
 	if (result == QDialog::Accepted)
 	{
 		QString file = dialog.get_url();
-		if (!file.isEmpty())
+		if (!file.isEmpty()) {
 			start_to_play(file);
+		}
 	}
 }
 
@@ -460,10 +498,6 @@ void MainWindow::on_actionCustomStyle()
 
 	qDebug("custom style menu clicked:%s", qUtf8Printable(str));
 	set_custom_style(str);
-}
-
-void MainWindow::on_actionGrayscale_triggered()
-{
 }
 
 void MainWindow::on_actionQuit_triggered()
@@ -1365,6 +1399,16 @@ void MainWindow::image_ready(const QImage& img)
 		draw_img_text(image, m_subtitle, rt, QPen(Qt::white), font);
 	}
 
+	QElapsedTimer timer;
+	timer.start();
+	image_cv(image); //cv handling
+	qDebug("------------image_cv---------------------%d milliseconds", timer.elapsed());
+
+	update_image(image);
+}
+
+void MainWindow::image_cv(QImage& image)
+{
 	if (ui->actionGrayscale->isChecked()) {
 		grey_image(image);
 		//invert_image(image);
@@ -1379,7 +1423,10 @@ void MainWindow::image_ready(const QImage& img)
 	}
 
 	if (ui->actionMirro->isChecked()) {
-		mirro_image(image);
+		//mirro_image(image);
+		cv::Mat matImg;
+		qimage_to_mat(image, matImg);
+		mat_to_qimage(flip_img(matImg), image);	//8
 	}
 
 	if (ui->actionTransform->isChecked()) {
@@ -1401,7 +1448,105 @@ void MainWindow::image_ready(const QImage& img)
 		transform_image(image, trans);
 	}
 
-	update_image(image);
+	cv::Mat matImg;
+	qimage_to_mat(image, matImg);
+
+	if (ui->actionTest_CV->isChecked()) {
+		//mat_to_qimage(grey_img(matImg), image); //23 millsecs
+		//mat_to_qimage(rotate_img(matImg), image);	//10
+		//mat_to_qimage(repeat_img(matImg, 3, 3), image); //48
+		//mat_to_qimage(histgram_img(matImg), image);	//20
+		//mat_to_qimage(equalized_hist_img(matImg), image);	//30
+		//mat_to_qimage(threshold_img(matImg), image);	//30
+		//mat_to_qimage(thresholdAdaptive_img(matImg), image);	//78
+		//mat_to_qimage(reverse_img(matImg), image);	//6
+
+		/*
+		int divideWith = 20;
+		uchar table[256];
+		gen_color_table(table, sizeof(table), divideWith);
+		Mat table_mat = cv::Mat(1, 256, CV_8UC1, table);
+		Mat res = scane_img_LUT(matImg, table_mat);
+		mat_to_qimage(res, image);	//10
+		*/
+
+		//mat_to_qimage(lighter_img(matImg, 1.2), image);	//20
+		//mat_to_qimage(exposure_img(matImg), image);	//15
+		//mat_to_qimage(gamma_img(matImg, 1.2), image);	//10
+		//mat_to_qimage(contrast_bright_img(matImg, 1.2, 30), image);	//90
+		//mat_to_qimage(canny_img(matImg), image);	//440
+
+		//mat_to_qimage(blur_img(matImg), image);	//120
+		//mat_to_qimage(sobel_img_XY(matImg), image);	//240
+		//mat_to_qimage(laplacian_img(matImg), image);	//80
+		//mat_to_qimage(scharr_img_XY(matImg), image);	//350
+		//mat_to_qimage(prewitt_img_XY(matImg), image);	//270
+	}
+
+	if (ui->actionRotate->isChecked()) {
+		mat_to_qimage(rotate_img(matImg), image);
+	}
+
+	if (ui->actionRepeat->isChecked()) {
+		mat_to_qimage(repeat_img(matImg, 3, 3), image);
+	}
+
+	if (ui->actionEqualizeHist->isChecked()) {
+		mat_to_qimage(equalized_hist_img(matImg), image);
+	}
+
+	if (ui->actionThreshold->isChecked()) {
+		mat_to_qimage(threshold_img(matImg), image);
+	}
+
+	if (ui->actionThreshold_Adaptive->isChecked()) {
+		mat_to_qimage(thresholdAdaptive_img(matImg), image);
+	}
+
+	if (ui->actionReverse->isChecked()) {
+		mat_to_qimage(reverse_img(matImg), image);
+	}
+
+	if (ui->actionColorReduce->isChecked()) {
+		int divideWith = 20;
+		uchar table[256];
+		gen_color_table(table, sizeof(table), divideWith);
+		Mat table_mat = cv::Mat(1, 256, CV_8UC1, table);
+		Mat res = scane_img_LUT(matImg, table_mat);
+		mat_to_qimage(res, image);	//10
+	}
+
+	if (ui->actionGamma->isChecked()) {
+		mat_to_qimage(gamma_img(matImg, 1.2), image);
+	}
+
+	if (ui->actionContrastBright->isChecked()) {
+		mat_to_qimage(contrast_bright_img(matImg, 1.2, 30), image);
+	}
+
+	if (ui->actionCanny->isChecked()) {
+		mat_to_qimage(canny_img(matImg), image);
+	}
+
+	if (ui->actionBlur->isChecked()) {
+		mat_to_qimage(blur_img(matImg), image);
+	}
+
+	if (ui->actionSobel->isChecked()) {
+		mat_to_qimage(sobel_img_XY(matImg), image);
+	}
+
+	if (ui->actionLaplacian->isChecked()) {
+		mat_to_qimage(laplacian_img(matImg), image);
+	}
+
+	if (ui->actionScharr->isChecked()) {
+		mat_to_qimage(scharr_img_XY(matImg), image);
+	}
+
+	if (ui->actionPrewitt->isChecked()) {
+		mat_to_qimage(prewitt_img_XY(matImg), image);
+	}
 }
 
 void MainWindow::subtitle_ready(const QString& text)

@@ -5,7 +5,7 @@
 //
 // Youtube Url open dialog
 // ***********************************************************/
-
+#include<QMessageBox>
 #include "youtube_url_dlg.h"
 #include "ui_youtube_url_dlg.h"
 
@@ -44,17 +44,16 @@ void YoutubeUrlDlg::on_btn_Ok_clicked()
 			accept();
 			return;
 		}
-		else
-		{
-			qDebug("invalid youtube url:%s", qUtf8Printable(url));
-		}
-	}
-	else
-	{
-		qDebug("Please input a youtube url.");
 	}
 
-	reject();
+	qDebug("Invalid youtube url:%s", qUtf8Printable(url));
+
+	QMessageBox msgBox;
+	msgBox.setText(QString("Please input a valid youtube url."));
+	msgBox.setModal(true);
+	msgBox.show();
+	msgBox.move(frameGeometry().center() - msgBox.rect().center());
+	msgBox.exec();
 }
 
 const QString YoutubeUrlDlg::parse_youtubeUrl(const QString& url)
