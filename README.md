@@ -12,6 +12,7 @@ Please find the release player [here.](https://github.com/StevenHuang2020/VideoP
 
 ##### History
 
+- v2.0.1, CMake configuration
 - v2.0.0, add cv effects by using OpenCV;
 - v1.1.8, bugs fixed;
 - v1.1.6, app settings; loop play; media info;
