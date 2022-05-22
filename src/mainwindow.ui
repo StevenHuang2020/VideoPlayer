@@ -126,6 +126,7 @@
     <property name="title">
      <string>Help</string>
     </property>
+    <addaction name="actionKeyboard_Usage"/>
     <addaction name="actionAbout"/>
     <addaction name="actionAbout_QT"/>
    </widget>
@@ -436,6 +437,11 @@
    </property>
    <property name="text">
     <string>No Selection</string>
+   </property>
+  </action>
+  <action name="actionKeyboard_Usage">
+   <property name="text">
+    <string>Usage Tips</string>
    </property>
   </action>
  </widget>

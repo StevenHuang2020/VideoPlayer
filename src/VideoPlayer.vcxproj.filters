@@ -181,19 +181,16 @@
     </QtUic>
   </ItemGroup>
   <ItemGroup>
-    <None Include="debug\VideoPlayer_en_001.qm">
-      <Filter>Resource Files</Filter>
-    </None>
-    <QtRcc Include="debug\qmake_qmake_qm_files.qrc">
-      <Filter>Resource Files</Filter>
-    </QtRcc>
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="version.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="packets_sync.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <QtRcc Include="qmake_qmake_qm_files.qrc">
+      <Filter>Resource Files</Filter>
+    </QtRcc>
   </ItemGroup>
 </Project>

@@ -11,6 +11,7 @@
 #include <QElapsedTimer>
 #include <QTimer>
 #include <QSettings>
+#include <QMutex>
 
 //#include "decode_thread.h"
 #include "video_decode_thread.h"
@@ -49,6 +50,8 @@ private:
 
 	AppSettings m_settings;
 	QString m_subtitle;
+
+	QMutex m_mutex;
 private:
 	enum { MaxRecentFiles = 10 };	// keep recent play files
 	QAction* recentFileActs[MaxRecentFiles];
@@ -77,6 +80,7 @@ private slots:
 	void on_actionCustomStyle();
 	void on_actionLoop_Play_triggered();
 	void on_actionMedia_Info_triggered();
+	void on_actionKeyboard_Usage_triggered();
 public slots:
 	void image_ready(const QImage&);
 	void subtitle_ready(const QString&);
@@ -144,8 +148,9 @@ private:
 	QString get_selected_style();
 	void set_style_action(const QString& style);
 	void clear_subtitle_str();
-
 	void create_cv_action_group();
+public:
+	float volume_settings(bool set = true, float vol = 0);
 private:
 	void play_control_key(Qt::Key key);
 	void set_default_bkground();

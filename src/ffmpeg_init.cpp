@@ -8,7 +8,23 @@
 
 #include "ffmpeg_init.h"
 
-#define OPEN_FFMPEG_LOG 0
+#define OPEN_FFMPEG_LOG 1
+
+#define PRINT_LIB_INFO(libname, LIBNAME, level)                      \
+    if(true) {                                                       \
+        const char *indent = "  ";                                   \
+        unsigned int version = libname##_version();                  \
+        qInfo("%slib%-11s %2d.%3d.%3d / %2d.%3d.%3d",                \
+                indent, #libname,                                    \
+                LIB##LIBNAME##_VERSION_MAJOR,                        \
+                LIB##LIBNAME##_VERSION_MINOR,                        \
+                LIB##LIBNAME##_VERSION_MICRO,                        \
+                AV_VERSION_MAJOR(version), AV_VERSION_MINOR(version),\
+                AV_VERSION_MICRO(version));                          \
+    }                                                                \
+
+#define BUFF_MAXLEN     256
+
 
 static void log_callback(void* ptr, int level, const char* fmt, va_list vl)
 {
@@ -41,6 +57,7 @@ int ffmpeg_init()
 
 void print_ffmpeg_info(int level)
 {
+	//ffmpeg-snapshot_0401 
 	qInfo("%s version %s", "ffmpeg", FFMPEG_VERSION);
 
 	PRINT_LIB_INFO(avutil, AVUTIL, level);
@@ -56,8 +73,9 @@ void print_ffmpeg_info(int level)
 const QString dump_format(AVFormatContext* ic, int index, const char* url, int is_output)
 {
 	QString str = "";
-	char tmp[BUFF_MAXLEN + 1] = { 0 };
+	char tmp[BUFF_MAXLEN];
 	const char* indent = "  ";
+	uint8_t* printed = NULL;
 
 	if (ic == NULL)	{
 		qErrnoWarning("invalid parameter!");
@@ -69,11 +87,11 @@ const QString dump_format(AVFormatContext* ic, int index, const char* url, int i
 		goto fail;
 	}
 
-	uint8_t* printed = ic->nb_streams ? (uint8_t*)av_mallocz(ic->nb_streams) : NULL;
+	printed = ic->nb_streams ? (uint8_t*)av_mallocz(ic->nb_streams) : NULL;
 	if (ic->nb_streams && !printed)
 		goto fail;
 
-	snprintf(tmp, BUFF_MAXLEN, "%s #%d, %s, %s '%s':\n", is_output ? "Output" : "Input",
+	snprintf(tmp, sizeof(tmp), "%s #%d, %s, %s '%s':\n", is_output ? "Output" : "Input",
 		index,
 		is_output ? ic->oformat->name : ic->iformat->name,
 		is_output ? "to" : "from", url);
@@ -82,7 +100,7 @@ const QString dump_format(AVFormatContext* ic, int index, const char* url, int i
 	str += dump_metadata(NULL, ic->metadata, indent);
 
 	if (!is_output) {
-		snprintf(tmp, BUFF_MAXLEN, "%sDuration: ", indent);
+		snprintf(tmp, sizeof(tmp), "%sDuration: ", indent);
 		str += tmp;
 
 		if (ic->duration != AV_NOPTS_VALUE) {
@@ -95,7 +113,7 @@ const QString dump_format(AVFormatContext* ic, int index, const char* url, int i
 			hours = mins / 60;
 			mins %= 60;
 
-			snprintf(tmp, BUFF_MAXLEN, "%02lld:%02lld:%02lld.%02lld", hours, mins, secs, (100 * us) / AV_TIME_BASE);
+			snprintf(tmp, sizeof(tmp), "%02lld:%02lld:%02lld.%02lld", hours, mins, secs, (100 * us) / AV_TIME_BASE);
 			str += tmp;
 		}
 		else {
@@ -107,13 +125,13 @@ const QString dump_format(AVFormatContext* ic, int index, const char* url, int i
 			secs = llabs(ic->start_time / AV_TIME_BASE);
 			us = llabs(ic->start_time % AV_TIME_BASE);
 			//av_log(NULL, AV_LOG_INFO, ", start: %s%d.%06d", 	ic->start_time >= 0 ? "" : "-",	secs, (int)av_rescale(us, 1000000, AV_TIME_BASE));
-			snprintf(tmp, BUFF_MAXLEN, ", start: %s%d.%06d", ic->start_time >= 0 ? "" : "-", secs, (int)av_rescale(us, 1000000, AV_TIME_BASE));
+			snprintf(tmp, sizeof(tmp), ", start: %s%d.%06d", ic->start_time >= 0 ? "" : "-", secs, (int)av_rescale(us, 1000000, AV_TIME_BASE));
 			str += tmp;
 		}
 
 		str += ", bitrate: ";
 		if (ic->bit_rate) {
-			snprintf(tmp, BUFF_MAXLEN, "%lld kb/s", ic->bit_rate / 1000);
+			snprintf(tmp, sizeof(tmp), "%lld kb/s", ic->bit_rate / 1000);
 			str += tmp;
 		}
 		else
@@ -123,13 +141,13 @@ const QString dump_format(AVFormatContext* ic, int index, const char* url, int i
 	}
 
 	if (ic->nb_chapters) {
-		snprintf(tmp, BUFF_MAXLEN, "%sChapters:\n", indent);
+		snprintf(tmp, sizeof(tmp), "%sChapters:\n", indent);
 		str += tmp;
 	}
 
 	for (unsigned int i = 0; i < ic->nb_chapters; i++) {
 		const AVChapter* ch = ic->chapters[i];
-		snprintf(tmp, BUFF_MAXLEN, "    Chapter #%d:%d: start %f, end %f\n", index, i,
+		snprintf(tmp, sizeof(tmp), "    Chapter #%d:%d: start %f, end %f\n", index, i,
 			ch->start * av_q2d(ch->time_base),
 			ch->end * av_q2d(ch->time_base));
 		str += tmp;
@@ -142,7 +160,7 @@ const QString dump_format(AVFormatContext* ic, int index, const char* url, int i
 		for (j = 0; j < ic->nb_programs; j++) {
 			const AVProgram* program = ic->programs[j];
 			const AVDictionaryEntry* name = av_dict_get(program->metadata, "name", NULL, 0);
-			snprintf(tmp, BUFF_MAXLEN, "  Program %d %s\n", program->id, name ? name->value : "");
+			snprintf(tmp, sizeof(tmp), "  Program %d %s\n", program->id, name ? name->value : "");
 			str += tmp;
 
 			str += dump_metadata(NULL, program->metadata, "    ");
@@ -173,19 +191,19 @@ fail:
 const QString dump_metadata(void* ctx, const AVDictionary* m, const char* indent)
 {
 	QString str = "";
-	char tmp[BUFF_MAXLEN + 1] = { 0 };
+	char tmp[BUFF_MAXLEN];
 
 	if (m && !(av_dict_count(m) == 1 && av_dict_get(m, "language", NULL, 0))) {
 		const AVDictionaryEntry* tag = NULL;
 
-		snprintf(tmp, BUFF_MAXLEN, "%sMetadata:\n", indent);
+		snprintf(tmp, sizeof(tmp), "%sMetadata:\n", indent);
 		str += tmp;
 
 		while ((tag = av_dict_get(m, "", tag, AV_DICT_IGNORE_SUFFIX))) {
 			if (strcmp("language", tag->key)) {
 				const char* p = tag->value;
 				//av_log(ctx, AV_LOG_INFO,"%s  %-16s: ", indent, tag->key);
-				snprintf(tmp, BUFF_MAXLEN, "%s  %-16s: ", indent, tag->key);
+				snprintf(tmp, sizeof(tmp), "%s  %-16s: ", indent, tag->key);
 				str += tmp;
 
 				while (*p) {
@@ -193,7 +211,7 @@ const QString dump_metadata(void* ctx, const AVDictionary* m, const char* indent
 					size_t len = strcspn(p, "\x8\xa\xb\xc\xd");
 					av_strlcpy(tmp_str, p, FFMIN(sizeof(tmp_str), len + 1));
 					//str += "%s", tmp);
-					snprintf(tmp, BUFF_MAXLEN, "%s", tmp_str);
+					snprintf(tmp, sizeof(tmp), "%s", tmp_str);
 					str += tmp;
 
 					p += len;
@@ -211,7 +229,7 @@ const QString dump_metadata(void* ctx, const AVDictionary* m, const char* indent
 const QString dump_stream_format(const AVFormatContext* ic, int i, int index, int is_output)
 {
 	QString str = "";
-	char tmp[BUFF_MAXLEN + 1] = { 0 };
+	char tmp[BUFF_MAXLEN];
 
 	char buf[256];
 	int flags = (is_output ? ic->oformat->flags : ic->iformat->flags);
@@ -247,20 +265,20 @@ const QString dump_stream_format(const AVFormatContext* ic, int i, int index, in
 	avcodec_string(buf, sizeof(buf), avctx, is_output);
 	avcodec_free_context(&avctx);
 
-	snprintf(tmp, BUFF_MAXLEN, "  Stream #%d:%d", index, i);
+	snprintf(tmp, sizeof(tmp), "  Stream #%d:%d", index, i);
 	str += tmp;
 
 	if (flags & AVFMT_SHOW_IDS) {
-		snprintf(tmp, BUFF_MAXLEN, "[0x%x]", st->id);
+		snprintf(tmp, sizeof(tmp), "[0x%x]", st->id);
 		str += tmp;
 	}
 
 	if (lang) {
-		snprintf(tmp, BUFF_MAXLEN, "(%s)", lang->value);
+		snprintf(tmp, sizeof(tmp), "(%s)", lang->value);
 		str += tmp;
 	}
 
-	snprintf(tmp, BUFF_MAXLEN, ": %s", buf);
+	snprintf(tmp, sizeof(tmp), ": %s", buf);
 	str += tmp;
 
 	if (st->sample_aspect_ratio.num &&
@@ -271,7 +289,7 @@ const QString dump_stream_format(const AVFormatContext* ic, int i, int index, in
 			st->codecpar->height * (int64_t)st->sample_aspect_ratio.den,
 			1024 * 1024);
 
-		snprintf(tmp, BUFF_MAXLEN, ", SAR %d:%d DAR %d:%d",
+		snprintf(tmp, sizeof(tmp), ", SAR %d:%d DAR %d:%d",
 			st->sample_aspect_ratio.num, st->sample_aspect_ratio.den,
 			display_aspect_ratio.num, display_aspect_ratio.den);
 		str += tmp;
@@ -283,7 +301,7 @@ const QString dump_stream_format(const AVFormatContext* ic, int i, int index, in
 		int tbn = st->time_base.den && st->time_base.num;
 
 		if (fps || tbr || tbn) {
-			snprintf(tmp, BUFF_MAXLEN, "%s", separator);
+			snprintf(tmp, sizeof(tmp), "%s", separator);
 			str += tmp;
 		}
 
@@ -341,20 +359,20 @@ fail:
 
 const QString print_fps(double d, const char* postfix)
 {
-	char tmp[BUFF_MAXLEN + 1] = { 0 };
+	char tmp[BUFF_MAXLEN];
 
 	uint64_t v = lrintf(d * 100);
 	if (!v) {
-		snprintf(tmp, BUFF_MAXLEN, "%1.4f %s", d, postfix);
+		snprintf(tmp, sizeof(tmp), "%1.4f %s", d, postfix);
 	}
 	else if (v % 100) {
-		snprintf(tmp, BUFF_MAXLEN, "%3.2f %s", d, postfix);
+		snprintf(tmp, sizeof(tmp), "%3.2f %s", d, postfix);
 	}
 	else if (v % (100 * 1000)) {
-		snprintf(tmp, BUFF_MAXLEN, "%1.0f %s", d, postfix);
+		snprintf(tmp, sizeof(tmp), "%1.0f %s", d, postfix);
 	}
 	else {
-		snprintf(tmp, BUFF_MAXLEN, "%1.0fk %s", d / 1000, postfix);
+		snprintf(tmp, sizeof(tmp), "%1.0fk %s", d / 1000, postfix);
 	}
 
 	return QString(tmp);
@@ -363,16 +381,16 @@ const QString print_fps(double d, const char* postfix)
 const QString dump_sidedata(void* ctx, const AVStream* st, const char* indent)
 {
 	QString str = "";
-	char tmp[BUFF_MAXLEN + 1] = { 0 };
+	char tmp[BUFF_MAXLEN];
 
 	if (st->nb_side_data) {
-		snprintf(tmp, BUFF_MAXLEN, "%sSide data:\n", indent);
+		snprintf(tmp, sizeof(tmp), "%sSide data:\n", indent);
 		str += tmp;
 	}
 
 	for (int i = 0; i < st->nb_side_data; i++) {
 		const AVPacketSideData* sd = &st->side_data[i];
-		snprintf(tmp, BUFF_MAXLEN, "%s  ", indent);
+		snprintf(tmp, sizeof(tmp), "%s  ", indent);
 		str += tmp;
 
 		switch (sd->type) {
@@ -395,7 +413,7 @@ const QString dump_sidedata(void* ctx, const AVStream* st, const char* indent)
 			break;
 		case AV_PKT_DATA_DISPLAYMATRIX:
 			{
-				snprintf(tmp, BUFF_MAXLEN, "displaymatrix: rotation of %.2f degrees",
+				snprintf(tmp, sizeof(tmp), "displaymatrix: rotation of %.2f degrees",
 					av_display_rotation_get((const int32_t*)sd->data));
 				str += tmp;
 			}
@@ -410,7 +428,7 @@ const QString dump_sidedata(void* ctx, const AVStream* st, const char* indent)
 			break;
 		case AV_PKT_DATA_QUALITY_STATS:
 			{
-				snprintf(tmp, BUFF_MAXLEN, "quality factor: %p, pict_type: %c", sd->data,
+				snprintf(tmp, sizeof(tmp), "quality factor: %p, pict_type: %c", sd->data,
 					av_get_picture_type_char(AVPictureType(sd->data[4])));
 				str += tmp;
 			}
@@ -442,7 +460,7 @@ const QString dump_sidedata(void* ctx, const AVStream* st, const char* indent)
 			break;
 		default:
 			{
-				snprintf(tmp, BUFF_MAXLEN, "unknown side data type %d, size:%llu bytes", sd->type, sd->size);
+				snprintf(tmp, sizeof(tmp), "unknown side data type %d, size:%llu bytes", sd->type, sd->size);
 				str += tmp;
 			}
 		break;

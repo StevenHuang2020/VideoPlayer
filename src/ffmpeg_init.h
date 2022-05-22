@@ -13,27 +13,10 @@ extern "C" {
 #include <libavformat/avformat.h>
 #include <libswscale/swscale.h>
 #include <libswresample/swresample.h>
-//#include <libavdevice/avdevice.h>
-//#include <libavfilter/avfilter.h>
 #include <libavutil/avstring.h>
 #include <libavutil/opt.h>
 #include <libavutil/display.h>
 }
-
-#define PRINT_LIB_INFO(libname, LIBNAME, level)                      \
-    if(true) {                                                       \
-        const char *indent = "  ";                                   \
-        unsigned int version = libname##_version();                  \
-        qInfo("%slib%-11s %2d.%3d.%3d / %2d.%3d.%3d",                \
-                indent, #libname,                                    \
-                LIB##LIBNAME##_VERSION_MAJOR,                        \
-                LIB##LIBNAME##_VERSION_MINOR,                        \
-                LIB##LIBNAME##_VERSION_MICRO,                        \
-                AV_VERSION_MAJOR(version), AV_VERSION_MINOR(version),\
-                AV_VERSION_MICRO(version));                          \
-    }                                                                \
-
-#define BUFF_MAXLEN     256
 
 int ffmpeg_init();
 void print_ffmpeg_info(int level);

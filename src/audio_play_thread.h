@@ -16,6 +16,10 @@ typedef struct Audio_Resample {
 	//AVFrame* pFrame;
 	//uint8_t* buffer;
 	struct SwrContext* swrCtx;
+
+	//uint64_t channel_layout;	// out
+	//AVSampleFormat sample_fmt;
+	//int sample_rate;
 }Audio_Resample;
 
 class AudioPlayThread : public QThread
@@ -41,7 +45,8 @@ private:
 	int audio_decode_frame(VideoState* is);
 public:
 	void print_device();
-	bool init_device(int sample_rate = 8000, int channel = 1, AVSampleFormat sample_fmt = AV_SAMPLE_FMT_S16);
+	bool init_device(int sample_rate = 8000, int channel = 1, 
+		AVSampleFormat sample_fmt = AV_SAMPLE_FMT_S16, float default_vol = 0.8);
 	void stop_device();
 	void play_file(const QString& file);
 	void play_buf(const uint8_t* buf, int datasize);
@@ -49,7 +54,7 @@ public:
 public slots:
 	void stop_thread();
 public:
-	bool init_resample_param(AVCodecContext* pAudio);
+	bool init_resample_param(AVCodecContext* pAudio, AVSampleFormat sample_fmt, VideoState* is);
 	void final_resample_param();
 	float get_device_volume();
 	void set_device_volume(float volume);

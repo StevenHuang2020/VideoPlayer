@@ -33,9 +33,12 @@ void qimage_to_mat(const QImage& image, cv::OutputArray out) {
 
 void mat_to_qimage(cv::InputArray image, QImage& out)
 {
-	switch (image.type()) {
+	int type = image.type();
+	switch (type) {
 	case CV_8UC4:
 	{
+		qDebug("image format:%d, CV_8UC4", type);
+
 		cv::Mat view(image.getMat());
 		QImage view2(view.data, view.cols, view.rows, view.step[0], QImage::Format_ARGB32);
 		out = view2.copy();
@@ -43,6 +46,8 @@ void mat_to_qimage(cv::InputArray image, QImage& out)
 	}
 	case CV_8UC3:
 	{
+		qDebug("image format:%d, CV_8UC3", type);
+
 		cv::Mat mat;
 		cvtColor(image, mat, cv::COLOR_BGR2BGRA); //COLOR_BGR2RGB doesn't behave so use RGBA
 		QImage view(mat.data, mat.cols, mat.rows, mat.step[0], QImage::Format_ARGB32);
@@ -51,6 +56,8 @@ void mat_to_qimage(cv::InputArray image, QImage& out)
 	}
 	case CV_8UC1:
 	{
+		qDebug("image format:%d, CV_8UC1", type);
+
 		cv::Mat mat;
 		cvtColor(image, mat, cv::COLOR_GRAY2BGRA);
 		QImage view(mat.data, mat.cols, mat.rows, mat.step[0], QImage::Format_ARGB32);
@@ -59,8 +66,15 @@ void mat_to_qimage(cv::InputArray image, QImage& out)
 	}
 	default:
 	{
+		qDebug("Unspoorted image format:%d", image.type());
 		throw invalid_argument("Image format not supported");
 		break;
 	}
 	}
+}
+
+QString print_mat(const char* name, cv::Mat M) {
+	ostringstream oss;
+	oss << name << endl << " " << M << endl;
+	return QString(oss.str().c_str());
 }

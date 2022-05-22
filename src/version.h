@@ -12,7 +12,7 @@
 
 #define VERSION_MAJOR  2
 #define VERSION_MINOR  0
-#define VERSION_MICRO  0
+#define VERSION_MICRO  1
 
 
 #define VERSION_DOT(a, b, c)   a ##.## b ##.## c

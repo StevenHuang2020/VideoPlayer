@@ -61,7 +61,7 @@ void AudioPlayThread::print_device()
 		qDebug() << "sampleSize: " << sampleSize;
 }
 
-bool AudioPlayThread::init_device(int sample_rate, int channel, AVSampleFormat sample_fmt)
+bool AudioPlayThread::init_device(int sample_rate, int channel, AVSampleFormat sample_fmt, float default_vol)
 {
 	QAudioDeviceInfo deviceInfo = QAudioDeviceInfo::defaultOutputDevice();
 	m_pDevice = &deviceInfo;
@@ -82,7 +82,7 @@ bool AudioPlayThread::init_device(int sample_rate, int channel, AVSampleFormat s
 	}
 
 	m_pOutput = new QAudioOutput(*m_pDevice, format);
-	set_device_volume(0.8);
+	set_device_volume(default_vol);
 
 	m_audioDevice = m_pOutput->start();
 	return true;
@@ -138,8 +138,6 @@ void AudioPlayThread::play_buf(const uint8_t* buf, int datasize)
 			// qDebug("play buf:reslen:%d, write len:%d", len, datasize);
 		}
 	}
-
-	av_free((void*)buf);
 }
 
 void AudioPlayThread::run()
@@ -199,12 +197,19 @@ int AudioPlayThread::audio_decode_frame(VideoState* is)
 	data_size = av_samples_get_buffer_size(nullptr, af->frame->channels, af->frame->nb_samples,
 		AV_SAMPLE_FMT_S16, 0);  //AVSampleFormat(af->frame->format)
 	uint8_t* buffer_audio = (uint8_t*)av_malloc(data_size * sizeof(uint8_t));
-	swr_convert(swrCtx, &buffer_audio, af->frame->nb_samples, (const uint8_t**)(af->frame->data), af->frame->nb_samples);
-
-	if (is->muted && data_size > 0)
-		memset(buffer_audio, 0, data_size); //mute
+	int ret = swr_convert(swrCtx, &buffer_audio, af->frame->nb_samples, (const uint8_t**)(af->frame->data), af->frame->nb_samples);
 	
-	play_buf(buffer_audio, data_size);
+	//qDebug("buffer_audio:0x%08x", buffer_audio);
+
+	if (!(ret < 0)) {
+		if (is->muted && data_size > 0)
+			memset(buffer_audio, 0, data_size); //mute
+
+		play_buf(buffer_audio, data_size);
+	}
+		
+	//qDebug("after buffer_audio:0x%08x", buffer_audio);
+	av_free((void*)buffer_audio);
 
 	audio_clock0 = is->audio_clock;
 	/* update the audio clock with the pts */
@@ -233,17 +238,44 @@ int AudioPlayThread::audio_decode_frame(VideoState* is)
 	return data_size;
 }
 
-bool AudioPlayThread::init_resample_param(AVCodecContext* pAudio)
+bool AudioPlayThread::init_resample_param(AVCodecContext* pAudio, AVSampleFormat sample_fmt, VideoState* is)
 {
 	if (pAudio) {
-		struct SwrContext* swrCtx = swr_alloc_set_opts(NULL,
-			pAudio->channel_layout, AV_SAMPLE_FMT_S16, pAudio->sample_rate,
-			pAudio->channel_layout, pAudio->sample_fmt, pAudio->sample_rate,
-			0, nullptr);
-		swr_init(swrCtx);
+		int ret = -1;
+		struct SwrContext* swrCtx = NULL;
+#if USE_AVFILTER_AUDIO
+		if (is) {
+			AVFilterContext* sink = is->out_audio_filter;
+			int sample_rate = av_buffersink_get_sample_rate(sink);
+			int nb_channels = av_buffersink_get_channels(sink);
 
-		m_audioResample.swrCtx = swrCtx;
-		return true;
+			AVChannelLayout channel_layout;
+			av_buffersink_get_ch_layout(sink, &channel_layout);
+			//int64_t channel_layout = av_buffersink_get_channel_layout(sink);
+			int format = av_buffersink_get_format(sink);
+
+			ret = swr_alloc_set_opts2(&swrCtx,
+				&pAudio->ch_layout, sample_fmt, pAudio->sample_rate,
+				&channel_layout, (AVSampleFormat)format, pAudio->sample_rate,
+				0, nullptr);
+		}
+#else
+		/*swrCtx = swr_alloc_set_opts(NULL,
+			pAudio->channel_layout, sample_fmt, pAudio->sample_rate,
+			pAudio->channel_layout, pAudio->sample_fmt, pAudio->sample_rate,
+			0, nullptr);	*/
+
+		ret = swr_alloc_set_opts2(&swrCtx,
+			&pAudio->ch_layout, sample_fmt, pAudio->sample_rate,
+			&pAudio->ch_layout, pAudio->sample_fmt, pAudio->sample_rate,
+			0, nullptr);
+#endif
+
+		if (!(ret < 0)) {
+			swr_init(swrCtx);
+			m_audioResample.swrCtx = swrCtx;
+			return true;
+		}		
 	}
 	return false;
 }

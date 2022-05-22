@@ -256,8 +256,7 @@ const Mat normalize_img(const Mat& img, double alpha, double beta, int norm_type
 	return res;
 }
 
-const Mat& scane_img_colortable(Mat& I, const uchar* const table)
-{
+const Mat& scane_img_colortable(Mat& I, const uchar* const table) {
 	// accept only char type matrices
 	CV_Assert(I.depth() == CV_8U);
 	int channels = I.channels();
@@ -465,7 +464,7 @@ const Mat prewitt_img(const Mat& I, bool borizontal) {
 	else {
 		cv::Mat kernel({ 3, 3 }, { 1, 1, 1, 0, 0, 0, -1, -1, -1 });
 		return filter_img(grey, kernel);
-	}	
+	}
 }
 
 const Mat prewitt_img_XY(const Mat& I) {

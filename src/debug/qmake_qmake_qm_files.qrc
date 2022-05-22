@@ -1,8 +1,0 @@
-<RCC>
-    <qresource prefix="/i18n">
-        <file alias="VideoPlayer_en_001.qm">VideoPlayer_en_001.qm</file>
-    </qresource>
-    <qresource prefix="/images">
-        <file>res/bkground.png</file>
-    </qresource>
-</RCC>

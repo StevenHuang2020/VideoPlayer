@@ -365,16 +365,24 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
 {
 	switch (event->key()) {
 	case Qt::Key_Space:	//pause/continue
-		pause_play();
-		break;
-
 	case Qt::Key_Up:	//volume up
 	case Qt::Key_Down:	//volume down
 	case Qt::Key_Left:  //play back
 	case Qt::Key_Right: // play forward
 	case Qt::Key_M:		//mute
+	case Qt::Key_Comma:	//speed down
+	case Qt::Key_Period:	//speed up
+	case Qt::Key_A:			//aspect ratio
 		play_control_key((Qt::Key)event->key());
 		break;
+
+	case Qt::Key_F:		//full screen
+	{
+		bool bFullscreen = isFullScreen();
+		show_fullscreen(!bFullscreen);
+		ui->actionFullscreen->setChecked(!bFullscreen);
+	}
+	break;
 
 	case Qt::Key_Escape:
 	{
@@ -386,6 +394,7 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
 	default:
 		qDebug("key:%s(%d) pressed!\n", qUtf8Printable(event->text()), event->key());
 		QWidget::keyPressEvent(event);
+		break;
 	}
 }
 
@@ -548,6 +557,36 @@ void MainWindow::on_actionMedia_Info_triggered()
 	about_media_info();
 }
 
+void MainWindow::on_actionKeyboard_Usage_triggered()
+{
+	QString str = "";
+	QString indent = "		";
+	str += "Keyboard" + indent + "Function\n";
+	str += "----------------------------------------------------\n";
+	str += "Space" + indent + "Pause/Play\n";
+	str += "M" + indent + "Mute/Unmute\n";
+	str += "F" + indent + "Fulllscreen/Unfullscreen\n";
+	str += "A" + indent + "Video aspect ratio\n";
+	str += "Up" + indent + "Volume up\n";
+	str += "Down" + indent + "Volume down\n";
+	str += "Left" + indent + "Play back\n";
+	str += "Right" + indent + "Play forward\n";
+	//str += "<" + indent + "Speed down\n";
+	//str += ">" + indent + "Speed up\n";
+	str += "----------------------------------------------------";
+
+	QMessageBox msgBox;
+	//info.replace(" ", "&nbsp;");
+	//msgBox.setTextFormat(Qt::RichText);
+	msgBox.setWindowTitle("Keyboard Play Control");
+	//msgBox.setStyleSheet("QLabel{min-width: 760px;}");
+	msgBox.setText(str);
+	msgBox.setModal(true);
+	msgBox.show();
+	msgBox.move(frameGeometry().center() - msgBox.rect().center());
+	msgBox.exec();
+}
+
 void MainWindow::resize_window(int width, int height)
 {
 	QPoint pt = this->pos();
@@ -595,16 +634,20 @@ void MainWindow::keep_aspect_ratio(bool bWidth)
 			//QSize size = this->size();
 			QSize sizeLabel = pLabel->size();
 
+			QSize sz = size();
 			if (bWidth) {
 				int new_height = int(sizeLabel.width() * pVideoCtx->height / pVideoCtx->width);
 				int h_change = new_height - sizeLabel.height();
-				resize(size() + QSize(0, h_change));
+				sz += QSize(0, h_change);
 			}
 			else {
 				int new_width = int(sizeLabel.height() * pVideoCtx->width / pVideoCtx->height);
 				int w_change = new_width - sizeLabel.width();
-				resize(size() + QSize(w_change, 0));
+				sz += QSize(w_change, 0);
 			}
+
+			resize_window(sz.width(), sz.height());
+			//resize(sz);
 		}
 	}
 }
@@ -677,6 +720,13 @@ void MainWindow::set_volume_updown(bool bUp, float unit)
 	else {
 		n_volume -= unit;
 	}
+
+	if (n_volume > 1.0 || n_volume < 0) {
+		QApplication::beep();
+	}
+
+	n_volume = n_volume > 1.0 ? 1.0 : n_volume;
+	n_volume = n_volume < 0 ? 0 : n_volume;
 
 	set_volume(int(n_volume * 100));
 	update_paly_control_volume();
@@ -843,7 +893,10 @@ void MainWindow::set_volume(int volume)
 
 	const QSlider* pSilder = pPlayControl->get_volume_slider();
 	int max_val = pSilder->maximum();
-	m_pAudioPlayThread->set_device_volume(volume * 1.0 / max_val);
+	float vol = volume * 1.0 / max_val;
+	m_pAudioPlayThread->set_device_volume(vol);
+
+	volume_settings(true, vol);
 }
 
 void MainWindow::hide_statusbar(bool bHide)
@@ -882,7 +935,7 @@ void MainWindow::hide_menubar(bool bHide)
 	QSize sz_menubar = menuBar()->size();
 	QSize sz_center = centralWidget()->size();
 
-	qDebug("is full screen:%d, menu is visible:%d", isFullScreen(), bVisible);
+	//qDebug("is full screen:%d, menu is visible:%d", isFullScreen(), bVisible);
 	if (isFullScreen()) {
 		QSize sz = centralWidget()->size();
 		//sz = size();
@@ -906,10 +959,24 @@ void MainWindow::hide_menubar(bool bHide)
 
 void MainWindow::on_actionAbout_triggered()
 {
+#if 0
+	if (m_pVideoState) {
+		VideoState* pState = m_pVideoState->get_state();
+		if (pState) {
+#if USE_AVFILTER_AUDIO
+			m_mutex.lock();
+			set_audio_playspeed(pState, 1.5);
+			m_mutex.unlock();
+#endif
+		}
+	}
+
+#else
 	About dlg;
 	dlg.move(frameGeometry().center() - dlg.rect().center());
 	dlg.setModal(true);
 	dlg.exec();
+#endif
 }
 
 void MainWindow::play_started(bool ret)
@@ -1137,7 +1204,7 @@ void MainWindow::play_control_key(Qt::Key key)
 
 	switch (key) {
 	case Qt::Key_Space:	//pause/continue
-		toggle_pause(pState);
+		pause_play();
 		break;
 
 	case Qt::Key_M:
@@ -1148,17 +1215,31 @@ void MainWindow::play_control_key(Qt::Key key)
 	case Qt::Key_Up: //volume
 		set_volume_updown(true);
 		break;
+
 	case Qt::Key_Down: //volume
 		set_volume_updown(false);
 		break;
 
 	case Qt::Key_Left:
+		play_seek_pre();
+		break;
+
 	case Qt::Key_Right:
-		qDebug("key:left or right pressed!\n");
+		play_seek_next();
+		break;
+
+	case Qt::Key_Comma:
+	case Qt::Key_Period:
+		qDebug("not handled yet!");
+		break;
+
+	case Qt::Key_A:
+		keep_aspect_ratio();
 		break;
 
 	default:
 		qDebug("key:(%d) pressed, not handled!\n", key);
+		break;
 	}
 }
 
@@ -1399,10 +1480,10 @@ void MainWindow::image_ready(const QImage& img)
 		draw_img_text(image, m_subtitle, rt, QPen(Qt::white), font);
 	}
 
-	QElapsedTimer timer;
-	timer.start();
+	//QElapsedTimer timer;
+	//timer.start();
 	image_cv(image); //cv handling
-	qDebug("------------image_cv---------------------%d milliseconds", timer.elapsed());
+	//qDebug("------------image_cv---------------------%d milliseconds", timer.elapsed());
 
 	update_image(image);
 }
@@ -1731,6 +1812,22 @@ void MainWindow::read_settings()
 			set_custom_style(style);
 		}
 	}
+}
+
+float MainWindow::volume_settings(bool set, float vol)
+{
+	if (set) {
+		m_settings.set_general(QStringList(QString::number(float(vol), 'f', 1)), "volume");
+	}
+	else {
+		float value = 0.8;
+		QStringList values = m_settings.get_general("volume");
+		if (values.size() > 0) {
+			value = values[0].toFloat();
+		}
+		return value;
+	}
+	return 0;
 }
 
 QString MainWindow::get_selected_style()

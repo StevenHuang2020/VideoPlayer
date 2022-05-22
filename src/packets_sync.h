@@ -11,6 +11,8 @@
  // #include <QQueue>
 #include <QWaitCondition>
 
+#define USE_AVFILTER_AUDIO	0
+
 extern "C" {
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
@@ -20,6 +22,13 @@ extern "C" {
 #include <libavutil/time.h>
 #include <libavutil/samplefmt.h>
 #include <libswresample/swresample.h>
+#if USE_AVFILTER_AUDIO
+#include <libavfilter/avfilter.h>
+#include <libavfilter/buffersink.h>
+#include <libavfilter/buffersrc.h>
+#include <libavutil/opt.h>
+#include <libavutil/avstring.h>
+#endif
 }
 
 #define MAX_QUEUE_SIZE (15 * 1024 * 1024)
@@ -74,7 +83,8 @@ typedef struct MyAVPacketList {
 } MyAVPacketList;
 
 typedef struct PacketQueue {
-	AVFifoBuffer* pkt_list;
+	//AVFifoBuffer* pkt_list;
+	AVFifo* pkt_list;
 	int nb_packets;
 	int size;
 	int64_t duration;
@@ -88,6 +98,7 @@ typedef struct PacketQueue {
 #define SUBPICTURE_QUEUE_SIZE 16
 #define SAMPLE_QUEUE_SIZE 20
 #define FRAME_QUEUE_SIZE FFMAX(SAMPLE_QUEUE_SIZE, FFMAX(VIDEO_PICTURE_QUEUE_SIZE, SUBPICTURE_QUEUE_SIZE))
+
 
 typedef struct AudioParams {
 	int freq;
@@ -225,9 +236,6 @@ typedef struct VideoState {
 
 	struct SwrContext* swr_ctx;
 
-	struct AudioParams audio_src;
-	struct AudioParams audio_tgt;
-
 	enum ShowMode {
 		SHOW_MODE_NONE = -1, SHOW_MODE_VIDEO = 0, SHOW_MODE_WAVES, SHOW_MODE_RDFT, SHOW_MODE_NB
 	} show_mode;
@@ -261,6 +269,23 @@ typedef struct VideoState {
 	char* filename;
 	int width, height, xleft, ytop;
 	int step;
+
+#if USE_AVFILTER_AUDIO
+	struct AudioParams audio_src;
+	struct AudioParams audio_tgt;
+
+	double audio_speed;
+	char* afilters;
+	int req_afilter_reconfigure;
+
+	struct AudioParams audio_filter_src;
+	int vfilter_idx;
+	AVFilterContext* in_video_filter;   // the first filter in the video chain
+	AVFilterContext* out_video_filter;  // the last filter in the video chain
+	AVFilterContext* in_audio_filter;   // the first filter in the audio chain
+	AVFilterContext* out_audio_filter;  // the last filter in the audio chain
+	AVFilterGraph* agraph;
+#endif
 
 	int last_video_stream, last_audio_stream, last_subtitle_stream;
 
@@ -346,6 +371,20 @@ void print_state_info(VideoState* is);
 /****************************************/
 int is_realtime(AVFormatContext* s);
 int stream_has_enough_packets(AVStream* st, int stream_id, PacketQueue* queue);
+
+#if USE_AVFILTER_AUDIO
+void set_audio_playspeed(VideoState* is, double value);
+
+int cmp_audio_fmts(enum AVSampleFormat fmt1, int64_t channel_count1,
+	enum AVSampleFormat fmt2, int64_t channel_count2);
+int64_t get_valid_channel_layout(int64_t channel_layout, int channels);
+
+int configure_audio_filters(VideoState* is, const char* afilters, int force_output_format);
+int configure_filtergraph(AVFilterGraph* graph, const char* filtergraph,
+	AVFilterContext* source_ctx, AVFilterContext* sink_ctx);
+
+int audio_open(void* opaque, int64_t wanted_channel_layout, int wanted_nb_channels, int wanted_sample_rate, struct AudioParams* audio_hw_params);
+#endif
 
 
 #endif /* PACKETS_SYNC_H */

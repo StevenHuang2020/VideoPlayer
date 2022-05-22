@@ -370,6 +370,8 @@ void VideoStateData::close_hardware()
 	av_buffer_unref(&hw_device_ctx);
 }
 
+//static const char* afilters = "atempo=2";
+
 int VideoStateData::stream_component_open(VideoState* is, int stream_index)
 {
 	assert(is);
@@ -380,6 +382,7 @@ int VideoStateData::stream_component_open(VideoState* is, int stream_index)
 	// const AVDictionaryEntry* t = NULL;
 	int sample_rate, nb_channels;
 	int64_t channel_layout;
+	int format;
 	int ret = 0;
 	int stream_lowres = 0;
 
@@ -446,9 +449,39 @@ int VideoStateData::stream_component_open(VideoState* is, int stream_index)
 	switch (avctx->codec_type)
 	{
 	case AVMEDIA_TYPE_AUDIO:
+#if USE_AVFILTER_AUDIO
+		{
+			AVFilterContext* sink;
+			//const char* afilters = "aresample=8000,aformat=sample_fmts=s16:channel_layouts=mono"; // "atempo=2";
+			//const char* afilters = NULL;
+			const char* afilters = "atempo=2.0";
+			is->audio_filter_src.freq = avctx->sample_rate;
+			is->audio_filter_src.channels = avctx->channels;
+			is->audio_filter_src.channel_layout = get_valid_channel_layout(avctx->channel_layout, avctx->channels);
+			is->audio_filter_src.fmt = avctx->sample_fmt;
+			if ((ret = configure_audio_filters(is, afilters, 0)) < 0)
+				goto fail;
+
+			sink = is->out_audio_filter;
+			sample_rate = av_buffersink_get_sample_rate(sink);
+			nb_channels = av_buffersink_get_channels(sink);
+			channel_layout = av_buffersink_get_channel_layout(sink);
+			format = av_buffersink_get_format(sink);
+			AVChannelLayout chn_layout;
+			av_buffersink_get_ch_layout(sink, &chn_layout);
+			qDebug("afilter sink: sample rate:%d, chn:%d, fmt:%d, chn_layout:%d", sample_rate, nb_channels, format, chn_layout.u);
+		}
+#else
 		sample_rate = avctx->sample_rate;
 		nb_channels = avctx->channels;
 		channel_layout = avctx->channel_layout;
+#endif
+		/* prepare audio output */
+		/*if ((ret = audio_open(is, channel_layout, nb_channels, sample_rate, &is->audio_tgt)) < 0)
+			goto fail;
+
+		is->audio_src = is->audio_tgt;*/
+
 
 		is->audio_stream = stream_index;
 		is->audio_st = ic->streams[stream_index];

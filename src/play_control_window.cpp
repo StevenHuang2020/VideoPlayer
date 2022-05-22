@@ -182,7 +182,6 @@ void play_control_window::clear_all()
 	enable_play_buttons(false);
 	ui->check_mute->setEnabled(false);
 	ui->slider_vol->setEnabled(false);
-	ui->slider_vol->setValue(0);
 }
 
 void play_control_window::update_btn_play(bool bPause)

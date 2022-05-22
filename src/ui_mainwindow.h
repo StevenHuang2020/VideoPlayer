@@ -60,6 +60,7 @@ public:
     QAction *actionScharr;
     QAction *actionPrewitt;
     QAction *actionRemoveCV;
+    QAction *actionKeyboard_Usage;
     QWidget *centralwidget;
     QLabel *label_Video;
     QMenuBar *menubar;
@@ -189,6 +190,8 @@ public:
         actionRemoveCV = new QAction(MainWindow);
         actionRemoveCV->setObjectName(QString::fromUtf8("actionRemoveCV"));
         actionRemoveCV->setCheckable(true);
+        actionKeyboard_Usage = new QAction(MainWindow);
+        actionKeyboard_Usage->setObjectName(QString::fromUtf8("actionKeyboard_Usage"));
         centralwidget = new QWidget(MainWindow);
         centralwidget->setObjectName(QString::fromUtf8("centralwidget"));
         label_Video = new QLabel(centralwidget);
@@ -239,6 +242,7 @@ public:
         menuView->addAction(actionFullscreen);
         menuView->addSeparator();
         menuView->addAction(actionAspect_Ratio);
+        menuHelp->addAction(actionKeyboard_Usage);
         menuHelp->addAction(actionAbout);
         menuHelp->addAction(actionAbout_QT);
         menuCV->addAction(actionGrayscale);
@@ -314,6 +318,7 @@ public:
         actionScharr->setText(QApplication::translate("MainWindow", "Scharr", nullptr));
         actionPrewitt->setText(QApplication::translate("MainWindow", "Prewitt", nullptr));
         actionRemoveCV->setText(QApplication::translate("MainWindow", "No Selection", nullptr));
+        actionKeyboard_Usage->setText(QApplication::translate("MainWindow", "Usage Tips", nullptr));
         label_Video->setText(QString());
         menuMedia->setTitle(QApplication::translate("MainWindow", "Media", nullptr));
         menuRecent_Files->setTitle(QApplication::translate("MainWindow", "Recent Files", nullptr));
