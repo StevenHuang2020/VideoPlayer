@@ -899,6 +899,25 @@ void MainWindow::set_volume(int volume)
 	volume_settings(true, vol);
 }
 
+void MainWindow::set_play_spped(int value)
+{
+	play_control_window* pPlayControl = (play_control_window*)get_object("play_control");
+	if (pPlayControl == NULL)
+		return;
+
+	double speed = pPlayControl->get_speed();
+	if (m_pVideoState) {
+		VideoState* pState = m_pVideoState->get_state();
+		if (pState) {
+#if USE_AVFILTER_AUDIO
+			//m_mutex.lock();
+			set_audio_playspeed(pState, speed);
+			//m_mutex.unlock();
+#endif
+		}
+	}
+}
+
 void MainWindow::hide_statusbar(bool bHide)
 {
 	statusBar()->setVisible(!bHide);
@@ -959,24 +978,10 @@ void MainWindow::hide_menubar(bool bHide)
 
 void MainWindow::on_actionAbout_triggered()
 {
-#if 0
-	if (m_pVideoState) {
-		VideoState* pState = m_pVideoState->get_state();
-		if (pState) {
-#if USE_AVFILTER_AUDIO
-			m_mutex.lock();
-			set_audio_playspeed(pState, 1.5);
-			m_mutex.unlock();
-#endif
-		}
-	}
-
-#else
 	About dlg;
 	dlg.move(frameGeometry().center() - dlg.rect().center());
 	dlg.setModal(true);
 	dlg.exec();
-#endif
 }
 
 void MainWindow::play_started(bool ret)

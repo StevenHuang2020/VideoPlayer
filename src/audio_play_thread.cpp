@@ -192,15 +192,16 @@ int AudioPlayThread::audio_decode_frame(VideoState* is)
 		frame_queue_next(&is->sampq);
 	} while (af->serial != is->audioq.serial);
 
+	/*data_size = av_samples_get_buffer_size(NULL, af->frame->channels,
+		af->frame->nb_samples,
+		AVSampleFormat(af->frame->format), 1);*/
 
 	struct SwrContext* swrCtx = m_audioResample.swrCtx;
-	data_size = av_samples_get_buffer_size(nullptr, af->frame->channels, af->frame->nb_samples,
+	data_size = av_samples_get_buffer_size(NULL, af->frame->channels, af->frame->nb_samples,
 		AV_SAMPLE_FMT_S16, 0);  //AVSampleFormat(af->frame->format)
 	uint8_t* buffer_audio = (uint8_t*)av_malloc(data_size * sizeof(uint8_t));
 	int ret = swr_convert(swrCtx, &buffer_audio, af->frame->nb_samples, (const uint8_t**)(af->frame->data), af->frame->nb_samples);
 	
-	//qDebug("buffer_audio:0x%08x", buffer_audio);
-
 	if (!(ret < 0)) {
 		if (is->muted && data_size > 0)
 			memset(buffer_audio, 0, data_size); //mute
@@ -208,7 +209,6 @@ int AudioPlayThread::audio_decode_frame(VideoState* is)
 		play_buf(buffer_audio, data_size);
 	}
 		
-	//qDebug("after buffer_audio:0x%08x", buffer_audio);
 	av_free((void*)buffer_audio);
 
 	audio_clock0 = is->audio_clock;
@@ -216,7 +216,9 @@ int AudioPlayThread::audio_decode_frame(VideoState* is)
 	if (!isnan(af->pts))
 	{
 		is->audio_clock = af->pts + (double)af->frame->nb_samples / af->frame->sample_rate;
-		//qDebug("audio: clock=%0.3f pts=%0.3f, frame:%0.3f\n", is->audio_clock, af->pts, (double)af->frame->nb_samples / af->frame->sample_rate);
+		//qDebug("audio: clock=%0.3f pts=%0.3f, (nb:%d, sr:%d)frame:%0.3f\n", is->audio_clock, af->pts, \
+			af->frame->nb_samples, af->frame->sample_rate, \
+			(double)af->frame->nb_samples / af->frame->sample_rate);
 	}
 	else {
 		is->audio_clock = NAN;
@@ -257,7 +259,7 @@ bool AudioPlayThread::init_resample_param(AVCodecContext* pAudio, AVSampleFormat
 			ret = swr_alloc_set_opts2(&swrCtx,
 				&pAudio->ch_layout, sample_fmt, pAudio->sample_rate,
 				&channel_layout, (AVSampleFormat)format, pAudio->sample_rate,
-				0, nullptr);
+				0, NULL);
 		}
 #else
 		/*swrCtx = swr_alloc_set_opts(NULL,

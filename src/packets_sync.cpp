@@ -768,17 +768,28 @@ void print_state_info(VideoState* is)
 #if USE_AVFILTER_AUDIO
 void set_audio_playspeed(VideoState* is, double value)
 {
-	if (value < 0.5 || value>2)
+	if (value < 0 || value>4)
 		return;
 
 	is->audio_speed = value;
 
+	size_t len = 32;
 	if (!is->afilters) {
 
-		is->afilters = (char*)av_malloc(32);
+		is->afilters = (char*)av_malloc(len);
 	}
-	snprintf(is->afilters, 32, "atempo=%lf", value);
-	//snprintf(is->afilters, 32, "aresample=8000", value);
+	if (value <= 2.0) {
+		snprintf(is->afilters, len, "atempo=%.2lf", value);
+	}
+	else {
+		snprintf(is->afilters, len, "atempo=2.0,");
+		char tmp[128];
+		snprintf(tmp, sizeof(tmp), "atempo=%.2lf", value/2.0);
+
+		strncat(is->afilters, tmp, len - strlen(is->afilters) - 1);
+	}
+	
+	qDebug("changeing audio filters to :%s", is->afilters);
 	is->req_afilter_reconfigure = 1;
 }
 
@@ -890,9 +901,9 @@ int configure_audio_filters(VideoState* is, const char* afilters, int force_outp
 		goto end;
 
 	if (force_output_format) {
+		sample_rates[0] = is->audio_filter_src.freq;
 		channel_layouts[0] = is->audio_filter_src.channel_layout;
 		//channels[0] = is->audio_filter_src.channels;
-		sample_rates[0] = is->audio_filter_src.freq;
 		if ((ret = av_opt_set_int(filt_asink, "all_channel_counts", 0, AV_OPT_SEARCH_CHILDREN)) < 0)
 			goto end;
 		if ((ret = av_opt_set_int_list(filt_asink, "channel_layouts", channel_layouts, -1, AV_OPT_SEARCH_CHILDREN)) < 0)

@@ -370,8 +370,6 @@ void VideoStateData::close_hardware()
 	av_buffer_unref(&hw_device_ctx);
 }
 
-//static const char* afilters = "atempo=2";
-
 int VideoStateData::stream_component_open(VideoState* is, int stream_index)
 {
 	assert(is);
@@ -453,8 +451,8 @@ int VideoStateData::stream_component_open(VideoState* is, int stream_index)
 		{
 			AVFilterContext* sink;
 			//const char* afilters = "aresample=8000,aformat=sample_fmts=s16:channel_layouts=mono"; // "atempo=2";
-			//const char* afilters = NULL;
-			const char* afilters = "atempo=2.0";
+			const char* afilters = NULL;
+			//const char* afilters = "atempo=2.0";
 			is->audio_filter_src.freq = avctx->sample_rate;
 			is->audio_filter_src.channels = avctx->channels;
 			is->audio_filter_src.channel_layout = get_valid_channel_layout(avctx->channel_layout, avctx->channels);

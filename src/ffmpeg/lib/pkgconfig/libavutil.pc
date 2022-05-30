@@ -1,7 +1,7 @@
-prefix=/c/ffmpeg
+prefix=${pcfiledir}/../..
 exec_prefix=${prefix}
-libdir=/c/ffmpeg/lib
-includedir=/c/ffmpeg/include
+libdir=${prefix}/lib
+includedir=${prefix}/include
 
 Name: libavutil
 Description: FFmpeg utility library
@@ -10,5 +10,4 @@ Requires:
 Requires.private: 
 Conflicts:
 Libs: -L${libdir}  -lavutil 
-Libs.private: user32.lib bcrypt.lib
 Cflags: -I${includedir}

@@ -220,7 +220,7 @@ list(APPEND INCLUDE_DIRS
 #-------------------------------------------------------------------------------
 list(APPEND LINK_DIRS
     "src/opencv/build/x64/vc15/lib"
-    "src/ffmpeg/bin"
+    "src/ffmpeg/lib"
 )
 
 #-------------------------------------------------------------------------------
@@ -285,5 +285,4 @@ if(WIN32)
         COMMAND ${CMAKE_COMMAND} -E copy_directory
         "${CMAKE_SOURCE_DIR}/src/res"
         $<TARGET_FILE_DIR:${TARGET_NAME}>/res)
-
 endif()

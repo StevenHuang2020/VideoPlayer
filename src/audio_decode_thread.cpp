@@ -44,11 +44,7 @@ void AudioDecodeThread::run()
 		if (got_frame) {
 			tb = { 1, frame->sample_rate };
 
-			if (!(af = frame_queue_peek_writable(&is->sampq)))
-				goto the_end;
-
 #if USE_AVFILTER_AUDIO
-#if 1
 			dec_channel_layout = get_valid_channel_layout(frame->channel_layout, frame->channels);
 
 			reconfigure =
@@ -58,8 +54,7 @@ void AudioDecodeThread::run()
 				is->audio_filter_src.freq != frame->sample_rate ||
 				is->auddec.pkt_serial != last_serial;
 
-			//if (reconfigure && is->req_afilter_reconfigure) {
-			if (is->req_afilter_reconfigure) {
+			if (reconfigure) {
 				char buf1[1024], buf2[1024];
 				av_get_channel_layout_string(buf1, sizeof(buf1), -1, is->audio_filter_src.channel_layout);
 				av_get_channel_layout_string(buf2, sizeof(buf2), -1, dec_channel_layout);
@@ -74,19 +69,28 @@ void AudioDecodeThread::run()
 				is->audio_filter_src.freq = frame->sample_rate;
 				last_serial = is->auddec.pkt_serial;
 
-				is->req_afilter_reconfigure = 0;
-				if ((ret = configure_audio_filters(is, is->afilters, 1)) < 0)
+				if ((ret = configure_audio_filters(is, NULL, 1)) < 0)
 					goto the_end;
+
+			}else if (is->req_afilter_reconfigure)
+			{
+				if (is->afilters) {
+					if ((ret = configure_audio_filters(is, is->afilters, 1)) < 0)
+						goto the_end;
+				}
+				is->req_afilter_reconfigure = 0;
 			}
-#endif
+
 			if ((ret = av_buffersrc_add_frame(is->in_audio_filter, frame)) < 0)
 				goto the_end;
 
-			
 			//while ((ret = av_buffersink_get_frame_flags(is->out_audio_filter, frame, 0)) >= 0) {
 			while ((ret = av_buffersink_get_frame(is->out_audio_filter, frame)) >= 0) {
 				tb = av_buffersink_get_time_base(is->out_audio_filter);
 #endif
+
+				if (!(af = frame_queue_peek_writable(&is->sampq)))
+					goto the_end;
 
 				af->pts = (frame->pts == AV_NOPTS_VALUE) ? NAN : frame->pts * av_q2d(tb);
 				af->pos = frame->pkt_pos;
@@ -117,8 +121,7 @@ the_end:
 
 #if USE_AVFILTER_AUDIO
 	avfilter_graph_free(&is->agraph);
-	if (is->afilters)
-	{
+	if (is->afilters) {
 		av_free(is->afilters);
 		is->afilters = NULL;
 	}

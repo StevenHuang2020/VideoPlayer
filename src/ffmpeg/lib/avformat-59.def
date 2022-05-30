@@ -14,7 +14,6 @@ EXPORTS
     av_find_input_format
     av_find_program_from_stream
     av_fmt_ctx_get_duration_estimation_method
-    av_fopen_utf8
     av_format_ffversion
     av_format_inject_global_side_data
     av_get_frame_filename

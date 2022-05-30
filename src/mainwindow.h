@@ -100,6 +100,7 @@ public slots:
 	void play_seek_next();
 	void play_mute(bool mute);
 	void set_volume(int volume);
+	void set_play_spped(int speed);
 
 	void open_recentFile();
 	void clear_recentfiles();

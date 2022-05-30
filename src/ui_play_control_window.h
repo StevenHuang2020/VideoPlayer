@@ -34,6 +34,9 @@ public:
     QPushButton *btn_next;
     QPushButton *btn_stop;
     QSpacerItem *horizontalSpacer_3;
+    QSlider *slider_speed;
+    QLabel *label_speed;
+    QSpacerItem *horizontalSpacer_5;
     QCheckBox *check_mute;
     QSlider *slider_vol;
     QLabel *label_vol;
@@ -53,7 +56,7 @@ public:
         play_control_window->resize(595, 91);
         layoutWidget = new QWidget(play_control_window);
         layoutWidget->setObjectName(QString::fromUtf8("layoutWidget"));
-        layoutWidget->setGeometry(QRect(0, 0, 541, 48));
+        layoutWidget->setGeometry(QRect(0, 0, 591, 61));
         gridLayout = new QGridLayout(layoutWidget);
         gridLayout->setSpacing(0);
         gridLayout->setContentsMargins(11, 11, 11, 11);
@@ -110,6 +113,40 @@ public:
 
         horizontalLayout_2->addItem(horizontalSpacer_3);
 
+        slider_speed = new QSlider(layoutWidget);
+        slider_speed->setObjectName(QString::fromUtf8("slider_speed"));
+        sizePolicy.setHeightForWidth(slider_speed->sizePolicy().hasHeightForWidth());
+        slider_speed->setSizePolicy(sizePolicy);
+        slider_speed->setMinimumSize(QSize(100, 12));
+        slider_speed->setMaximumSize(QSize(100, 12));
+        slider_speed->setMinimum(1);
+        slider_speed->setMaximum(8);
+        slider_speed->setSingleStep(1);
+        slider_speed->setPageStep(10);
+        slider_speed->setValue(4);
+        slider_speed->setOrientation(Qt::Horizontal);
+        slider_speed->setTickPosition(QSlider::TicksAbove);
+        slider_speed->setTickInterval(1);
+
+        horizontalLayout_2->addWidget(slider_speed);
+
+        label_speed = new QLabel(layoutWidget);
+        label_speed->setObjectName(QString::fromUtf8("label_speed"));
+        QSizePolicy sizePolicy1(QSizePolicy::Fixed, QSizePolicy::Preferred);
+        sizePolicy1.setHorizontalStretch(0);
+        sizePolicy1.setVerticalStretch(0);
+        sizePolicy1.setHeightForWidth(label_speed->sizePolicy().hasHeightForWidth());
+        label_speed->setSizePolicy(sizePolicy1);
+        label_speed->setMinimumSize(QSize(45, 0));
+        label_speed->setMaximumSize(QSize(45, 16777215));
+        label_speed->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
+
+        horizontalLayout_2->addWidget(label_speed);
+
+        horizontalSpacer_5 = new QSpacerItem(10, 20, QSizePolicy::Fixed, QSizePolicy::Minimum);
+
+        horizontalLayout_2->addItem(horizontalSpacer_5);
+
         check_mute = new QCheckBox(layoutWidget);
         check_mute->setObjectName(QString::fromUtf8("check_mute"));
         sizePolicy.setHeightForWidth(check_mute->sizePolicy().hasHeightForWidth());
@@ -133,9 +170,6 @@ public:
         label_vol = new QLabel(layoutWidget);
         label_vol->setObjectName(QString::fromUtf8("label_vol"));
         label_vol->setEnabled(true);
-        QSizePolicy sizePolicy1(QSizePolicy::Fixed, QSizePolicy::Preferred);
-        sizePolicy1.setHorizontalStretch(0);
-        sizePolicy1.setVerticalStretch(0);
         sizePolicy1.setHeightForWidth(label_vol->sizePolicy().hasHeightForWidth());
         label_vol->setSizePolicy(sizePolicy1);
         label_vol->setMinimumSize(QSize(28, 0));
@@ -199,7 +233,6 @@ public:
 
 
         retranslateUi(play_control_window);
-        QObject::connect(slider_vol, SIGNAL(valueChanged(int)), label_vol, SLOT(setNum(int)));
 
         QMetaObject::connectSlotsByName(play_control_window);
     } // setupUi
@@ -211,6 +244,7 @@ public:
         btn_play->setText(QApplication::translate("play_control_window", "Play", nullptr));
         btn_next->setText(QApplication::translate("play_control_window", ">>", nullptr));
         btn_stop->setText(QApplication::translate("play_control_window", "Stop", nullptr));
+        label_speed->setText(QApplication::translate("play_control_window", "1.0x", nullptr));
         check_mute->setText(QApplication::translate("play_control_window", "Mute", nullptr));
         label_vol->setText(QApplication::translate("play_control_window", "0", nullptr));
         label_curTime->setText(QApplication::translate("play_control_window", "00\357\274\23200", nullptr));

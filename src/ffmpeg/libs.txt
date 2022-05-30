@@ -1,8 +1,0 @@
-avcodec.lib
-avdevice.lib
-avfilter.lib
-avformat.lib
-avutil.lib
-swresample.lib
-swscale.lib
-postproc.lib

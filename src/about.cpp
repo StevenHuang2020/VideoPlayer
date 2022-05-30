@@ -21,7 +21,8 @@ About::About(QWidget* parent)
 
 	setLayout(ui->gridLayout);
 	setWindowFlags(windowFlags() & ~Qt::WindowMaximizeButtonHint);
-	setFixedSize(360, 250);
+	setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
+	setFixedSize(400, 260);
 	init_label();
 }
 
@@ -30,11 +31,13 @@ About::~About()
 	delete ui;
 }
 
-void About::on_btn_Ok_clicked() {
+void About::on_btn_Ok_clicked() 
+{
 	QDialog::close();
 }
 
-void About::on_btn_Cancel_clicked() {
+void About::on_btn_Cancel_clicked() 
+{
 	QDialog::close();
 }
 

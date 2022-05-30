@@ -540,6 +540,8 @@ EXPORTS
     av_version_info
     av_video_enc_params_alloc
     av_video_enc_params_create_side_data
+    av_vk_frame_alloc
+    av_vkfmt_from_pixfmt
     av_vlog
     av_write_image_line
     av_write_image_line2
@@ -551,11 +553,11 @@ EXPORTS
     avpriv_alloc_fixed_dsp
     avpriv_cga_font
     avpriv_dict_set_timestamp
-    avpriv_emms_asm
     avpriv_float_dsp_alloc
     avpriv_get_gamma_from_trc
     avpriv_get_trc_function_from_trc
     avpriv_init_lls
+    avpriv_open
     avpriv_report_missing_feature
     avpriv_request_sample
     avpriv_scalarproduct_float_c
@@ -564,6 +566,7 @@ EXPORTS
     avpriv_slicethread_execute
     avpriv_slicethread_free
     avpriv_solve_lls
+    avpriv_tempfile
     avpriv_vga16_font
     avutil_configuration
     avutil_license
