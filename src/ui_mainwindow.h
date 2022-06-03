@@ -79,13 +79,13 @@ public:
             MainWindow->setObjectName(QString::fromUtf8("MainWindow"));
         MainWindow->setWindowModality(Qt::ApplicationModal);
         MainWindow->setEnabled(true);
-        MainWindow->resize(480, 288);
+        MainWindow->resize(640, 288);
         QSizePolicy sizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(MainWindow->sizePolicy().hasHeightForWidth());
         MainWindow->setSizePolicy(sizePolicy);
-        MainWindow->setMinimumSize(QSize(480, 288));
+        MainWindow->setMinimumSize(QSize(640, 288));
         MainWindow->setMaximumSize(QSize(16777215, 16777215));
         MainWindow->setWindowOpacity(1.000000000000000);
         MainWindow->setToolTipDuration(-1);

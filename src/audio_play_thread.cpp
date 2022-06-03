@@ -17,6 +17,8 @@ AudioPlayThread::AudioPlayThread(QObject* parent, VideoState* pState)
 	, m_bExitThread(false)
 {
 	memset(&m_audioResample, 0, sizeof(Audio_Resample));
+
+	//print_device();
 }
 
 AudioPlayThread::~AudioPlayThread()
@@ -105,8 +107,7 @@ void AudioPlayThread::set_device_volume(float volume)
 
 void AudioPlayThread::stop_device()
 {
-	if (m_pOutput)
-	{
+	if (m_pOutput) {
 		m_pOutput->stop();
 		delete m_pOutput;
 		m_pOutput = NULL;
@@ -124,8 +125,7 @@ void AudioPlayThread::play_file(const QString& file)
 
 void AudioPlayThread::play_buf(const uint8_t* buf, int datasize)
 {
-	if (m_audioDevice)
-	{
+	if (m_audioDevice) {
 		uint8_t* data = (uint8_t*)buf;
 		while (datasize > 0) {
 			qint64 len = m_audioDevice->write((const char*)data, datasize);
@@ -153,7 +153,7 @@ void AudioPlayThread::run()
 		if (is->abort_request)
 			break;
 
-		if (is->paused)	{
+		if (is->paused) {
 			msleep(10);
 			continue;
 		}
@@ -163,7 +163,7 @@ void AudioPlayThread::run()
 			break;
 
 		if (!isnan(is->audio_clock)) {
-			AVCodecContext*pAudioCodex = is->auddec.avctx;
+			AVCodecContext* pAudioCodex = is->auddec.avctx;
 			int bytes_per_sec = av_samples_get_buffer_size(NULL, pAudioCodex->channels, pAudioCodex->sample_rate, AV_SAMPLE_FMT_S16, 1);
 			int64_t audio_callback_time = av_gettime_relative();
 			set_clock_at(&is->audclk, is->audio_clock - (double)(audio_size) / bytes_per_sec, is->audio_clock_serial, audio_callback_time / 1000000.0);
@@ -196,29 +196,43 @@ int AudioPlayThread::audio_decode_frame(VideoState* is)
 		af->frame->nb_samples,
 		AVSampleFormat(af->frame->format), 1);*/
 
+#if USE_AVFILTER_AUDIO
+	data_size = av_samples_get_buffer_size(NULL, af->frame->channels, af->frame->nb_samples,
+		AV_SAMPLE_FMT_S16, 1);
+	uint8_t* buffer_audio = (uint8_t*)av_malloc(data_size * sizeof(uint8_t));
+
+	memcpy(buffer_audio, af->frame->data[0], data_size);
+#else
 	struct SwrContext* swrCtx = m_audioResample.swrCtx;
 	data_size = av_samples_get_buffer_size(NULL, af->frame->channels, af->frame->nb_samples,
 		AV_SAMPLE_FMT_S16, 0);  //AVSampleFormat(af->frame->format)
 	uint8_t* buffer_audio = (uint8_t*)av_malloc(data_size * sizeof(uint8_t));
-	int ret = swr_convert(swrCtx, &buffer_audio, af->frame->nb_samples, (const uint8_t**)(af->frame->data), af->frame->nb_samples);
-	
-	if (!(ret < 0)) {
-		if (is->muted && data_size > 0)
-			memset(buffer_audio, 0, data_size); //mute
 
-		play_buf(buffer_audio, data_size);
+	int ret = swr_convert(swrCtx, &buffer_audio, af->frame->nb_samples, (const uint8_t**)(af->frame->data), af->frame->nb_samples);
+	if (ret < 0) {
+		return 0;
 	}
-		
+#endif
+
+	if (is->muted && data_size > 0)
+		memset(buffer_audio, 0, data_size); //mute
+
+	play_buf(buffer_audio, data_size);
+
 	av_free((void*)buffer_audio);
 
 	audio_clock0 = is->audio_clock;
 	/* update the audio clock with the pts */
-	if (!isnan(af->pts))
-	{
-		is->audio_clock = af->pts + (double)af->frame->nb_samples / af->frame->sample_rate;
-		//qDebug("audio: clock=%0.3f pts=%0.3f, (nb:%d, sr:%d)frame:%0.3f\n", is->audio_clock, af->pts, \
-			af->frame->nb_samples, af->frame->sample_rate, \
-			(double)af->frame->nb_samples / af->frame->sample_rate);
+	if (!isnan(af->pts)) {
+		//is->audio_clock = af->pts + (double)af->frame->nb_samples / af->frame->sample_rate;
+		double frame = (double)af->frame->nb_samples / af->frame->sample_rate;
+		//frame = frame * is->audio_speed;
+		is->audio_clock = af->pts + frame;
+#if USE_AVFILTER_AUDIO
+		is->audio_clock *= is->audio_speed;
+#endif
+		qDebug("audio: clock=%0.3f pts=%0.3f, (nb:%d, sr:%d)frame:%0.3f\n", is->audio_clock, af->pts, \
+			af->frame->nb_samples, af->frame->sample_rate, frame);
 	}
 	else {
 		is->audio_clock = NAN;
@@ -248,8 +262,8 @@ bool AudioPlayThread::init_resample_param(AVCodecContext* pAudio, AVSampleFormat
 #if USE_AVFILTER_AUDIO
 		if (is) {
 			AVFilterContext* sink = is->out_audio_filter;
-			int sample_rate = av_buffersink_get_sample_rate(sink);
-			int nb_channels = av_buffersink_get_channels(sink);
+			//int sample_rate = av_buffersink_get_sample_rate(sink);
+			//int nb_channels = av_buffersink_get_channels(sink);
 
 			AVChannelLayout channel_layout;
 			av_buffersink_get_ch_layout(sink, &channel_layout);
@@ -260,13 +274,12 @@ bool AudioPlayThread::init_resample_param(AVCodecContext* pAudio, AVSampleFormat
 				&pAudio->ch_layout, sample_fmt, pAudio->sample_rate,
 				&channel_layout, (AVSampleFormat)format, pAudio->sample_rate,
 				0, NULL);
+
+			/*m_audioResample.channel_layout = channel_layout;
+			m_audioResample.sample_fmt = sample_fmt;
+			m_audioResample.sample_rate = pAudio->sample_rate;*/
 		}
 #else
-		/*swrCtx = swr_alloc_set_opts(NULL,
-			pAudio->channel_layout, sample_fmt, pAudio->sample_rate,
-			pAudio->channel_layout, pAudio->sample_fmt, pAudio->sample_rate,
-			0, nullptr);	*/
-
 		ret = swr_alloc_set_opts2(&swrCtx,
 			&pAudio->ch_layout, sample_fmt, pAudio->sample_rate,
 			&pAudio->ch_layout, pAudio->sample_fmt, pAudio->sample_rate,
@@ -277,7 +290,7 @@ bool AudioPlayThread::init_resample_param(AVCodecContext* pAudio, AVSampleFormat
 			swr_init(swrCtx);
 			m_audioResample.swrCtx = swrCtx;
 			return true;
-		}		
+		}
 	}
 	return false;
 }

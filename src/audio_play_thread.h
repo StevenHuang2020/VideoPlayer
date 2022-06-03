@@ -18,6 +18,7 @@ typedef struct Audio_Resample {
 	struct SwrContext* swrCtx;
 
 	//uint64_t channel_layout;	// out
+	//AVChannelLayout channel_layout;
 	//AVSampleFormat sample_fmt;
 	//int sample_rate;
 }Audio_Resample;

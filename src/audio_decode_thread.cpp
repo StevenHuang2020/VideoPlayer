@@ -54,7 +54,7 @@ void AudioDecodeThread::run()
 				is->audio_filter_src.freq != frame->sample_rate ||
 				is->auddec.pkt_serial != last_serial;
 
-			if (reconfigure) {
+			if (reconfigure || is->req_afilter_reconfigure) {
 				char buf1[1024], buf2[1024];
 				av_get_channel_layout_string(buf1, sizeof(buf1), -1, is->audio_filter_src.channel_layout);
 				av_get_channel_layout_string(buf2, sizeof(buf2), -1, dec_channel_layout);
@@ -69,15 +69,8 @@ void AudioDecodeThread::run()
 				is->audio_filter_src.freq = frame->sample_rate;
 				last_serial = is->auddec.pkt_serial;
 
-				if ((ret = configure_audio_filters(is, NULL, 1)) < 0)
+				if ((ret = configure_audio_filters(is, is->afilters, 1)) < 0)
 					goto the_end;
-
-			}else if (is->req_afilter_reconfigure)
-			{
-				if (is->afilters) {
-					if ((ret = configure_audio_filters(is, is->afilters, 1)) < 0)
-						goto the_end;
-				}
 				is->req_afilter_reconfigure = 0;
 			}
 

@@ -571,8 +571,8 @@ void MainWindow::on_actionKeyboard_Usage_triggered()
 	str += "Down" + indent + "Volume down\n";
 	str += "Left" + indent + "Play back\n";
 	str += "Right" + indent + "Play forward\n";
-	//str += "<" + indent + "Speed down\n";
-	//str += ">" + indent + "Speed up\n";
+	str += "<" + indent + "Speed down\n";
+	str += ">" + indent + "Speed up\n";
 	str += "----------------------------------------------------";
 
 	QMessageBox msgBox;
@@ -792,7 +792,8 @@ void MainWindow::update_play_time()
 				int secs = (total_secs - hours * 3600 - mins * 60);
 
 				//qDebug("audio: clock=%0.3f, hours:%d, mins:%d, secs:%d", audio_clock, hours, mins, secs);
-				pPlayControl->update_play_time(hours, mins, secs);
+				//pPlayControl->update_play_time(hours, mins, secs);
+				pPlayControl->update_play_time((int)audio_clock);
 			}
 		}
 	}
@@ -829,8 +830,7 @@ void MainWindow::video_seek(double pos, double incr)
 	if (pState == NULL)
 		return;
 
-	if (pState->ic->start_time != AV_NOPTS_VALUE && pos < pState->ic->start_time / (double)AV_TIME_BASE)
-	{
+	if (pState->ic->start_time != AV_NOPTS_VALUE && pos < pState->ic->start_time / (double)AV_TIME_BASE) {
 		//qDebug("!seek_by_bytes pos=%lf, start_time=%lf, %lf", pos, pState->ic->start_time, pState->ic->start_time / (double)AV_TIME_BASE);
 		pos = pState->ic->start_time / (double)AV_TIME_BASE;
 	}
@@ -910,12 +910,19 @@ void MainWindow::set_play_spped(int value)
 		VideoState* pState = m_pVideoState->get_state();
 		if (pState) {
 #if USE_AVFILTER_AUDIO
-			//m_mutex.lock();
 			set_audio_playspeed(pState, speed);
-			//m_mutex.unlock();
 #endif
 		}
 	}
+}
+
+void MainWindow::play_speed_adjust(bool up)
+{
+	play_control_window* pPlayControl = (play_control_window*)get_object("play_control");
+	if (pPlayControl == NULL)
+		return;
+
+	pPlayControl->speed_adjust(up);
 }
 
 void MainWindow::hide_statusbar(bool bHide)
@@ -949,7 +956,7 @@ void MainWindow::hide_menubar(bool bHide)
 {
 	menuBar()->setVisible(!bHide);
 
-	bool bVisible = menuBar()->isVisible();
+	//bool bVisible = menuBar()->isVisible();
 
 	QSize sz_menubar = menuBar()->size();
 	QSize sz_center = centralWidget()->size();
@@ -1234,8 +1241,11 @@ void MainWindow::play_control_key(Qt::Key key)
 		break;
 
 	case Qt::Key_Comma:
+		play_speed_adjust(false);
+		break;
+
 	case Qt::Key_Period:
-		qDebug("not handled yet!");
+		play_speed_adjust(true);
 		break;
 
 	case Qt::Key_A:
@@ -1398,6 +1408,7 @@ bool MainWindow::create_video_play_thread() //video play thread
 
 				//resize_window(pVideo->width, pVideo->height); // Adjust window size
 				resize_window(window_size.width(), window_size.height()); // Adjust window size
+				//keep_aspect_ratio();
 			}
 
 			bool ret = m_pVideoPlayThread->init_resample_param(pVideo, bHardware);
@@ -1603,7 +1614,7 @@ void MainWindow::image_cv(QImage& image)
 	}
 
 	if (ui->actionGamma->isChecked()) {
-		mat_to_qimage(gamma_img(matImg, 1.2), image);
+		mat_to_qimage(gamma_img(matImg, 1.2f), image);
 	}
 
 	if (ui->actionContrastBright->isChecked()) {
@@ -1825,7 +1836,7 @@ float MainWindow::volume_settings(bool set, float vol)
 		m_settings.set_general(QStringList(QString::number(float(vol), 'f', 1)), "volume");
 	}
 	else {
-		float value = 0.8;
+		float value = 0.8f;
 		QStringList values = m_settings.get_general("volume");
 		if (values.size() > 0) {
 			value = values[0].toFloat();

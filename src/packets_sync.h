@@ -12,6 +12,7 @@
 #include <QWaitCondition>
 
 #define USE_AVFILTER_AUDIO	0
+#define USE_AVFILTER_VIDEO	0
 
 extern "C" {
 #include <libavcodec/avcodec.h>
@@ -28,6 +29,7 @@ extern "C" {
 #include <libavfilter/buffersrc.h>
 #include <libavutil/opt.h>
 #include <libavutil/avstring.h>
+#include <libavutil/macros.h>
 #endif
 }
 
@@ -277,6 +279,8 @@ typedef struct VideoState {
 	double audio_speed;
 	char* afilters;
 	int req_afilter_reconfigure;
+	char* vfilters;
+	int req_vfilter_reconfigure;
 
 	struct AudioParams audio_filter_src;
 	int vfilter_idx;
@@ -285,6 +289,7 @@ typedef struct VideoState {
 	AVFilterContext* in_audio_filter;   // the first filter in the audio chain
 	AVFilterContext* out_audio_filter;  // the last filter in the audio chain
 	AVFilterGraph* agraph;
+	AVFilterGraph* vgraph;
 #endif
 
 	int last_video_stream, last_audio_stream, last_subtitle_stream;
@@ -384,6 +389,9 @@ int configure_filtergraph(AVFilterGraph* graph, const char* filtergraph,
 	AVFilterContext* source_ctx, AVFilterContext* sink_ctx);
 
 int audio_open(void* opaque, int64_t wanted_channel_layout, int wanted_nb_channels, int wanted_sample_rate, struct AudioParams* audio_hw_params);
+
+void set_video_playspeed(VideoState* is, double value);
+int configure_video_filters(AVFilterGraph* graph, VideoState* is, const char* vfilters, AVFrame* frame);
 #endif
 
 

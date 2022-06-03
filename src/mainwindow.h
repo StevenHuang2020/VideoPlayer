@@ -150,8 +150,7 @@ private:
 	void set_style_action(const QString& style);
 	void clear_subtitle_str();
 	void create_cv_action_group();
-public:
-	float volume_settings(bool set = true, float vol = 0);
+	void play_speed_adjust(bool up = true);
 private:
 	void play_control_key(Qt::Key key);
 	void set_default_bkground();
@@ -175,5 +174,6 @@ public:
 	bool start_play();
 	void stop_play();
 	void pause_play();
+	float volume_settings(bool set = true, float vol = 0);
 };
 #endif // MAINWINDOW_H

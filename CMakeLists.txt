@@ -2,7 +2,7 @@
 #   Qt Project CMake definition file
 #   Author: Steven Huang
 #   Date: 21/May/22
-#   Address: AKL, NZ
+#   Location: AKL, NZ
 #-------------------------------------------------------------------------------
 
 

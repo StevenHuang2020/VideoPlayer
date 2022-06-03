@@ -17,9 +17,9 @@ static AVBufferRef* hw_device_ctx = NULL;
 static enum AVPixelFormat hw_pix_fmt;
 
 VideoStateData::VideoStateData(QThread* pThread, bool use_hardware, bool loop_play) : m_pState(NULL)
-	, m_pReadThreadId(pThread)
-	, m_bUseHardware(use_hardware)
-	, m_bLoopPlay(loop_play)
+, m_pReadThreadId(pThread)
+, m_bUseHardware(use_hardware)
+, m_bLoopPlay(loop_play)
 {
 	m_bHasVideo = false;
 	m_bHasAudio = false;
@@ -272,6 +272,9 @@ VideoState* VideoStateData::stream_open(const char* filename, const AVInputForma
 	is->read_tid = m_pReadThreadId;
 	is->read_thread_exit = -1;
 	is->loop = int(m_bLoopPlay);
+#if USE_AVFILTER_AUDIO
+	is->audio_speed = 1.0;
+#endif
 	return is;
 fail:
 	stream_close(is);
@@ -448,27 +451,27 @@ int VideoStateData::stream_component_open(VideoState* is, int stream_index)
 	{
 	case AVMEDIA_TYPE_AUDIO:
 #if USE_AVFILTER_AUDIO
-		{
-			AVFilterContext* sink;
-			//const char* afilters = "aresample=8000,aformat=sample_fmts=s16:channel_layouts=mono"; // "atempo=2";
-			const char* afilters = NULL;
-			//const char* afilters = "atempo=2.0";
-			is->audio_filter_src.freq = avctx->sample_rate;
-			is->audio_filter_src.channels = avctx->channels;
-			is->audio_filter_src.channel_layout = get_valid_channel_layout(avctx->channel_layout, avctx->channels);
-			is->audio_filter_src.fmt = avctx->sample_fmt;
-			if ((ret = configure_audio_filters(is, afilters, 0)) < 0)
-				goto fail;
+	{
+		AVFilterContext* sink;
+		//const char* afilters = "aresample=8000,aformat=sample_fmts=s16:channel_layouts=mono"; // "atempo=2";
+		//const char* afilters = NULL;
+		//const char* afilters = "atempo=2.0";
+		is->audio_filter_src.freq = avctx->sample_rate;
+		is->audio_filter_src.channels = avctx->channels;
+		is->audio_filter_src.channel_layout = get_valid_channel_layout(avctx->channel_layout, avctx->channels);
+		is->audio_filter_src.fmt = avctx->sample_fmt;
+		if ((ret = configure_audio_filters(is, is->afilters, 0)) < 0)
+			goto fail;
 
-			sink = is->out_audio_filter;
-			sample_rate = av_buffersink_get_sample_rate(sink);
-			nb_channels = av_buffersink_get_channels(sink);
-			channel_layout = av_buffersink_get_channel_layout(sink);
-			format = av_buffersink_get_format(sink);
-			AVChannelLayout chn_layout;
-			av_buffersink_get_ch_layout(sink, &chn_layout);
-			qDebug("afilter sink: sample rate:%d, chn:%d, fmt:%d, chn_layout:%d", sample_rate, nb_channels, format, chn_layout.u);
-		}
+		sink = is->out_audio_filter;
+		sample_rate = av_buffersink_get_sample_rate(sink);
+		nb_channels = av_buffersink_get_channels(sink);
+		channel_layout = av_buffersink_get_channel_layout(sink);
+		format = av_buffersink_get_format(sink);
+		AVChannelLayout chn_layout;
+		av_buffersink_get_ch_layout(sink, &chn_layout);
+		qDebug("afilter sink: sample rate:%d, chn:%d, fmt:%d, chn_layout:%d", sample_rate, nb_channels, format, chn_layout.u);
+	}
 #else
 		sample_rate = avctx->sample_rate;
 		nb_channels = avctx->channels;

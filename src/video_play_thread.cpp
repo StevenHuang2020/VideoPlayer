@@ -60,7 +60,6 @@ void VideoPlayThread::run()
 void VideoPlayThread::video_refresh(VideoState* is, double* remaining_time)
 {
 	double time;
-
 	Frame* sp, * sp2;
 
 	if (!is->paused && get_master_sync_type(is) == AV_SYNC_EXTERNAL_CLOCK && is->realtime)
@@ -350,7 +349,7 @@ void VideoPlayThread::video_image_display(VideoState* is)
 			if (!sp->uploaded) {
 				//uint8_t* pixels[4];
 				//int pitch[4];
-		
+
 				if (!sp->width || !sp->height) {
 					sp->width = vp->width;
 					sp->height = vp->height;
@@ -424,6 +423,8 @@ void VideoPlayThread::video_image_display(VideoState* is)
 
 	//AVHWFramesContext* ctx = (AVHWFramesContext*)pVideoCtx->hw_frames_ctx->data;
 	//AVPixelFormat sw_fmt = ctx->sw_format;
+	
+	//qDebug("frame w:%d,h:%d, pts:%lld, dts:%lld", pVideoCtx->width, pVideoCtx->height, pFrame->pts, pFrame->pkt_dts);
 
 	sws_scale(pResample->sws_ctx, (uint8_t const* const*)pFrame->data, pFrame->linesize, 0,
 		pVideoCtx->height, pFrameRGB->data, pFrameRGB->linesize);
@@ -439,13 +440,10 @@ void VideoPlayThread::video_image_display(VideoState* is)
 bool VideoPlayThread::init_resample_param(AVCodecContext* pVideo, bool bHardware)
 {
 	Video_Resample* pResample = &m_Resample;
-	if (pVideo)
-	{
+	if (pVideo) {
 		enum AVPixelFormat pix_fmt = pVideo->pix_fmt;// frame format after decode
-		if (bHardware)
-		{
+		if (bHardware) 
 			pix_fmt = AV_PIX_FMT_NV12;
-		}
 
 		struct SwsContext* sws_ctx = sws_getContext(
 			pVideo->width,
@@ -461,16 +459,14 @@ bool VideoPlayThread::init_resample_param(AVCodecContext* pVideo, bool bHardware
 		);
 
 		AVFrame* pFrameRGB = av_frame_alloc();
-		if (pFrameRGB == NULL)
-		{
+		if (pFrameRGB == NULL) {
 			printf("Could not allocate rgb frame.\n");
 			return false;
 		}
 
 		int numBytes = av_image_get_buffer_size(AV_PIX_FMT_RGB24, pVideo->width, pVideo->height, 32);
 		uint8_t* buffer_RGB = (uint8_t*)av_malloc(numBytes * sizeof(uint8_t));
-		if (buffer_RGB == NULL)
-		{
+		if (buffer_RGB == NULL) {
 			printf("Could not allocate buffer.\n");
 			return false;
 		}
@@ -507,7 +503,7 @@ void VideoPlayThread::stop_thread()
 void VideoPlayThread::parse_subtitle_ass(const QString& text)
 {
 	QString str = text;
-#if 1
+
 	int j = 0;
 	int k = 0;
 	while ((j = str.indexOf("{", j)) != -1) {
@@ -522,7 +518,6 @@ void VideoPlayThread::parse_subtitle_ass(const QString& text)
 		++j;
 	}
 	//qDebug() << str;
-#endif
 
 	emit subtitle_ready(str);
 }

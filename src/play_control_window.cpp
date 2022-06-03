@@ -10,6 +10,10 @@
 #include "ui_play_control_window.h"
 #include "mainwindow.h"
 
+#define PLAY_SPEED_STEP 0.25
+#define PLAY_SPEED_START 0.25
+#define PLAY_SPEED_STOP 4		//speed multiple from start to stop in step
+
 
 play_control_window::play_control_window(QWidget* parent)
 	: QWidget(parent)
@@ -42,7 +46,6 @@ play_control_window::play_control_window(QWidget* parent)
 	//	//"QSlider::handle:horizontal:hover{ border - radius: 10px; }"
 	//);
 #endif
-	init_slider_speed();
 
 	connect(ui->slider_vol, SIGNAL(valueChanged(int)), ui->label_vol, SLOT(setNum(int)));
 	connect(ui->check_mute, &QCheckBox::stateChanged, this, &play_control_window::volume_muted);
@@ -70,33 +73,46 @@ void play_control_window::volume_muted(int mute)
 	bool enable = !mute;
 	ui->label_vol->setEnabled(enable);
 	ui->slider_vol->setEnabled(enable);
-
 	ui->check_mute->setChecked(!enable);
 }
 
-#define PLAY_SPEED_STEP 0.25
 void play_control_window::speed_changed(int value)
 {
 	int max = ui->slider_speed->maximum();
-	double speed = value * PLAY_SPEED_STEP + 0.25;
+	value %= (max + 1);
+	double speed = (value - 1) * PLAY_SPEED_STEP + PLAY_SPEED_START;
 	QString str = QString::number(speed, 'f', 2) + "x";
-	// qDebug() << speed << max << "str=" << str;
+	qDebug() << speed << max << "str=" << str;
 	ui->label_speed->setText(str);
 }
 
 double play_control_window::get_speed()
 {
-	/*speed range(PLAY_SPEED_STEP ~ n)  slider value range(1, 4*n) step=1*/
 	int value = ui->slider_speed->value();
-	double speed = value * PLAY_SPEED_STEP + 0.25;
-	return speed;
+	return (value - 1) * PLAY_SPEED_STEP + PLAY_SPEED_START;
+}
+
+void play_control_window::speed_adjust(bool up)
+{
+	int value = ui->slider_speed->value();
+	int max = ui->slider_speed->maximum();
+	if (up) {
+		value += 1;
+	}
+	else {
+		value -= 1;
+	}
+
+	value = value > max ? max : value;
+	value = value < 0 ? 0 : value;
+	ui->slider_speed->setValue(value);
 }
 
 void play_control_window::init_slider_speed()
 {
-	int maxSpeed = 7; // 4*n, n = speed multiple, speed range(0.25 ~ n), slider range(1 ~ 4*n)
+	int maxSpeed = (PLAY_SPEED_STOP + PLAY_SPEED_STEP - PLAY_SPEED_START) / PLAY_SPEED_STEP; //8
 	ui->slider_speed->setMaximum(maxSpeed);
-	ui->slider_speed->setValue((1 - 0.25)/ PLAY_SPEED_STEP); //set 1x speed
+	ui->slider_speed->setValue((1 + PLAY_SPEED_STEP - PLAY_SPEED_START) / PLAY_SPEED_STEP); //set 1x speed
 }
 
 void play_control_window::set_volume_slider(float volume)
@@ -104,13 +120,6 @@ void play_control_window::set_volume_slider(float volume)
 	enable_slider_vol(true);
 	int max = ui->slider_vol->maximum();
 	ui->slider_vol->setValue(int(volume * max));
-}
-
-void play_control_window::paintEvent(QPaintEvent* e)
-{
-	//QPainter painter(this);
-	//painter.drawRoundedRect(0, 0, width() - 1, height() - 1, 1, 1);
-	QWidget::paintEvent(e);
 }
 
 const QSlider* play_control_window::get_progress_slider()
@@ -143,6 +152,13 @@ void play_control_window::enable_slider_speed(bool enable)
 	ui->slider_speed->setEnabled(enable);
 }
 
+void play_control_window::get_play_time_params(int total_secs, int& hours, int& mins, int& secs)
+{
+	hours = int(total_secs / 3600);
+	mins = (total_secs - hours * 3600) / 60;
+	secs = (total_secs - hours * 3600 - mins * 60);
+}
+
 void play_control_window::update_play_time(int hours, int mins, int secs)
 {
 	QString time_str = get_play_time(hours, mins, secs);
@@ -151,11 +167,28 @@ void play_control_window::update_play_time(int hours, int mins, int secs)
 	int percent = 0;
 	int total = get_total_time();
 	int cur = get_time_secs(hours, mins, secs);
-	if (total > 0)
-	{
+	cur = cur > total ? total : cur;
+	if (total > 0) {
 		percent = cur * ui->progress_slider->maximum() / total;
 	}
 	ui->progress_slider->setValue(percent);
+}
+
+void play_control_window::update_play_time(int total_secs)
+{
+	int percent = 0;
+	int total = get_total_time();
+	int cur = total_secs;
+	cur = cur > total ? total : cur;
+	if (total > 0) {
+		percent = cur * ui->progress_slider->maximum() / total;
+	}
+	ui->progress_slider->setValue(percent);
+
+	int hours, mins, secs;
+	get_play_time_params(cur, hours, mins, secs);
+	QString time_str = get_play_time(hours, mins, secs);
+	ui->label_curTime->setText(time_str);
 }
 
 int play_control_window::get_time_secs(int hours, int mins, int secs)
@@ -223,6 +256,8 @@ void play_control_window::clear_all()
 	enable_slider_vol(false);
 	enable_play_buttons(false);
 	ui->check_mute->setEnabled(false);
+
+	init_slider_speed();
 }
 
 void play_control_window::update_btn_play(bool bPause)

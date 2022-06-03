@@ -23,8 +23,6 @@ private:
 	int m_mins;
 	int m_secs;
 private:
-	void paintEvent(QPaintEvent* e) override;
-private:
 	void enable_progressbar(bool enable = true);
 	void enable_slider_vol(bool enable = true);
 	void enable_slider_speed(bool enable = true);
@@ -33,8 +31,10 @@ private:
 	int get_time_secs(int hours, int mins, int secs);
 	void clear_time();
 	void enable_play_buttons(bool enable = true);
+	void get_play_time_params(int total_secs, int& hours, int& mins, int& secs);
 public:
 	void update_play_time(int hours, int mins, int secs);
+	void update_play_time(int total_secs);
 	void set_total_time(int hours, int mins, int secs);
 	const QSlider* get_progress_slider();
 	const QSlider* get_volume_slider();
@@ -44,6 +44,7 @@ public:
 	void update_btn_play(bool bPause = true);
 	int get_total_time();
 	double get_speed();
+	void speed_adjust(bool up = true);
 public slots:
 	void volume_muted(int mute);
 	void speed_changed(int speed);
