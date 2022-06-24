@@ -19,10 +19,8 @@ const QStringList get_style()
 {
 	/*qDebug("system styles:");
 	for each (const QString style in QStyleFactory::keys())
-	{
 		qDebug("style:%s", qUtf8Printable(style));
-	}*/
-
+	*/
 	return QStyleFactory::keys();
 }
 
@@ -30,7 +28,6 @@ void set_system_style(int id)
 {
 	QStringList styles = QStyleFactory::keys();
 	QString style = styles[id % styles.length()];
-
 	set_system_style(style);
 }
 

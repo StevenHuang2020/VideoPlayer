@@ -86,12 +86,7 @@ void VideoDecodeThread::run()
             frame_rate = av_buffersink_get_frame_rate(filt_out);
 
             is->req_vfilter_reconfigure = 0;
-        }/*else if (is->req_vfilter_reconfigure) {
-            if (is->vfilters) {
-                if ((ret = configure_video_filters(is->vgraph, is, is->vfilters, frame)) < 0)
-                    goto the_end;
-            }
-        }*/
+        }
 
         ret = av_buffersrc_add_frame(filt_in, frame);
         if (ret < 0)

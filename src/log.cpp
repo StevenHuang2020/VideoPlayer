@@ -20,7 +20,7 @@ void Output(const char* szFormat, ...)
 #endif
 {
 #ifdef UNICODE
-	WCHAR  szBuff[BUFF_LEN +1]; // Output(L"%ls %ls", L"Hi", L"there");
+	WCHAR  szBuff[BUFF_LEN + 1]; // Output(L"%ls %ls", L"Hi", L"there");
 
 	va_list arg;
 	va_start(arg, szFormat);

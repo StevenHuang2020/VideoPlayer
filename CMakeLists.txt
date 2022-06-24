@@ -31,10 +31,7 @@ list(APPEND HEADER_FILES
     src/play_control_window.h
     src/start_play_thread.h
     src/version.h
-#    src/ui_about.h
-#    src/ui_mainwindow.h
-#    src/ui_play_control_window.h
-#    src/ui_youtube_url_dlg.h
+    src/video_label.h
 )
 
 # .cpp files
@@ -60,6 +57,7 @@ list(APPEND SOURCE_FILES
     src/video_play_thread.cpp
     src/video_state.cpp
     src/youtube_url_dlg.cpp
+    src/video_label.cpp
 )
 
 

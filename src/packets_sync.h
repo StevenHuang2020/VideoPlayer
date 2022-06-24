@@ -11,8 +11,8 @@
  // #include <QQueue>
 #include <QWaitCondition>
 
-#define USE_AVFILTER_AUDIO	0
-#define USE_AVFILTER_VIDEO	0
+#define USE_AVFILTER_AUDIO	1
+#define USE_AVFILTER_VIDEO	1
 
 extern "C" {
 #include <libavcodec/avcodec.h>
@@ -23,6 +23,7 @@ extern "C" {
 #include <libavutil/time.h>
 #include <libavutil/samplefmt.h>
 #include <libswresample/swresample.h>
+
 #if USE_AVFILTER_AUDIO
 #include <libavfilter/avfilter.h>
 #include <libavfilter/buffersink.h>
@@ -31,6 +32,7 @@ extern "C" {
 #include <libavutil/avstring.h>
 #include <libavutil/macros.h>
 #endif
+
 }
 
 #define MAX_QUEUE_SIZE (15 * 1024 * 1024)
@@ -209,6 +211,8 @@ typedef struct VideoState {
 
 	double audio_clock;
 	int audio_clock_serial;
+
+	double audio_clock_old; //add for renew clock after speed changing
 
 	AVStream* audio_st;
 

@@ -23,6 +23,7 @@
 #include "video_state.h"
 #include "play_control_window.h"
 #include "app_settings.h"
+#include "video_label.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -100,7 +101,7 @@ public slots:
 	void play_seek_next();
 	void play_mute(bool mute);
 	void set_volume(int volume);
-	void set_play_spped(int speed);
+	void set_play_spped();
 
 	void open_recentFile();
 	void clear_recentfiles();
@@ -119,6 +120,7 @@ private:
 	void resize_window(int width = 800, int height = 480);
 	void center_window(QRect screen_rec);
 	void show_fullscreen(bool bFullscreen = true);
+	bool label_fullscreen();
 	void hide_statusbar(bool bHide = true);
 	void hide_menubar(bool bHide = true);
 	void check_hide_menubar(QMouseEvent* mouseEvent);
@@ -133,10 +135,12 @@ private:
 	void print_size();
 	void keep_aspect_ratio(bool bWidth = true);
 	void create_style_menu();
-	QLabel* get_video_label();
+	//QLabel* get_video_label();
+	video_label* get_video_label();
 	QObject* get_object(const QString name);
 	void create_play_control();
 	void update_play_control();
+	play_control_window* get_play_control();
 	void set_volume_updown(bool bUp = true, float unit = 0.2);
 
 	void create_recentfiles_menu();
@@ -151,6 +155,8 @@ private:
 	void clear_subtitle_str();
 	void create_cv_action_group();
 	void play_speed_adjust(bool up = true);
+	void create_video_label();
+	void update_video_label();
 private:
 	void play_control_key(Qt::Key key);
 	void set_default_bkground();

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>595</width>
-    <height>91</height>
+    <width>681</width>
+    <height>221</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,8 +18,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>591</width>
-     <height>61</height>
+     <width>651</width>
+     <height>111</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout">
@@ -165,6 +165,9 @@
       </item>
       <item>
        <widget class="QSlider" name="slider_speed">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
         <property name="sizePolicy">
          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
           <horstretch>0</horstretch>
@@ -174,13 +177,13 @@
         <property name="minimumSize">
          <size>
           <width>100</width>
-          <height>12</height>
+          <height>0</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>100</width>
-          <height>12</height>
+          <width>16777215</width>
+          <height>16777215</height>
          </size>
         </property>
         <property name="minimum">
@@ -277,13 +280,13 @@
         <property name="minimumSize">
          <size>
           <width>100</width>
-          <height>10</height>
+          <height>12</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
           <width>100</width>
-          <height>10</height>
+          <height>12</height>
          </size>
         </property>
         <property name="maximum">

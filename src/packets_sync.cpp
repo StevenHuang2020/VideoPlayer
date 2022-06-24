@@ -779,18 +779,17 @@ void set_audio_playspeed(VideoState* is, double value)
 	if (value <= 0.5) {
 		snprintf(is->afilters, len, "atempo=0.5,");
 		char tmp[128];
-		snprintf(tmp, sizeof(tmp), "atempo=%.2lf", value / 0.5);
+		snprintf(tmp, sizeof(tmp), "atempo=%lf", value / 0.5);
 
 		strncat(is->afilters, tmp, len - strlen(is->afilters) - 1);
-
 	}
 	else if (value <= 2.0) {
-		snprintf(is->afilters, len, "atempo=%.2lf", value);
+		snprintf(is->afilters, len, "atempo=%lf", value);
 	}
 	else {
 		snprintf(is->afilters, len, "atempo=2.0,");
 		char tmp[128];
-		snprintf(tmp, sizeof(tmp), "atempo=%.2lf", value / 2.0);
+		snprintf(tmp, sizeof(tmp), "atempo=%lf", value / 2.0);
 
 		strncat(is->afilters, tmp, len - strlen(is->afilters) - 1);
 	}
@@ -799,6 +798,7 @@ void set_audio_playspeed(VideoState* is, double value)
 
 	set_video_playspeed(is, value);
 
+	is->audio_clock_old = is->audio_clock;
 	is->req_afilter_reconfigure = 1;
 }
 
@@ -810,7 +810,7 @@ void set_video_playspeed(VideoState* is, double value)
 	if (!is->vfilters)
 		is->vfilters = (char*)av_malloc(len);
 
-	snprintf(is->vfilters, len, "setpts=%.2lf*PTS", 1.0 / value);
+	snprintf(is->vfilters, len, "setpts=%.4lf*PTS", 1.0 / speed);
 
 	is->req_vfilter_reconfigure = 1;
 

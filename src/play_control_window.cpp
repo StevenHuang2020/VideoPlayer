@@ -10,9 +10,9 @@
 #include "ui_play_control_window.h"
 #include "mainwindow.h"
 
-#define PLAY_SPEED_STEP 0.25
-#define PLAY_SPEED_START 0.25
-#define PLAY_SPEED_STOP 4		//speed multiple from start to stop in step
+#define PLAY_SPEED_STEP		0.25
+#define PLAY_SPEED_START	0.5
+#define PLAY_SPEED_STOP		2	//4 speed multiple from start to stop in step
 
 
 play_control_window::play_control_window(QWidget* parent)
@@ -58,7 +58,7 @@ play_control_window::play_control_window(QWidget* parent)
 	connect(ui->progress_slider, &QSlider::sliderReleased, (MainWindow*)parent, &MainWindow::play_seek);
 	connect(ui->progress_slider, &QSlider::sliderPressed, (MainWindow*)parent, &MainWindow::pause_play);
 	connect(ui->slider_speed, &QSlider::valueChanged, this, &play_control_window::speed_changed);
-	connect(ui->slider_speed, &QSlider::valueChanged, (MainWindow*)parent, &MainWindow::set_play_spped);
+	connect(ui->slider_speed, &QSlider::sliderReleased, (MainWindow*)parent, &MainWindow::set_play_spped);
 
 	clear_all();
 }
@@ -82,7 +82,7 @@ void play_control_window::speed_changed(int value)
 	value %= (max + 1);
 	double speed = (value - 1) * PLAY_SPEED_STEP + PLAY_SPEED_START;
 	QString str = QString::number(speed, 'f', 2) + "x";
-	qDebug() << speed << max << "str=" << str;
+	//qDebug() << speed << max << "str=" << str;
 	ui->label_speed->setText(str);
 }
 

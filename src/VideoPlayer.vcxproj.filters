@@ -120,6 +120,9 @@
     <ClCompile Include="qimage_convert_mat.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="video_label.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="mainwindow.h">
@@ -153,6 +156,9 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="start_play_thread.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="video_label.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

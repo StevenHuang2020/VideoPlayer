@@ -8,6 +8,7 @@
 
 #include "audio_play_thread.h"
 
+#define DEBUG_PLAYFILTER	0
 
 AudioPlayThread::AudioPlayThread(QObject* parent, VideoState* pState)
 	: QThread(parent)
@@ -17,7 +18,6 @@ AudioPlayThread::AudioPlayThread(QObject* parent, VideoState* pState)
 	, m_bExitThread(false)
 {
 	memset(&m_audioResample, 0, sizeof(Audio_Resample));
-
 	//print_device();
 }
 
@@ -181,12 +181,17 @@ int AudioPlayThread::audio_decode_frame(VideoState* is)
 	Frame* af;
 
 	do {
-#if defined(_WIN32)
 		while (frame_queue_nb_remaining(&is->sampq) == 0) {
-			av_usleep(1000);
-			//return -1;
+			if (is->eof) {
+				//break;
+				return -1;
+			}
+			else {
+				av_usleep(1000);
+				//return -1;
+			}			
 		}
-#endif
+
 		if (!(af = frame_queue_peek_readable(&is->sampq)))
 			return -1;
 		frame_queue_next(&is->sampq);
@@ -228,11 +233,22 @@ int AudioPlayThread::audio_decode_frame(VideoState* is)
 		double frame = (double)af->frame->nb_samples / af->frame->sample_rate;
 		//frame = frame * is->audio_speed;
 		is->audio_clock = af->pts + frame;
+
 #if USE_AVFILTER_AUDIO
-		is->audio_clock *= is->audio_speed;
+		is->audio_clock = is->audio_clock_old + (is->audio_clock - is->audio_clock_old) * is->audio_speed;
+		//is->audio_clock = is->audio_clock * is->audio_speed;
 #endif
-		qDebug("audio: clock=%0.3f pts=%0.3f, (nb:%d, sr:%d)frame:%0.3f\n", is->audio_clock, af->pts, \
+
+#if DEBUG_PLAYFILTER
+		static int pks_num = 0;
+		pks_num++;
+
+		qDebug("[%d]audio: clock=%0.3f pts=%0.3f, (nb:%d, sr:%d)frame:%0.3f\n", pks_num, is->audio_clock, af->pts, \
 			af->frame->nb_samples, af->frame->sample_rate, frame);
+
+		//qDebug("audio: clock=%0.3f pts=%0.3f, (nb:%d, sr:%d)frame:%0.3f\n", is->audio_clock, af->pts, \
+			af->frame->nb_samples, af->frame->sample_rate, frame);
+#endif
 	}
 	else {
 		is->audio_clock = NAN;

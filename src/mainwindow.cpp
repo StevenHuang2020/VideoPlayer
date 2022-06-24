@@ -18,6 +18,13 @@
 #include "imagecv_operations.h"
 
 
+
+#if NDEBUG
+#define AUTO_HIDE_PLAYCONTROL 1		//release version
+#else
+#define AUTO_HIDE_PLAYCONTROL 0
+#endif
+
 MainWindow::MainWindow(QWidget* parent)
 	: QMainWindow(parent)
 	, ui(new Ui::MainWindow)
@@ -37,6 +44,7 @@ MainWindow::MainWindow(QWidget* parent)
 		Qt::WindowMaximizeButtonHint |
 		Qt::WindowCloseButtonHint);
 
+	create_video_label();
 	create_play_control();
 	create_style_menu();
 	create_recentfiles_menu();
@@ -49,11 +57,13 @@ MainWindow::MainWindow(QWidget* parent)
 
 	ffmpeg_init();
 
+#if AUTO_HIDE_PLAYCONTROL
 	//set mouse moving detection timer
 	setMouseTracking(true);
 	m_timer.setInterval(5 * 1000);
 	m_timer.setSingleShot(false);
 	connect(&m_timer, &QTimer::timeout, this, &MainWindow::check_hide_play_control);
+#endif
 
 	connect(ui->actionAbout_QT, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
 
@@ -68,6 +78,23 @@ MainWindow::~MainWindow()
 	delete ui;
 }
 
+void MainWindow::create_video_label()
+{
+	/*
+	label_Video = new QLabel(centralwidget);
+	label_Video->setObjectName(QString::fromUtf8("label_Video"));
+	label_Video->setGeometry(QRect(-2, -2, 431, 341));
+	label_Video->setScaledContents(true);
+	*/
+
+	video_label* label_Video = new video_label(centralWidget());
+	label_Video->setObjectName(QString::fromUtf8("label_Video"));
+	//label_Video->setGeometry(QRect(-2, -2, 431, 341));
+	label_Video->setScaledContents(true);
+	//label_Video->setWindowFlags(label_Video->windowFlags() | Qt::Widget);
+	label_Video->show();
+}
+
 void MainWindow::create_style_menu()
 {
 	QMenu* pMenu = ui->menuStyle;
@@ -77,8 +104,7 @@ void MainWindow::create_style_menu()
 	QActionGroup* alignmentGroup = new QActionGroup(this);
 
 	QStringList styles = get_style();
-	for (int i = 0; i < styles.size(); ++i)
-	{
+	for (int i = 0; i < styles.size(); ++i) {
 		QString style = styles[i];
 
 		qDebug("style:%s", qUtf8Printable(style));
@@ -104,8 +130,7 @@ void MainWindow::create_style_menu()
 	//pMenu->addSection("custom styles");
 
 	QStringList paths = get_custom_styles();
-	for (int i = 0; i < paths.size(); ++i)
-	{
+	for (int i = 0; i < paths.size(); ++i) {
 		QString path = paths[i];
 
 		QFileInfo fileInfo(path);
@@ -281,22 +306,39 @@ void MainWindow::create_play_control()
 {
 	play_control_window* pPlayControl = new play_control_window(this);
 	pPlayControl->setObjectName(QString::fromUtf8("play_control"));
-	pPlayControl->setGeometry(QRect(0, 0, 10, 62));
+	pPlayControl->setGeometry(0, 0, 0, 65);
 	//pPlayControl->setStyleSheet("border: 1px solid green;");
 	//pPlayControl->setStyleSheet("background-color: rgba(0,0,0,0)");
 	//pPlayControl->setStyleSheet("background-color:black");
 	pPlayControl->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
 	pPlayControl->setWindowFlags(Qt::Tool | Qt::FramelessWindowHint);
 	//pPlayControl->show();
-	//hide_play_control(false);
-	//update_play_control();
+}
+
+play_control_window* MainWindow::get_play_control()
+{
+	return (play_control_window*)get_object("play_control");
+}
+
+void MainWindow::update_video_label()
+{
+	QSize sizeCenter = centralWidget()->size();
+	QPoint ptCenter = centralWidget()->pos();
+	video_label* pLabel = get_video_label();
+	if (pLabel) {
+		//QPoint pt = geometry().topLeft() + centralWidget()->pos();
+		//QPoint pt = mapToGlobal(ptCenter);
+		//QPoint pt = geometry().topLeft();
+		//QPoint pt = ptCenter;
+		pLabel->resize(sizeCenter.width(), sizeCenter.height());
+		//pLabel->move(pt);
+	}
 }
 
 void MainWindow::update_play_control()
 {
-	play_control_window* pPlayControl = (play_control_window*)get_object("play_control");
-	if (pPlayControl)
-	{
+	play_control_window* pPlayControl = get_play_control();
+	if (pPlayControl) {
 		QSize sizeCenter = centralWidget()->size();
 		QStatusBar* pStatusBar = statusBar();
 		QSize szStatusBar = pStatusBar->size();
@@ -304,7 +346,10 @@ void MainWindow::update_play_control()
 		pPlayControl->resize(sizeCenter.width(), szPlayControl.height());
 
 		//QPoint pt = ui->statusbar->pos();
-		QPoint pt = geometry().bottomLeft() - QPoint(0, szPlayControl.height());
+		int borderH = frameGeometry().height() - (geometry().y() - frameGeometry().y()) - geometry().height();
+		//int borderw = frameGeometry().width() - geometry().width();
+
+		QPoint pt = geometry().bottomLeft() - QPoint(0, szPlayControl.height() - borderH);
 
 		if (pStatusBar->isVisible())
 			pt -= QPoint(0, szStatusBar.height());
@@ -350,15 +395,14 @@ void MainWindow::resizeEvent(QResizeEvent* event)
 {
 	/*QSize size = event->size();
 	qDebug("event size:(%d,%d)", size.width(), size.height());*/
-
-	QSize sizeCenter = centralWidget()->size();
-	ui->label_Video->resize(sizeCenter);
+	update_video_label();
 	update_play_control();
 }
 
 void MainWindow::moveEvent(QMoveEvent* event)
 {
 	update_play_control();
+	//update_video_label();
 }
 
 void MainWindow::keyPressEvent(QKeyEvent* event)
@@ -378,7 +422,7 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
 
 	case Qt::Key_F:		//full screen
 	{
-		bool bFullscreen = isFullScreen();
+		bool bFullscreen = label_fullscreen();
 		show_fullscreen(!bFullscreen);
 		ui->actionFullscreen->setChecked(!bFullscreen);
 	}
@@ -400,29 +444,27 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
 
 bool MainWindow::eventFilter(QObject* obj, QEvent* event)
 {
-	if (event->type() == QEvent::MouseMove)
-	{
+	if (event->type() == QEvent::MouseMove) {
 		QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
 		// displayStatusMessage(QString("Mouse move (%1,%2)").arg(mouseEvent->pos().x()).arg(mouseEvent->pos().y()));
 
 		check_hide_menubar(mouseEvent);
 
-		if (!ui->actionHide_Play_Ctronl->isChecked())
-		{
+#if AUTO_HIDE_PLAYCONTROL
+		if (!ui->actionHide_Play_Ctronl->isChecked()) {
 			m_timer.start();
 			auto_hide_play_control(false);
 		}
 		setCursor(Qt::ArrowCursor);
+#endif
 	}
 	return false;
 }
 
 void MainWindow::check_hide_menubar(QMouseEvent* mouseEvent)
 {
-	if (isFullScreen() && mouseEvent)
-	{
+	if (isFullScreen() && mouseEvent) {
 		QPoint pt = mouseEvent->pos();
-
 		const QRect rt = menuBar()->geometry();
 		hide_menubar(pt.y() > rt.height());
 	}
@@ -436,7 +478,7 @@ void MainWindow::check_hide_play_control()
 
 void MainWindow::auto_hide_play_control(bool bHide)
 {
-	play_control_window* pPlayControl = (play_control_window*)get_object("play_control");
+	play_control_window* pPlayControl = get_play_control();
 	if (pPlayControl == NULL)
 		return;
 
@@ -477,8 +519,7 @@ void MainWindow::on_actionYoutube_triggered()
 {
 	YoutubeUrlDlg dialog(this);
 	int result = dialog.exec();
-	if (result == QDialog::Accepted)
-	{
+	if (result == QDialog::Accepted) {
 		QString file = dialog.get_url();
 		if (!file.isEmpty()) {
 			start_to_play(file);
@@ -561,7 +602,7 @@ void MainWindow::on_actionKeyboard_Usage_triggered()
 {
 	QString str = "";
 	QString indent = "		";
-	str += "Keyboard" + indent + "Function\n";
+	//str += "Keyboard" + indent + "Function\n";
 	str += "----------------------------------------------------\n";
 	str += "Space" + indent + "Pause/Play\n";
 	str += "M" + indent + "Mute/Unmute\n";
@@ -600,6 +641,11 @@ void MainWindow::resize_window(int width, int height)
 
 	resize(width, height);
 
+	if (width != screen_rec.width() ||
+		height != screen_rec.height()) {
+		show_fullscreen(false);
+	}
+
 	if (pt.x() + width > screen_rec.width() ||
 		pt.y() + height > screen_rec.height()) {
 		center_window(screen_rec);
@@ -614,8 +660,10 @@ void MainWindow::center_window(QRect screen_rec)
 	this->show();
 }
 
+
 void MainWindow::show_fullscreen(bool bFullscreen)
 {
+#if 0
 	if (bFullscreen) {
 		showFullScreen();
 	}
@@ -623,13 +671,26 @@ void MainWindow::show_fullscreen(bool bFullscreen)
 		showNormal();
 		hide_menubar(false);
 	}
+#else
+	video_label* pLabel = get_video_label();
+	pLabel->show_fullscreen(bFullscreen);
+
+	if (!bFullscreen)
+		update_video_label();
+#endif
+}
+
+bool MainWindow::label_fullscreen()
+{
+	video_label* pLabel = get_video_label();
+	return pLabel->isFullScreen();
 }
 
 void MainWindow::keep_aspect_ratio(bool bWidth)
 {
 	if (m_pVideoState) {
 		AVCodecContext* pVideoCtx = m_pVideoState->get_contex(AVMEDIA_TYPE_VIDEO);
-		QLabel* pLabel = get_video_label();
+		video_label* pLabel = get_video_label();
 		if (pVideoCtx && pLabel) {
 			//QSize size = this->size();
 			QSize sizeLabel = pLabel->size();
@@ -647,19 +708,16 @@ void MainWindow::keep_aspect_ratio(bool bWidth)
 			}
 
 			resize_window(sz.width(), sz.height());
-			//resize(sz);
 		}
 	}
 }
 
 void MainWindow::hide_play_control(bool bHide)
 {
-	play_control_window* pPlayControl = (play_control_window*)get_object("play_control");
-	if (pPlayControl)
-	{
+	play_control_window* pPlayControl = get_play_control();
+	if (pPlayControl) {
 		bool bVisible = pPlayControl->isVisible();
-		if (bVisible == bHide)
-		{
+		if (bVisible == bHide) {
 			pPlayControl->setVisible(!bHide);
 		}
 	}
@@ -667,12 +725,11 @@ void MainWindow::hide_play_control(bool bHide)
 
 void MainWindow::set_paly_control_wnd(bool set)
 {
-	play_control_window* pPlayControl = (play_control_window*)get_object("play_control");
+	play_control_window* pPlayControl = get_play_control();
 	if (pPlayControl == NULL)
 		return;
 
 	if (set) {
-
 		if (m_pVideoState == NULL)
 			return;
 
@@ -701,8 +758,7 @@ void MainWindow::set_paly_control_wnd(bool set)
 			pPlayControl->set_total_time(hours, mins, secs);
 		}
 	}
-	else
-	{
+	else {
 		pPlayControl->clear_all();
 	}
 }
@@ -734,7 +790,7 @@ void MainWindow::set_volume_updown(bool bUp, float unit)
 
 void MainWindow::update_paly_control_volume()
 {
-	play_control_window* pPlayControl = (play_control_window*)get_object("play_control");
+	play_control_window* pPlayControl = get_play_control();
 	if (pPlayControl == NULL)
 		return;
 
@@ -747,7 +803,7 @@ void MainWindow::update_paly_control_volume()
 
 void MainWindow::update_paly_control_muted()
 {
-	play_control_window* pPlayControl = (play_control_window*)get_object("play_control");
+	play_control_window* pPlayControl = get_play_control();
 	if (pPlayControl == NULL)
 		return;
 
@@ -763,7 +819,7 @@ void MainWindow::update_paly_control_muted()
 
 void MainWindow::update_paly_control_status()
 {
-	play_control_window* pPlayControl = (play_control_window*)get_object("play_control");
+	play_control_window* pPlayControl = get_play_control();
 	if (pPlayControl == NULL)
 		return;
 
@@ -779,7 +835,7 @@ void MainWindow::update_paly_control_status()
 
 void MainWindow::update_play_time()
 {
-	play_control_window* pPlayControl = (play_control_window*)get_object("play_control");
+	play_control_window* pPlayControl = get_play_control();
 	if (pPlayControl) {
 		if (m_pVideoState) {
 			VideoState* pState = m_pVideoState->get_state();
@@ -792,8 +848,8 @@ void MainWindow::update_play_time()
 				int secs = (total_secs - hours * 3600 - mins * 60);
 
 				//qDebug("audio: clock=%0.3f, hours:%d, mins:%d, secs:%d", audio_clock, hours, mins, secs);
-				//pPlayControl->update_play_time(hours, mins, secs);
-				pPlayControl->update_play_time((int)audio_clock);
+				pPlayControl->update_play_time(hours, mins, secs);
+				//pPlayControl->update_play_time((int)audio_clock);
 			}
 		}
 	}
@@ -802,9 +858,8 @@ void MainWindow::update_play_time()
 void MainWindow::video_seek_inc(double incr) //incr seconds
 {
 	VideoState* pState = NULL;
-	if (m_pVideoState) {
+	if (m_pVideoState)
 		pState = m_pVideoState->get_state();
-	}
 
 	if (pState == NULL)
 		return;
@@ -823,12 +878,15 @@ void MainWindow::video_seek_inc(double incr) //incr seconds
 void MainWindow::video_seek(double pos, double incr)
 {
 	VideoState* pState = NULL;
-	if (m_pVideoState) {
+	if (m_pVideoState)
 		pState = m_pVideoState->get_state();
-	}
 
 	if (pState == NULL)
 		return;
+
+#if USE_AVFILTER_AUDIO
+	// pos /= pState->audio_speed;
+#endif
 
 	if (pState->ic->start_time != AV_NOPTS_VALUE && pos < pState->ic->start_time / (double)AV_TIME_BASE) {
 		//qDebug("!seek_by_bytes pos=%lf, start_time=%lf, %lf", pos, pState->ic->start_time, pState->ic->start_time / (double)AV_TIME_BASE);
@@ -842,7 +900,7 @@ void MainWindow::play_seek()
 {
 	pause_play();
 
-	play_control_window* pPlayControl = (play_control_window*)get_object("play_control");
+	play_control_window* pPlayControl = get_play_control();
 	if (pPlayControl) {
 		const QSlider* pSlider = pPlayControl->get_progress_slider();
 		int maxValue = pSlider->maximum();
@@ -850,9 +908,8 @@ void MainWindow::play_seek()
 		int value = pSlider->value();
 
 		int seek_time = 0;
-		if (maxValue > 0) {
+		if (maxValue > 0)
 			seek_time = int(value * total_time * 1.0 / maxValue);
-		}
 
 		qDebug("seek value:%d, maxValue:%d, total_time:%d, seek_time:%d", value, maxValue, total_time, seek_time);
 		video_seek(seek_time); //
@@ -872,9 +929,8 @@ void MainWindow::play_seek_next()
 void MainWindow::play_mute(bool mute)
 {
 	VideoState* pState = NULL;
-	if (m_pVideoState) {
+	if (m_pVideoState)
 		pState = m_pVideoState->get_state();
-	}
 
 	if (pState == NULL)
 		return;
@@ -884,7 +940,7 @@ void MainWindow::play_mute(bool mute)
 
 void MainWindow::set_volume(int volume)
 {
-	play_control_window* pPlayControl = (play_control_window*)get_object("play_control");
+	play_control_window* pPlayControl = get_play_control();
 	if (pPlayControl == NULL)
 		return;
 
@@ -899,13 +955,15 @@ void MainWindow::set_volume(int volume)
 	volume_settings(true, vol);
 }
 
-void MainWindow::set_play_spped(int value)
+void MainWindow::set_play_spped()
 {
-	play_control_window* pPlayControl = (play_control_window*)get_object("play_control");
+	play_control_window* pPlayControl = get_play_control();
 	if (pPlayControl == NULL)
 		return;
 
 	double speed = pPlayControl->get_speed();
+
+	//qDebug("set_play_spped, speed control changed, speed:%d", speed);
 	if (m_pVideoState) {
 		VideoState* pState = m_pVideoState->get_state();
 		if (pState) {
@@ -918,11 +976,13 @@ void MainWindow::set_play_spped(int value)
 
 void MainWindow::play_speed_adjust(bool up)
 {
-	play_control_window* pPlayControl = (play_control_window*)get_object("play_control");
+	play_control_window* pPlayControl = get_play_control();
 	if (pPlayControl == NULL)
 		return;
 
 	pPlayControl->speed_adjust(up);
+
+	set_play_spped();
 }
 
 void MainWindow::hide_statusbar(bool bHide)
@@ -1184,7 +1244,7 @@ void MainWindow::stop_play()
 	// emit stop_read_packet_thread(); //stop read thread
 	// emit stop_decode_thread();		//stop v/a decode thread
 	emit stop_audio_play_thread();	//stop audio play thread
-	emit stop_video_play_thread();	//stop video play thread
+	// emit stop_video_play_thread();	//stop video play thread
 
 	delete_video_state();
 	set_paly_control_wnd(false);
@@ -1196,9 +1256,8 @@ void MainWindow::pause_play()
 {
 	if (m_pVideoState) {
 		VideoState* pState = m_pVideoState->get_state();
-		if (pState) {
+		if (pState)
 			toggle_pause(pState);
-		}
 	}
 
 	update_paly_control_status();
@@ -1207,9 +1266,8 @@ void MainWindow::pause_play()
 void MainWindow::play_control_key(Qt::Key key)
 {
 	VideoState* pState = NULL;
-	if (m_pVideoState) {
+	if (m_pVideoState)
 		pState = m_pVideoState->get_state();
-	}
 
 	if (pState == NULL)
 		return;
@@ -1403,12 +1461,19 @@ bool MainWindow::create_video_play_thread() //video play thread
 			print_decodeContext(pVideo);
 
 			if (pVideo) {
+				//resize_window(pVideo->width, pVideo->height); // Adjust window size
+
 				QSize size_center = centralWidget()->size();
 				QSize window_size = size() + QSize(pVideo->width, pVideo->height) - size_center;
 
-				//resize_window(pVideo->width, pVideo->height); // Adjust window size
-				resize_window(window_size.width(), window_size.height()); // Adjust window size
-				//keep_aspect_ratio();
+				int width = window_size.width();
+				int height = window_size.height();
+
+				resize_window(width, height); // Adjust window size
+				QSize sz = minimumSize();
+				if (width < sz.width() || height < sz.height()) {
+					keep_aspect_ratio();
+				}
 			}
 
 			bool ret = m_pVideoPlayThread->init_resample_param(pVideo, bHardware);
@@ -1470,10 +1535,12 @@ bool MainWindow::start_play_thread()
 	return true;
 }
 
-QLabel* MainWindow::get_video_label()
+video_label* MainWindow::get_video_label()
 {
-	return ui->label_Video;
-	// return findChild<QLabel*>("label_Video");
+	//return ui->label_Video;
+	//return findChild<QLabel*>("label_Video");
+	//return findChild<video_label*>("label_Video");
+	return (video_label*)get_object("label_Video");
 }
 
 QObject* MainWindow::get_object(const QString name)
@@ -1659,9 +1726,9 @@ void MainWindow::clear_subtitle_str()
 
 void MainWindow::update_image(const QImage& img)
 {
-	if (!img.isNull()) {
-		ui->label_Video->setPixmap(QPixmap::fromImage(img));
-	}
+	video_label* pLabel = get_video_label();
+	if (!img.isNull() && pLabel)
+		pLabel->setPixmap(QPixmap::fromImage(img));
 }
 
 void MainWindow::read_packet_stopped()
@@ -1674,9 +1741,8 @@ void MainWindow::read_packet_stopped()
 
 	if (m_pVideoState) {
 		VideoState* pState = m_pVideoState->get_state();
-		if (pState) {
+		if (pState)
 			pState->read_thread_exit = 1;
-		}
 	}
 
 	stop_play();
@@ -1739,16 +1805,14 @@ void MainWindow::displayStatusMessage(const QString& message)
 void MainWindow::print_decodeContext(const AVCodecContext* pDecodeCtx, bool bVideo)
 {
 	assert(pDecodeCtx);
-	if (bVideo)
-	{
+	if (bVideo) {
 		qInfo("***************Video decode context*****************");
 		qInfo("codec_name:%s", pDecodeCtx->codec->name);
 		qInfo("codec_type:%d, codec_id:%d, codec_tag:%d", pDecodeCtx->codec_type, pDecodeCtx->codec_id, pDecodeCtx->codec_tag);
 		qInfo("width:%d, height:%d, codec_tag:%d", pDecodeCtx->width, pDecodeCtx->height);
 		qInfo("***************Video decode context end*****************\n");
 	}
-	else
-	{
+	else {
 		qInfo("***************Audio decode context*****************");
 		qInfo("codec_name:%s", pDecodeCtx->codec->name);
 		qInfo("codec_type:%d, codec_id:%d, codec_tag:%d", pDecodeCtx->codec_type, pDecodeCtx->codec_id, pDecodeCtx->codec_tag);

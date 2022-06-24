@@ -13,7 +13,6 @@
 #include <QtCore/QVariant>
 #include <QtWidgets/QAction>
 #include <QtWidgets/QApplication>
-#include <QtWidgets/QLabel>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QMenuBar>
@@ -62,7 +61,6 @@ public:
     QAction *actionRemoveCV;
     QAction *actionKeyboard_Usage;
     QWidget *centralwidget;
-    QLabel *label_Video;
     QMenuBar *menubar;
     QMenu *menuMedia;
     QMenu *menuRecent_Files;
@@ -194,14 +192,10 @@ public:
         actionKeyboard_Usage->setObjectName(QString::fromUtf8("actionKeyboard_Usage"));
         centralwidget = new QWidget(MainWindow);
         centralwidget->setObjectName(QString::fromUtf8("centralwidget"));
-        label_Video = new QLabel(centralwidget);
-        label_Video->setObjectName(QString::fromUtf8("label_Video"));
-        label_Video->setGeometry(QRect(-2, -2, 431, 341));
-        label_Video->setScaledContents(true);
         MainWindow->setCentralWidget(centralwidget);
         menubar = new QMenuBar(MainWindow);
         menubar->setObjectName(QString::fromUtf8("menubar"));
-        menubar->setGeometry(QRect(0, 0, 480, 18));
+        menubar->setGeometry(QRect(0, 0, 640, 18));
         menuMedia = new QMenu(menubar);
         menuMedia->setObjectName(QString::fromUtf8("menuMedia"));
         menuRecent_Files = new QMenu(menuMedia);
@@ -319,7 +313,6 @@ public:
         actionPrewitt->setText(QApplication::translate("MainWindow", "Prewitt", nullptr));
         actionRemoveCV->setText(QApplication::translate("MainWindow", "No Selection", nullptr));
         actionKeyboard_Usage->setText(QApplication::translate("MainWindow", "Usage Tips", nullptr));
-        label_Video->setText(QString());
         menuMedia->setTitle(QApplication::translate("MainWindow", "Media", nullptr));
         menuRecent_Files->setTitle(QApplication::translate("MainWindow", "Recent Files", nullptr));
         menuView->setTitle(QApplication::translate("MainWindow", "View", nullptr));

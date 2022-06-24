@@ -10,8 +10,13 @@ Please find the release player [here.](https://github.com/StevenHuang2020/VideoP
 
 <img src="src/res/player.png" width="320" height="205" />
 
+##### Compiler
+Visual studio 19 + QT vs tools extention.
+If you use another version vs, please use CMake and CMakeLists.txt to generate your own vs project.</br>
+
 ##### History
 
+- v2.0.3, play speed; full screen
 - v2.0.1, CMake configuration
 - v2.0.0, add cv effects by using OpenCV;
 - v1.1.8, bugs fixed;

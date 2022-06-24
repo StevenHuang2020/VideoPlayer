@@ -53,10 +53,10 @@ public:
     {
         if (play_control_window->objectName().isEmpty())
             play_control_window->setObjectName(QString::fromUtf8("play_control_window"));
-        play_control_window->resize(595, 91);
+        play_control_window->resize(681, 221);
         layoutWidget = new QWidget(play_control_window);
         layoutWidget->setObjectName(QString::fromUtf8("layoutWidget"));
-        layoutWidget->setGeometry(QRect(0, 0, 591, 61));
+        layoutWidget->setGeometry(QRect(0, 0, 651, 111));
         gridLayout = new QGridLayout(layoutWidget);
         gridLayout->setSpacing(0);
         gridLayout->setContentsMargins(11, 11, 11, 11);
@@ -115,10 +115,11 @@ public:
 
         slider_speed = new QSlider(layoutWidget);
         slider_speed->setObjectName(QString::fromUtf8("slider_speed"));
+        slider_speed->setEnabled(true);
         sizePolicy.setHeightForWidth(slider_speed->sizePolicy().hasHeightForWidth());
         slider_speed->setSizePolicy(sizePolicy);
-        slider_speed->setMinimumSize(QSize(100, 12));
-        slider_speed->setMaximumSize(QSize(100, 12));
+        slider_speed->setMinimumSize(QSize(100, 0));
+        slider_speed->setMaximumSize(QSize(16777215, 16777215));
         slider_speed->setMinimum(1);
         slider_speed->setMaximum(8);
         slider_speed->setSingleStep(1);
@@ -158,8 +159,8 @@ public:
         slider_vol->setObjectName(QString::fromUtf8("slider_vol"));
         sizePolicy.setHeightForWidth(slider_vol->sizePolicy().hasHeightForWidth());
         slider_vol->setSizePolicy(sizePolicy);
-        slider_vol->setMinimumSize(QSize(100, 10));
-        slider_vol->setMaximumSize(QSize(100, 10));
+        slider_vol->setMinimumSize(QSize(100, 12));
+        slider_vol->setMaximumSize(QSize(100, 12));
         slider_vol->setMaximum(100);
         slider_vol->setSingleStep(20);
         slider_vol->setPageStep(20);
