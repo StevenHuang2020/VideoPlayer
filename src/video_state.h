@@ -38,20 +38,20 @@ private:
 	void stream_component_close(VideoState* is, int stream_index);
 	int open_media(VideoState* is);
 
-	enum AVHWDeviceType get_hwdevice(const char* device);
-	enum AVPixelFormat get_hwdevice_decoder(const AVCodec* decoder, enum AVHWDeviceType type);
+	enum AVHWDeviceType get_hwdevice(const char* device) const;
+	enum AVPixelFormat get_hwdevice_decoder(const AVCodec* decoder, enum AVHWDeviceType type) const;
 	bool open_hardware(AVCodecContext* avctx, const AVCodec* codec, const char* device = "dxva2");
 	void close_hardware();
 public:
-	bool has_video();
-	bool has_audio();
-	bool has_subtitle();
-	AVCodecContext* get_contex(AVMediaType type);
-	bool is_hardware_decode();
+	bool has_video() const;
+	bool has_audio() const;
+	bool has_subtitle() const;
+	AVCodecContext* get_contex(AVMediaType type) const;
+	bool is_hardware_decode() const;
 public:
 	int create_video_state(const char* filename);
 	void delete_video_state();
-	VideoState* get_state();
+	VideoState* get_state() const;
 	void print_state();
 
 };

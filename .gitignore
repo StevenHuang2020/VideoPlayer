@@ -1,9 +1,8 @@
 #tmp folders
 src/.vs
-src/debug/qmake/
-src/debug/VideoPlayer.tlog/
-src/release/qmake/
-src/release/VideoPlayer.tlog/
+src/debug/
+src/release/
+src/ffmpeg/doc/
 
 #tem files
 *.log

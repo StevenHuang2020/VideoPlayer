@@ -51,8 +51,6 @@ private:
 
 	AppSettings m_settings;
 	QString m_subtitle;
-
-	QMutex m_mutex;
 private:
 	enum { MaxRecentFiles = 10 };	// keep recent play files
 	QAction* recentFileActs[MaxRecentFiles];
@@ -136,21 +134,21 @@ private:
 	void keep_aspect_ratio(bool bWidth = true);
 	void create_style_menu();
 	//QLabel* get_video_label();
-	video_label* get_video_label();
-	QObject* get_object(const QString name);
+	video_label* get_video_label() const;
+	QObject* get_object(const QString name) const;
 	void create_play_control();
 	void update_play_control();
-	play_control_window* get_play_control();
+	play_control_window* get_play_control() const;
 	void set_volume_updown(bool bUp = true, float unit = 0.2);
 
 	void create_recentfiles_menu();
 	void set_current_file(const QString& fileName);
 	void remove_recentfiles(const QString& fileName);
 	void update_recentfile_actions();
-	QString stripped_name(const QString& fullFileName);
+	QString stripped_name(const QString& fullFileName) const;
 	void save_settings();
 	void read_settings();
-	QString get_selected_style();
+	QString get_selected_style() const;
 	void set_style_action(const QString& style);
 	void clear_subtitle_str();
 	void create_cv_action_group();

@@ -1,5 +1,5 @@
-#ifndef _H_AUDIO_PLAY_H__
-#define _H_AUDIO_PLAY_H__
+#ifndef __H_AUDIO_PLAY_H__
+#define __H_AUDIO_PLAY_H__
 #include <QThread>
 #include <QAudioOutput>
 #include <QAudioDeviceInfo>
@@ -57,7 +57,7 @@ public slots:
 public:
 	bool init_resample_param(AVCodecContext* pAudio, AVSampleFormat sample_fmt, VideoState* is);
 	void final_resample_param();
-	float get_device_volume();
+	float get_device_volume() const;
 	void set_device_volume(float volume);
 };
-#endif
+#endif /* end of __H_AUDIO_PLAY_H__ */

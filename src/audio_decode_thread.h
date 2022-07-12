@@ -12,8 +12,6 @@ public:
 	~AudioDecodeThread();
 private:
 	VideoState* m_pState;
-signals:
-	void frame_ready(const QImage&);
 
 protected:
 	void run() override;

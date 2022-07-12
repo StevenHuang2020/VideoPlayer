@@ -5,7 +5,7 @@
 //
 // Youtube Url open dialog
 // ***********************************************************/
-#include<QMessageBox>
+#include <QMessageBox>
 #include "youtube_url_dlg.h"
 #include "ui_youtube_url_dlg.h"
 
@@ -26,7 +26,7 @@ YoutubeUrlDlg::~YoutubeUrlDlg()
 	delete ui;
 }
 
-const QString& YoutubeUrlDlg::get_url()
+const QString& YoutubeUrlDlg::get_url() const
 {
 	return m_youtubeUrl;
 }
@@ -75,5 +75,5 @@ const QString YoutubeUrlDlg::parse_youtubeUrl(const QString& url)
 		qDebug("output:%s", qUtf8Printable(output));
 		return output;
 	}
-	return "";
+	return QString("");
 }

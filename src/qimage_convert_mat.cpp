@@ -73,7 +73,7 @@ void mat_to_qimage(cv::InputArray image, QImage& out)
 	}
 }
 
-QString print_mat(const char* name, cv::Mat M) {
+const QString print_mat(const char* name, cv::Mat M) {
 	ostringstream oss;
 	oss << name << endl << " " << M << endl;
 	return QString(oss.str().c_str());

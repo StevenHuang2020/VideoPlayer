@@ -7,8 +7,8 @@
  ******************************************/
 
 
-#ifndef H_IMAGECV_OPERATIONS_H
-#define H_IMAGECV_OPERATIONS_H
+#ifndef __IMAGECV_OPERATIONS_H__
+#define __IMAGECV_OPERATIONS_H__
 
 #include <opencv2/core.hpp>
 #include <opencv2/imgcodecs.hpp>
@@ -87,6 +87,6 @@ const Mat prewitt_img_XY(const Mat& I);
 /*************face haar cascade detection *************/
 const Mat& face_detect(Mat& img, const char* haarXML, double scale = 1);
 
-#endif /* end of H_IMAGECV_OPERATIONS_H*/
+#endif /* end of __IMAGECV_OPERATIONS_H__*/
 
 //https://docs.opencv.org/4.x/d9/df8/tutorial_root.html

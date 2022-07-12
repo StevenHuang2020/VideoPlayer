@@ -1,5 +1,5 @@
-#ifndef _H_LOG_H__
-#define _H_LOG_H__
+#ifndef __LOG_H__
+#define __LOG_H__
 
 #include <QtDebug>
 #include <QFile>
@@ -7,6 +7,6 @@
 #include <QFileInfo>
 #include <QTime>
 
-void logOutput(QtMsgType type, const QMessageLogContext& context, const QString& msg);
+void logOutput(const QtMsgType type, const QMessageLogContext& context, const QString& msg);
 
-#endif /* end _H_LOG_H__ */
+#endif /* end __LOG_H__ */

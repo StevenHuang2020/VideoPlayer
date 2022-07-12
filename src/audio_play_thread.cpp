@@ -90,7 +90,7 @@ bool AudioPlayThread::init_device(int sample_rate, int channel, AVSampleFormat s
 	return true;
 }
 
-float AudioPlayThread::get_device_volume()
+float AudioPlayThread::get_device_volume() const
 {
 	if (m_pOutput) {
 		return m_pOutput->volume();

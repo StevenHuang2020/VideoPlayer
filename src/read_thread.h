@@ -13,8 +13,6 @@ public:
 private:
 	VideoState* m_pPlayData;
 	QMutex m_waitMutex;
-signals:
-	void frame_ready(const QImage&);
 
 protected:
 	void run() override;

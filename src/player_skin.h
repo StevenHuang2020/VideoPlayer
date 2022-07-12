@@ -1,5 +1,5 @@
-#ifndef PLAYER_SKIN_H
-#define PLAYER_SKIN_H
+#ifndef __PLAYER_SKIN_H__
+#define __PLAYER_SKIN_H__
 #include <QApplication>
 #include <QStyleFactory>
 #include <QStyle>
@@ -13,4 +13,4 @@ void set_system_style(int id = 0);
 void set_system_style(const QString& style);
 void set_custom_style(const QString& file);
 
-#endif /*end of PLAYER_SKIN_H*/
+#endif /*end of __PLAYER_SKIN_H__*/

@@ -16,20 +16,12 @@ int64_t start_time = AV_NOPTS_VALUE;
 static AVBufferRef* hw_device_ctx = NULL;
 static enum AVPixelFormat hw_pix_fmt;
 
-VideoStateData::VideoStateData(QThread* pThread, bool use_hardware, bool loop_play) : m_pState(NULL)
-, m_pReadThreadId(pThread)
-, m_bUseHardware(use_hardware)
-, m_bLoopPlay(loop_play)
+VideoStateData::VideoStateData(QThread* pThread, bool use_hardware, bool loop_play) 
+	: m_pState(NULL), m_pReadThreadId(pThread), m_bUseHardware(use_hardware)
+	, m_bLoopPlay(loop_play), m_bHasVideo(false), m_bHasAudio(false)
+	, m_bHasSubtitle(false), m_avctxVideo(NULL), m_avctxAudio(NULL)
+	, m_avctxSubtitle(NULL), m_bHardwareSuccess(false)
 {
-	m_bHasVideo = false;
-	m_bHasAudio = false;
-	m_bHasSubtitle = false;
-
-	m_avctxVideo = NULL;
-	m_avctxAudio = NULL;
-	m_avctxSubtitle = NULL;
-
-	m_bHardwareSuccess = false;
 	//m_hw_device_ctx = NULL;
 }
 
@@ -47,12 +39,12 @@ void VideoStateData::delete_video_state()
 	}
 }
 
-VideoState* VideoStateData::get_state()
+VideoState* VideoStateData::get_state() const
 {
 	return m_pState;
 }
 
-bool VideoStateData::is_hardware_decode()
+bool VideoStateData::is_hardware_decode() const
 {
 	if (m_bUseHardware)
 		return m_bHardwareSuccess;
@@ -589,22 +581,22 @@ void VideoStateData::stream_component_close(VideoState* is, int stream_index)
 	}
 }
 
-bool VideoStateData::has_video()
+bool VideoStateData::has_video() const
 {
 	return m_bHasVideo;
 }
 
-bool VideoStateData::has_audio()
+bool VideoStateData::has_audio() const
 {
 	return m_bHasAudio;
 }
 
-bool VideoStateData::has_subtitle()
+bool VideoStateData::has_subtitle() const
 {
 	return m_bHasSubtitle;
 }
 
-AVCodecContext* VideoStateData::get_contex(AVMediaType type)
+AVCodecContext* VideoStateData::get_contex(AVMediaType type) const
 {
 	AVCodecContext* pCtx = NULL;
 	switch (type) {
@@ -623,7 +615,7 @@ AVCodecContext* VideoStateData::get_contex(AVMediaType type)
 	return pCtx;
 }
 
-enum AVHWDeviceType VideoStateData::get_hwdevice(const char* device)
+enum AVHWDeviceType VideoStateData::get_hwdevice(const char* device) const
 {
 	//device = <vaapi|vdpau|dxva2|d3d11va>
 	enum AVHWDeviceType type = av_hwdevice_find_type_by_name(device);
@@ -639,7 +631,7 @@ enum AVHWDeviceType VideoStateData::get_hwdevice(const char* device)
 	return type;
 }
 
-enum AVPixelFormat VideoStateData::get_hwdevice_decoder(const AVCodec* decoder, enum AVHWDeviceType type)
+enum AVPixelFormat VideoStateData::get_hwdevice_decoder(const AVCodec* decoder, enum AVHWDeviceType type) const
 {
 	if (decoder == NULL || AV_HWDEVICE_TYPE_NONE == type)
 		return AV_PIX_FMT_NONE;

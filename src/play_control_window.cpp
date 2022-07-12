@@ -86,7 +86,7 @@ void play_control_window::speed_changed(int value)
 	ui->label_speed->setText(str);
 }
 
-double play_control_window::get_speed()
+double play_control_window::get_speed() const
 {
 	int value = ui->slider_speed->value();
 	return (value - 1) * PLAY_SPEED_STEP + PLAY_SPEED_START;
@@ -122,17 +122,17 @@ void play_control_window::set_volume_slider(float volume)
 	ui->slider_vol->setValue(int(volume * max));
 }
 
-const QSlider* play_control_window::get_progress_slider()
+const QSlider* play_control_window::get_progress_slider() const
 {
 	return ui->progress_slider;
 }
 
-const QSlider* play_control_window::get_volume_slider()
+const QSlider* play_control_window::get_volume_slider() const
 {
 	return ui->slider_vol;
 }
 
-const QSlider* play_control_window::get_speed_slider()
+const QSlider* play_control_window::get_speed_slider() const
 {
 	return ui->slider_speed;
 }
@@ -152,7 +152,7 @@ void play_control_window::enable_slider_speed(bool enable)
 	ui->slider_speed->setEnabled(enable);
 }
 
-void play_control_window::get_play_time_params(int total_secs, int& hours, int& mins, int& secs)
+void play_control_window::get_play_time_params(int total_secs, int& hours, int& mins, int& secs) const
 {
 	hours = int(total_secs / 3600);
 	mins = (total_secs - hours * 3600) / 60;
@@ -191,12 +191,12 @@ void play_control_window::update_play_time(int total_secs)
 	ui->label_curTime->setText(time_str);
 }
 
-int play_control_window::get_time_secs(int hours, int mins, int secs)
+int play_control_window::get_time_secs(int hours, int mins, int secs) const
 {
 	return hours * 60 * 60 + mins * 60 + secs;
 }
 
-int play_control_window::get_total_time()
+int play_control_window::get_total_time() const
 {
 	return get_time_secs(m_hours, m_mins, m_secs);
 }
@@ -221,7 +221,7 @@ void play_control_window::set_total_time(int hours, int mins, int secs)
 	ui->label_totalTime->setText(duration_str);
 }
 
-const QString play_control_window::get_play_time(int hours, int mins, int secs)
+const QString play_control_window::get_play_time(int hours, int mins, int secs) const
 {
 	QString str = "";
 

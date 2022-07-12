@@ -260,7 +260,7 @@ void MainWindow::update_recentfile_actions()
 		recentFileActs[j]->setVisible(false);
 }
 
-QString MainWindow::stripped_name(const QString& fullFileName)
+QString MainWindow::stripped_name(const QString& fullFileName) const
 {
 	return QFileInfo(fullFileName).fileName();
 }
@@ -315,7 +315,7 @@ void MainWindow::create_play_control()
 	//pPlayControl->show();
 }
 
-play_control_window* MainWindow::get_play_control()
+play_control_window* MainWindow::get_play_control() const
 {
 	return (play_control_window*)get_object("play_control");
 }
@@ -1535,7 +1535,7 @@ bool MainWindow::start_play_thread()
 	return true;
 }
 
-video_label* MainWindow::get_video_label()
+video_label* MainWindow::get_video_label() const
 {
 	//return ui->label_Video;
 	//return findChild<QLabel*>("label_Video");
@@ -1543,7 +1543,7 @@ video_label* MainWindow::get_video_label()
 	return (video_label*)get_object("label_Video");
 }
 
-QObject* MainWindow::get_object(const QString name)
+QObject* MainWindow::get_object(const QString name) const
 {
 	return findChild<QObject*>(name);
 }
@@ -1910,7 +1910,7 @@ float MainWindow::volume_settings(bool set, float vol)
 	return 0;
 }
 
-QString MainWindow::get_selected_style()
+QString MainWindow::get_selected_style() const
 {
 	QMenu* pMenu = ui->menuStyle;
 	foreach(QAction * action, pMenu->actions()) {

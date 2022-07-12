@@ -23,6 +23,6 @@ private slots:
 	void on_btn_Ok_clicked();
 
 public:
-	const QString& get_url();
+	const QString& get_url() const;
 	const QString parse_youtubeUrl(const QString&);
 };

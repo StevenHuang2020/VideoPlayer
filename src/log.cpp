@@ -39,7 +39,7 @@ void Output(const char* szFormat, ...)
 }
 
 
-void logOutput(QtMsgType type, const QMessageLogContext& context, const QString& msg)
+void logOutput(const QtMsgType type, const QMessageLogContext& context, const QString& msg)
 {
 	QString txt, type_str;
 	QString time = QDateTime::currentDateTime().toString("dd/MM/yy hh:mm:ss.zzz"); //"hh:mm:ss.zzz"

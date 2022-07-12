@@ -9,5 +9,5 @@ using namespace std;
 
 void qimage_to_mat(const QImage& image, cv::OutputArray out);
 void mat_to_qimage(cv::InputArray image, QImage& out);
-QString print_mat(const char* name, cv::Mat M);
+const QString print_mat(const char* name, cv::Mat M);
 #endif

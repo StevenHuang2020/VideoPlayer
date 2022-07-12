@@ -12,7 +12,8 @@
 
 AppSettings::AppSettings()
 {
-	m_pSettings = new QSettings("VideoPlayer.ini", QSettings::IniFormat);
+	QString config_file = "VideoPlayer.ini";
+	m_pSettings = new QSettings(config_file, QSettings::IniFormat);
 	print_settings();
 }
 
@@ -46,16 +47,16 @@ void AppSettings::set_value(const QString& group, const QString& key, const QStr
 	m_pSettings->setValue(key_str, value);
 }
 
-QStringList AppSettings::get_value(SectionID id, const QString& key)
+QStringList AppSettings::get_value(SectionID id, const QString& key) const
 {
-	if (id != SECTION_ID_NONE && id < SECTION_ID_MAX) {
+	if (id > SECTION_ID_NONE && id < SECTION_ID_MAX) {
 		QString group = QString(sections[id].str);
 		return get_value(group, key);
 	}
 	return QStringList("");
 }
 
-QStringList AppSettings::get_value(const QString& group, const QString& key)
+QStringList AppSettings::get_value(const QString& group, const QString& key) const
 {
 	QString key_str = group + "/" + key;
 	return m_pSettings->value(key_str).toStringList();
@@ -63,12 +64,12 @@ QStringList AppSettings::get_value(const QString& group, const QString& key)
 
 void AppSettings::set_value(SectionID id, const QString& key, const QStringList& value)
 {
-	if (id != SECTION_ID_NONE && id < SECTION_ID_MAX) {
+	if (id > SECTION_ID_NONE && id < SECTION_ID_MAX) {
 		set_value(QString(sections[id].str), key, value);
 	}
 }
 
-QStringList AppSettings::get_recentfiles(const QString& key)
+QStringList AppSettings::get_recentfiles(const QString& key) const
 {
 	return get_value(SECTION_ID_RECENTFILES, key);
 }
@@ -83,7 +84,7 @@ void AppSettings::set_general(const QStringList& value, const QString& key)
 	set_value(SECTION_ID_GENERAL, key, value);
 }
 
-QStringList AppSettings::get_general(const QString& key)
+QStringList AppSettings::get_general(const QString& key) const
 {
 	return get_value(SECTION_ID_GENERAL, key);
 }

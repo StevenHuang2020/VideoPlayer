@@ -3,8 +3,8 @@
  * @author Steven Huang
  */
 
-#ifndef PACKETS_SYNC_H
-#define PACKETS_SYNC_H
+#ifndef __PACKETS_SYNC_H__
+#define __PACKETS_SYNC_H__
 #include <QThread>
 #include <QDebug>
 #include <QMutex>
@@ -32,7 +32,6 @@ extern "C" {
 #include <libavutil/avstring.h>
 #include <libavutil/macros.h>
 #endif
-
 }
 
 #define MAX_QUEUE_SIZE (15 * 1024 * 1024)
@@ -399,4 +398,4 @@ int configure_video_filters(AVFilterGraph* graph, VideoState* is, const char* vf
 #endif
 
 
-#endif /* PACKETS_SYNC_H */
+#endif /* end of __PACKETS_SYNC_H__ */

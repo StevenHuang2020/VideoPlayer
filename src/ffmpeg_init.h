@@ -1,5 +1,5 @@
-#ifndef __H_FFMPEFG_INIT_H__
-#define __H_FFMPEFG_INIT_H__
+#ifndef __FFMPEFG_INIT_H__
+#define __FFMPEFG_INIT_H__
 
 #include <stdio.h>
 #include <QDebug>
@@ -25,4 +25,4 @@ const QString dump_metadata(void* ctx, const AVDictionary* m, const char* indent
 const QString dump_stream_format(const AVFormatContext* ic, int i, int index, int is_output);
 const QString print_fps(double d, const char* postfix);
 const QString dump_sidedata(void* ctx, const AVStream* st, const char* indent);
-#endif /* __H_FFMPEFG_INIT_H__ */
+#endif /* end of __FFMPEFG_INIT_H__ */
