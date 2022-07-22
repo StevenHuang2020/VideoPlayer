@@ -3,20 +3,36 @@
 ![VS Version](https://img.shields.io/badge/VS-2019-blue)
 ![QT Version](https://img.shields.io/badge/QT-5-green)
 ![FFmpeg Version](https://img.shields.io/badge/FFmpeg--blue)
+![CMake](https://img.shields.io/badge/CMake--blue)
 
-A simple video player based on QT and FFmpeg. This is just a rough product for personal entertainment.
+A simple video player based on QT and FFmpeg. This is just a rough work for personal use. Any bugs or suggestions about it are welcome.
 
 Please find the release player [here.](https://github.com/StevenHuang2020/VideoPlayer/releases)
 
 <img src="src/res/player.png" width="320" height="205" />
 
-##### Compiler
-Visual studio 19 + QT vs tools extention.
-If you use another version vs, please use CMake and CMakeLists.txt to generate your own vs project.</br>
+##### Compile
+- Visual Studio 19
+
+Please install ```QT tools extention``` in Visual Studio. If you use another version VS, please use CMake and CMakeLists.txt to generate your own VS project files.</br>
+
+- CMake
+```
+cd CMakeLists.txt folder
+mkdir build
+cd build
+cmake .. -G "Visual Studio 16 2019" -T host=x64 -A x64
+
+//build debug version
+cmake --build .
+
+//build release version
+cmake --build . --config Release
+```
 
 ##### History
 
-- v2.0.3, play speed; full screen
+- v2.0.3, play speed control; full screen
 - v2.0.1, CMake configuration
 - v2.0.0, add cv effects by using OpenCV;
 - v1.1.8, bugs fixed;
