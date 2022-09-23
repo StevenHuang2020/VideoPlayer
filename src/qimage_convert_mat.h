@@ -7,7 +7,7 @@
 
 using namespace std;
 
-void qimage_to_mat(const QImage& image, cv::OutputArray out);
-void mat_to_qimage(cv::InputArray image, QImage& out);
-const QString print_mat(const char* name, cv::Mat M);
+void qimage_to_mat(const QImage& image, cv::OutputArray& out);
+void mat_to_qimage(const cv::InputArray& image, QImage& out);
+const QString print_mat(const char* name, const cv::Mat& M);
 #endif

@@ -221,7 +221,7 @@ void play_control_window::set_total_time(int hours, int mins, int secs)
 	ui->label_totalTime->setText(duration_str);
 }
 
-const QString play_control_window::get_play_time(int hours, int mins, int secs) const
+QString play_control_window::get_play_time(int hours, int mins, int secs) const
 {
 	QString str = "";
 

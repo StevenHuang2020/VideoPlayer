@@ -838,7 +838,7 @@ int64_t get_valid_channel_layout(int64_t channel_layout, int channels)
 int configure_filtergraph(AVFilterGraph* graph, const char* filtergraph,
 	AVFilterContext* source_ctx, AVFilterContext* sink_ctx)
 {
-	int ret, i;
+	int ret;
 	int nb_filters = graph->nb_filters;
 	AVFilterInOut* outputs = NULL, * inputs = NULL;
 
@@ -869,7 +869,7 @@ int configure_filtergraph(AVFilterGraph* graph, const char* filtergraph,
 	}
 
 	/* Reorder the filters to ensure that inputs of the custom filters are merged first */
-	for (i = 0; i < graph->nb_filters - nb_filters; i++)
+	for (unsigned int i = 0; i < graph->nb_filters - nb_filters; i++)
 		FFSWAP(AVFilterContext*, graph->filters[i], graph->filters[i + nb_filters]);
 
 	ret = avfilter_graph_config(graph, NULL);
@@ -887,7 +887,7 @@ int configure_audio_filters(VideoState* is, const char* afilters, int force_outp
 	int channels[2] = { 0, -1 };
 	AVFilterContext* filt_asrc = NULL, * filt_asink = NULL;
 	char aresample_swr_opts[512] = "";
-	const AVDictionaryEntry* e = NULL;
+	// const AVDictionaryEntry* e = NULL;
 	char asrc_args[256];
 	int ret;
 
@@ -903,7 +903,7 @@ int configure_audio_filters(VideoState* is, const char* afilters, int force_outp
 	av_opt_set(is->agraph, "aresample_swr_opts", aresample_swr_opts, 0);*/
 
 	ret = snprintf(asrc_args, sizeof(asrc_args),
-		"sample_rate=%d:sample_fmt=%s:time_base=%d/%d:channel_layout=%d",
+		"sample_rate=%d:sample_fmt=%s:time_base=%d/%d:channel_layout=%lld",
 		is->audio_filter_src.freq, av_get_sample_fmt_name(is->audio_filter_src.fmt),
 		1, is->audio_filter_src.freq, is->audio_filter_src.channel_layout);
 
@@ -959,11 +959,12 @@ int configure_video_filters(AVFilterGraph* graph, VideoState* is, const char* vf
 	AVFilterContext* filt_src = NULL, * filt_out = NULL, * last_filter = NULL;
 	AVCodecParameters* codecpar = is->video_st->codecpar;
 	AVRational fr = av_guess_frame_rate(is->ic, is->video_st, NULL);
-	const AVDictionaryEntry* e = NULL;
+	// const AVDictionaryEntry* e = NULL;
 	int nb_pix_fmts = 0;
-	int i, j;
 
-	/*for (i = 0; i < renderer_info.num_texture_formats; i++) {
+	/*
+	int i, j;
+	for (i = 0; i < renderer_info.num_texture_formats; i++) {
 		for (j = 0; j < FF_ARRAY_ELEMS(sdl_texture_format_map) - 1; j++) {
 			if (renderer_info.texture_formats[i] == sdl_texture_format_map[j].texture_fmt) {
 				pix_fmts[nb_pix_fmts++] = sdl_texture_format_map[j].format;
@@ -1064,10 +1065,10 @@ fail:
 int audio_open(void* opaque, int64_t wanted_channel_layout, int wanted_nb_channels, int wanted_sample_rate, struct AudioParams* audio_hw_params)
 {
 	//SDL_AudioSpec wanted_spec, spec;
-	const char* env;
+	//const char* env;
 	static const int next_nb_channels[] = { 0, 0, 1, 6, 2, 6, 4, 6 };
 	static const int next_sample_rates[] = { 0, 44100, 48000, 96000, 192000 };
-	int next_sample_rate_idx = FF_ARRAY_ELEMS(next_sample_rates) - 1;
+	//int next_sample_rate_idx = FF_ARRAY_ELEMS(next_sample_rates) - 1;
 
 	/*env = SDL_getenv("SDL_AUDIO_CHANNELS");
 	if (env) {

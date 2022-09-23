@@ -423,7 +423,7 @@ void VideoPlayThread::video_image_display(VideoState* is)
 
 	//AVHWFramesContext* ctx = (AVHWFramesContext*)pVideoCtx->hw_frames_ctx->data;
 	//AVPixelFormat sw_fmt = ctx->sw_format;
-	
+
 	//qDebug("frame w:%d,h:%d, pts:%lld, dts:%lld", pVideoCtx->width, pVideoCtx->height, pFrame->pts, pFrame->pkt_dts);
 
 	sws_scale(pResample->sws_ctx, (uint8_t const* const*)pFrame->data, pFrame->linesize, 0,
@@ -442,7 +442,7 @@ bool VideoPlayThread::init_resample_param(AVCodecContext* pVideo, bool bHardware
 	Video_Resample* pResample = &m_Resample;
 	if (pVideo) {
 		enum AVPixelFormat pix_fmt = pVideo->pix_fmt;// frame format after decode
-		if (bHardware) 
+		if (bHardware)
 			pix_fmt = AV_PIX_FMT_NV12;
 
 		struct SwsContext* sws_ctx = sws_getContext(

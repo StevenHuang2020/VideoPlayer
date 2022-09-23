@@ -3,12 +3,7 @@
 #include <QSettings>
 
 
-typedef struct Section {
-	int id;             ///< unique id identifying a section
-	const char* str;
-}Section;
-
-typedef enum SectionID{
+typedef enum SectionID {
 	SECTION_ID_NONE = -1,
 	SECTION_ID_GENERAL,
 	SECTION_ID_INFO,
@@ -16,11 +11,12 @@ typedef enum SectionID{
 	SECTION_ID_MAX
 } SectionID;
 
-const Section sections[] = {
-	{ SECTION_ID_GENERAL, "General" },
-	{ SECTION_ID_INFO, "Info" },
-	{ SECTION_ID_RECENTFILES, "RecentFiles" },
-};
+
+typedef struct Section {
+	SectionID id;             ///< unique id identifying a section
+	const char* str;
+}Section;
+
 
 class AppSettings {
 public:
@@ -28,6 +24,8 @@ public:
 	~AppSettings();
 private:
 	QSettings* m_pSettings;
+
+	static const Section m_sections[];
 private:
 	void print_settings();
 

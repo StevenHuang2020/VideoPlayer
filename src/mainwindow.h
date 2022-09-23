@@ -24,6 +24,7 @@
 #include "play_control_window.h"
 #include "app_settings.h"
 #include "video_label.h"
+#include "player_skin.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -50,7 +51,9 @@ private:
 	QTimer m_timer; //mouse moving timer
 
 	AppSettings m_settings;
+	PlayerSkin m_skin;
 	QString m_subtitle;
+
 private:
 	enum { MaxRecentFiles = 10 };	// keep recent play files
 	QAction* recentFileActs[MaxRecentFiles];

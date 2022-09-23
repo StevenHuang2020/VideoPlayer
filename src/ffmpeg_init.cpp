@@ -10,7 +10,7 @@
 
 #define OPEN_FFMPEG_LOG 0
 
-#define PRINT_LIB_INFO(libname, LIBNAME, level)                      \
+#define PRINT_LIB_INFO(libname, LIBNAME)							 \
     if(true) {                                                       \
         const char *indent = "  ";                                   \
         unsigned int version = libname##_version();                  \
@@ -55,18 +55,18 @@ int ffmpeg_init()
 	return 0;
 }
 
-void print_ffmpeg_info(int level)
+void print_ffmpeg_info()
 {
 	//ffmpeg-snapshot_0401 
 	qInfo("%s version %s", "ffmpeg", FFMPEG_VERSION);
 
-	PRINT_LIB_INFO(avutil, AVUTIL, level);
-	PRINT_LIB_INFO(avcodec, AVCODEC, level);
-	PRINT_LIB_INFO(avformat, AVFORMAT, level);
-	//PRINT_LIB_INFO(avdevice, AVDEVICE, level);
-	//PRINT_LIB_INFO(avfilter, AVFILTER, level);
-	PRINT_LIB_INFO(swscale, SWSCALE, level);
-	PRINT_LIB_INFO(swresample, SWRESAMPLE, level);
+	PRINT_LIB_INFO(avutil, AVUTIL);
+	PRINT_LIB_INFO(avcodec, AVCODEC);
+	PRINT_LIB_INFO(avformat, AVFORMAT);
+	//PRINT_LIB_INFO(avdevice, AVDEVICE);
+	//PRINT_LIB_INFO(avfilter, AVFILTER);
+	PRINT_LIB_INFO(swscale, SWSCALE);
+	PRINT_LIB_INFO(swresample, SWRESAMPLE);
 	qInfo("");
 }
 
@@ -77,12 +77,12 @@ const QString dump_format(AVFormatContext* ic, int index, const char* url, int i
 	const char* indent = "  ";
 	uint8_t* printed = NULL;
 
-	if (ic == NULL)	{
+	if (ic == NULL) {
 		qErrnoWarning("invalid parameter!");
 		goto fail;
 	}
 
-	if(url == NULL || (!url[0])) {
+	if (url == NULL || (!url[0])) {
 		qErrnoWarning("url is invalid!");
 		goto fail;
 	}
@@ -412,11 +412,11 @@ const QString dump_sidedata(void* ctx, const AVStream* st, const char* indent)
 			//dump_replaygain(ctx, sd);
 			break;
 		case AV_PKT_DATA_DISPLAYMATRIX:
-			{
-				snprintf(tmp, sizeof(tmp), "displaymatrix: rotation of %.2f degrees",
-					av_display_rotation_get((const int32_t*)sd->data));
-				str += tmp;
-			}
+		{
+			snprintf(tmp, sizeof(tmp), "displaymatrix: rotation of %.2f degrees",
+				av_display_rotation_get((const int32_t*)sd->data));
+			str += tmp;
+		}
 		break;
 		case AV_PKT_DATA_STEREO3D:
 			str += "stereo3d: ";
@@ -427,11 +427,11 @@ const QString dump_sidedata(void* ctx, const AVStream* st, const char* indent)
 			//dump_audioservicetype(ctx, sd);
 			break;
 		case AV_PKT_DATA_QUALITY_STATS:
-			{
-				snprintf(tmp, sizeof(tmp), "quality factor: %p, pict_type: %c", sd->data,
-					av_get_picture_type_char(AVPictureType(sd->data[4])));
-				str += tmp;
-			}
+		{
+			snprintf(tmp, sizeof(tmp), "quality factor: %p, pict_type: %c", sd->data,
+				av_get_picture_type_char(AVPictureType(sd->data[4])));
+			str += tmp;
+		}
 		break;
 		case AV_PKT_DATA_CPB_PROPERTIES:
 			str += "cpb: ";
@@ -459,10 +459,10 @@ const QString dump_sidedata(void* ctx, const AVStream* st, const char* indent)
 			//dump_s12m_timecode(ctx, st, sd);
 			break;
 		default:
-			{
-				snprintf(tmp, sizeof(tmp), "unknown side data type %d, size:%llu bytes", sd->type, sd->size);
-				str += tmp;
-			}
+		{
+			snprintf(tmp, sizeof(tmp), "unknown side data type %d, size:%llu bytes", sd->type, sd->size);
+			str += tmp;
+		}
 		break;
 		}
 

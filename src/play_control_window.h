@@ -27,7 +27,7 @@ private:
 	void enable_slider_vol(bool enable = true);
 	void enable_slider_speed(bool enable = true);
 	void init_slider_speed();
-	const QString get_play_time(int hours, int mins, int secs) const;
+	QString get_play_time(int hours, int mins, int secs) const;
 	int get_time_secs(int hours, int mins, int secs) const;
 	void clear_time();
 	void enable_play_buttons(bool enable = true);

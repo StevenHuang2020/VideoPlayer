@@ -33,9 +33,8 @@ private:
 	QAudioDeviceInfo* m_pDevice;
 	QAudioOutput* m_pOutput;
 	QIODevice* m_audioDevice;
-private:
-	VideoState* m_pState;
 
+	VideoState* m_pState;
 	Audio_Resample m_audioResample;
 	bool m_bExitThread;
 protected:
@@ -46,7 +45,7 @@ private:
 	int audio_decode_frame(VideoState* is);
 public:
 	void print_device();
-	bool init_device(int sample_rate = 8000, int channel = 1, 
+	bool init_device(int sample_rate = 8000, int channel = 1,
 		AVSampleFormat sample_fmt = AV_SAMPLE_FMT_S16, float default_vol = 0.8);
 	void stop_device();
 	void play_file(const QString& file);

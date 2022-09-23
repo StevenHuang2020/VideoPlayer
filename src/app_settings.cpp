@@ -10,6 +10,13 @@
 #include "app_settings.h"
 
 
+const Section AppSettings::m_sections[] = {
+	{ SECTION_ID_GENERAL, "General" },
+	{ SECTION_ID_INFO, "Info" },
+	{ SECTION_ID_RECENTFILES, "RecentFiles" },
+};
+
+
 AppSettings::AppSettings()
 {
 	QString config_file = "VideoPlayer.ini";
@@ -29,10 +36,10 @@ void AppSettings::print_settings()
 		qDebug("organizationName:%s", qUtf8Printable(m_pSettings->organizationName()));
 		qDebug("applicationName:%s", qUtf8Printable(m_pSettings->applicationName()));
 
-		foreach(const QString & group, m_pSettings->childGroups()) {
+		for (const QString& group : m_pSettings->childGroups()) {
 			m_pSettings->beginGroup(group);
 			qDebug("group:%s", qUtf8Printable(group));
-			foreach(const QString & key, m_pSettings->childKeys()) {
+			for (const QString& key : m_pSettings->childKeys()) {
 				QString str = QString("key:%1, valye:%2").arg(key, m_pSettings->value(key).toString());
 				qDebug("%s", qUtf8Printable(str));
 			}
@@ -50,7 +57,7 @@ void AppSettings::set_value(const QString& group, const QString& key, const QStr
 QStringList AppSettings::get_value(SectionID id, const QString& key) const
 {
 	if (id > SECTION_ID_NONE && id < SECTION_ID_MAX) {
-		QString group = QString(sections[id].str);
+		QString group = QString(m_sections[id].str);
 		return get_value(group, key);
 	}
 	return QStringList("");
@@ -65,7 +72,7 @@ QStringList AppSettings::get_value(const QString& group, const QString& key) con
 void AppSettings::set_value(SectionID id, const QString& key, const QStringList& value)
 {
 	if (id > SECTION_ID_NONE && id < SECTION_ID_MAX) {
-		set_value(QString(sections[id].str), key, value);
+		set_value(QString(m_sections[id].str), key, value);
 	}
 }
 

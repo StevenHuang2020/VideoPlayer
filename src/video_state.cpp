@@ -16,7 +16,7 @@ int64_t start_time = AV_NOPTS_VALUE;
 static AVBufferRef* hw_device_ctx = NULL;
 static enum AVPixelFormat hw_pix_fmt;
 
-VideoStateData::VideoStateData(QThread* pThread, bool use_hardware, bool loop_play) 
+VideoStateData::VideoStateData(QThread* pThread, bool use_hardware, bool loop_play)
 	: m_pState(NULL), m_pReadThreadId(pThread), m_bUseHardware(use_hardware)
 	, m_bLoopPlay(loop_play), m_bHasVideo(false), m_bHasAudio(false)
 	, m_bHasSubtitle(false), m_avctxVideo(NULL), m_avctxAudio(NULL)

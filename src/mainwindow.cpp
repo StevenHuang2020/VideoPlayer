@@ -12,7 +12,6 @@
 #include "ffmpeg_init.h"
 #include "youtube_url_dlg.h"
 #include "start_play_thread.h"
-#include "player_skin.h"
 #include "qimage_operation.h"
 #include "qimage_convert_mat.h"
 #include "imagecv_operations.h"
@@ -103,7 +102,7 @@ void MainWindow::create_style_menu()
 
 	QActionGroup* alignmentGroup = new QActionGroup(this);
 
-	QStringList styles = get_style();
+	QStringList styles = m_skin.get_style();
 	for (int i = 0; i < styles.size(); ++i) {
 		QString style = styles[i];
 
@@ -129,7 +128,7 @@ void MainWindow::create_style_menu()
 	pMenu->addSeparator()->setText("Custom styles");
 	//pMenu->addSection("custom styles");
 
-	QStringList paths = get_custom_styles();
+	QStringList paths = m_skin.get_custom_styles();
 	for (int i = 0; i < paths.size(); ++i) {
 		QString path = paths[i];
 
@@ -408,13 +407,13 @@ void MainWindow::moveEvent(QMoveEvent* event)
 void MainWindow::keyPressEvent(QKeyEvent* event)
 {
 	switch (event->key()) {
-	case Qt::Key_Space:	//pause/continue
-	case Qt::Key_Up:	//volume up
-	case Qt::Key_Down:	//volume down
-	case Qt::Key_Left:  //play back
-	case Qt::Key_Right: // play forward
-	case Qt::Key_M:		//mute
-	case Qt::Key_Comma:	//speed down
+	case Qt::Key_Space:		//pause/continue
+	case Qt::Key_Up:		//volume up
+	case Qt::Key_Down:		//volume down
+	case Qt::Key_Left:  	//play back
+	case Qt::Key_Right: 	// play forward
+	case Qt::Key_M:			//mute
+	case Qt::Key_Comma:		//speed down
 	case Qt::Key_Period:	//speed up
 	case Qt::Key_A:			//aspect ratio
 		play_control_key((Qt::Key)event->key());
@@ -434,6 +433,10 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
 		ui->actionFullscreen->setChecked(false);
 	}
 	break;
+
+	case Qt::Key_H:
+		on_actionKeyboard_Usage_triggered();
+		break;
 
 	default:
 		qDebug("key:%s(%d) pressed!\n", qUtf8Printable(event->text()), event->key());
@@ -538,7 +541,7 @@ void MainWindow::on_actionSystemStyle()
 	QString str = act->data().toString();
 
 	qDebug("style menu clicked:%s", qUtf8Printable(str));
-	set_system_style(str);
+	m_skin.set_system_style(str);
 }
 
 void MainWindow::on_actionCustomStyle()
@@ -547,7 +550,7 @@ void MainWindow::on_actionCustomStyle()
 	QString str = act->data().toString();
 
 	qDebug("custom style menu clicked:%s", qUtf8Printable(str));
-	set_custom_style(str);
+	m_skin.set_custom_style(str);
 }
 
 void MainWindow::on_actionQuit_triggered()
@@ -614,6 +617,7 @@ void MainWindow::on_actionKeyboard_Usage_triggered()
 	str += "Right" + indent + "Play forward\n";
 	str += "<" + indent + "Speed down\n";
 	str += ">" + indent + "Speed up\n";
+	str += "H" + indent + "Show help\n";
 	str += "----------------------------------------------------";
 
 	QMessageBox msgBox;
@@ -1190,7 +1194,7 @@ bool MainWindow::start_play()
 		start_play_thread(); //start a thread for time-consuming task
 	}
 	else {
-		// if no audio stream but video stream, start all thread 
+		// if no audio stream but video stream, start all thread
 		play_started();
 	}
 
@@ -1507,7 +1511,7 @@ bool MainWindow::create_audio_play_thread()
 			connect(startWorker, &StartPlayThread::finished, startWorker, &QObject::deleteLater);
 			connect(startWorker, &StartPlayThread::init_audio, this, &MainWindow::play_started);
 			startWorker->start();*/
-#else	//this part is time-consuming, use thread 
+#else	//this part is time-consuming, use thread
 			ret = m_pAudioPlayThread->init_device(pAudio->sample_rate, pAudio->channels); //pAudio->sample_fmt
 			if (!ret) {
 				qWarning("audio play init_device failed.");
@@ -1576,7 +1580,7 @@ void MainWindow::image_cv(QImage& image)
 	if (ui->actionGrayscale->isChecked()) {
 		grey_image(image);
 		//invert_image(image);
-		//mirro_image(image); 
+		//mirro_image(image);
 		//swap_image(image);
 		//gamma_image(image); //too slow
 		//blur_img(image);
@@ -1885,11 +1889,11 @@ void MainWindow::read_settings()
 		QString style = values[0];
 		set_style_action(style);
 
-		if (get_style().contains(style)) {
-			set_system_style(style);
+		if (m_skin.get_style().contains(style)) {
+			m_skin.set_system_style(style);
 		}
 		else {
-			set_custom_style(style);
+			m_skin.set_custom_style(style);
 		}
 	}
 }

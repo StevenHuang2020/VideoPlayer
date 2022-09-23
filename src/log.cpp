@@ -66,21 +66,54 @@ void logOutput(const QtMsgType type, const QMessageLogContext& context, const QS
 		break;
 	}
 
-#if !NDEBUG	// debug version
+#if !NDEBUG	// log to debug window with debug version
 	txt = QString("[%1][%2]%3 (file:%4:%5, fun:%6)").arg(time, type_str, msg.toLocal8Bit().constData(),
 		file.fileName(), QString::number(context.line), context.function);
 
-	QString output = txt + "\n"; //output to debug window
+	QString output = txt + "\n";
 	Output(output.toStdWString().c_str());
-#else
-	if (type == QtDebugMsg)
+#else	//log to file
+	if (type <= QtDebugMsg)
 		return;
 
 	txt = QString("[%1][%2]%3").arg(time, type_str, msg.toLocal8Bit().constData());
-#endif
 
-	QFile outFile("log");
-	outFile.open(QIODevice::WriteOnly | QIODevice::Append); // QIODevice::Truncate
-	QTextStream ts(&outFile);
-	ts << txt << endl;
+	//QFile outFile("log");
+	//outFile.open(QIODevice::WriteOnly | QIODevice::Append); // QIODevice::Truncate
+	//QTextStream ts(&outFile);
+	//ts << txt << endl;
+
+	Logger& logger = Logger::instance();
+	logger.log(txt);
+#endif
+}
+
+
+Logger::Logger(const QString& file) :
+	m_logfile(nullptr)
+{
+	try
+	{
+		if (m_logfile != nullptr)
+			throw std::runtime_error("error");
+	}
+	catch (std::runtime_error& e) {
+		const QString str = "m_logfile is already initialized: " + QString(e.what());
+		Output(str.toStdWString().c_str());
+	}
+
+	m_logfile = new QFile(file);
+	m_logfile->open(QIODevice::WriteOnly | QIODevice::Append);
+}
+
+Logger::~Logger()
+{
+	m_logfile->close();
+	delete m_logfile;
+}
+
+void Logger::log(const QString& str)
+{
+	QTextStream ts(m_logfile);
+	ts << str << endl;
 }

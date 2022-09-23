@@ -1,6 +1,6 @@
 #include "qimage_convert_mat.h"
 
-void qimage_to_mat(const QImage& image, cv::OutputArray out) {
+void qimage_to_mat(const QImage& image, cv::OutputArray& out) {
 
 	switch (image.format()) {
 	case QImage::Format_Invalid:
@@ -31,7 +31,7 @@ void qimage_to_mat(const QImage& image, cv::OutputArray out) {
 	}
 }
 
-void mat_to_qimage(cv::InputArray image, QImage& out)
+void mat_to_qimage(const cv::InputArray& image, QImage& out)
 {
 	int type = image.type();
 	switch (type) {
@@ -40,7 +40,7 @@ void mat_to_qimage(cv::InputArray image, QImage& out)
 		qDebug("image format:%d, CV_8UC4", type);
 
 		cv::Mat view(image.getMat());
-		QImage view2(view.data, view.cols, view.rows, view.step[0], QImage::Format_ARGB32);
+		QImage view2(view.data, view.cols, view.rows, (int)view.step[0], QImage::Format_ARGB32);
 		out = view2.copy();
 		break;
 	}
@@ -50,7 +50,7 @@ void mat_to_qimage(cv::InputArray image, QImage& out)
 
 		cv::Mat mat;
 		cvtColor(image, mat, cv::COLOR_BGR2BGRA); //COLOR_BGR2RGB doesn't behave so use RGBA
-		QImage view(mat.data, mat.cols, mat.rows, mat.step[0], QImage::Format_ARGB32);
+		QImage view(mat.data, mat.cols, mat.rows, (int)mat.step[0], QImage::Format_ARGB32);
 		out = view.copy();
 		break;
 	}
@@ -60,7 +60,7 @@ void mat_to_qimage(cv::InputArray image, QImage& out)
 
 		cv::Mat mat;
 		cvtColor(image, mat, cv::COLOR_GRAY2BGRA);
-		QImage view(mat.data, mat.cols, mat.rows, mat.step[0], QImage::Format_ARGB32);
+		QImage view(mat.data, mat.cols, mat.rows, (int)mat.step[0], QImage::Format_ARGB32);
 		out = view.copy();
 		break;
 	}
@@ -73,7 +73,7 @@ void mat_to_qimage(cv::InputArray image, QImage& out)
 	}
 }
 
-const QString print_mat(const char* name, cv::Mat M) {
+const QString print_mat(const char* name, const cv::Mat& M) {
 	ostringstream oss;
 	oss << name << endl << " " << M << endl;
 	return QString(oss.str().c_str());

@@ -19,7 +19,7 @@ extern "C" {
 }
 
 int ffmpeg_init();
-void print_ffmpeg_info(int level);
+void print_ffmpeg_info();
 const QString dump_format(AVFormatContext* ic, int index, const char* url, int is_output = 0);
 const QString dump_metadata(void* ctx, const AVDictionary* m, const char* indent = "  ");
 const QString dump_stream_format(const AVFormatContext* ic, int i, int index, int is_output);

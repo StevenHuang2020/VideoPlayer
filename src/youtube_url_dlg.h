@@ -24,5 +24,5 @@ private slots:
 
 public:
 	const QString& get_url() const;
-	const QString parse_youtubeUrl(const QString&);
+	const QString parse_youtubeUrl(const QString& url);
 };
