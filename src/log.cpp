@@ -102,18 +102,17 @@ Logger::Logger(const QString& file) :
 		Output(str.toStdWString().c_str());
 	}
 
-	m_logfile = new QFile(file);
+	m_logfile = std::make_unique<QFile>(file);
 	m_logfile->open(QIODevice::WriteOnly | QIODevice::Append);
 }
 
 Logger::~Logger()
 {
 	m_logfile->close();
-	delete m_logfile;
 }
 
 void Logger::log(const QString& str)
 {
-	QTextStream ts(m_logfile);
+	QTextStream ts(m_logfile.get());
 	ts << str << endl;
 }

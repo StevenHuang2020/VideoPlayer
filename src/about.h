@@ -2,6 +2,7 @@
 
 #include <QDialog>
 #include "version.h"
+#include <memory>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class About; }
@@ -16,7 +17,7 @@ public:
 	~About();
 
 private:
-	Ui::About* ui;
+	std::unique_ptr <Ui::About> ui;
 private:
 	void init_label();
 private slots:

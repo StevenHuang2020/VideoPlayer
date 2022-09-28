@@ -13,7 +13,7 @@
 AudioPlayThread::AudioPlayThread(QObject* parent, VideoState* pState)
 	: QThread(parent)
 	, m_pDevice(NULL)
-	, m_pOutput(NULL)
+	, m_pOutput(nullptr)
 	, m_pState(pState)
 	, m_bExitThread(false)
 {
@@ -83,7 +83,7 @@ bool AudioPlayThread::init_device(int sample_rate, int channel, AVSampleFormat s
 		return false;
 	}
 
-	m_pOutput = new QAudioOutput(*m_pDevice, format);
+	m_pOutput = std::make_unique<QAudioOutput>(*m_pDevice, format);
 	set_device_volume(default_vol);
 
 	m_audioDevice = m_pOutput->start();
@@ -109,8 +109,7 @@ void AudioPlayThread::stop_device()
 {
 	if (m_pOutput) {
 		m_pOutput->stop();
-		delete m_pOutput;
-		m_pOutput = NULL;
+		m_pOutput->reset();
 	}
 }
 
@@ -189,7 +188,7 @@ int AudioPlayThread::audio_decode_frame(VideoState* is)
 			else {
 				av_usleep(1000);
 				//return -1;
-			}			
+			}
 		}
 
 		if (!(af = frame_queue_peek_readable(&is->sampq)))
@@ -270,7 +269,7 @@ int AudioPlayThread::audio_decode_frame(VideoState* is)
 	return data_size;
 }
 
-bool AudioPlayThread::init_resample_param(AVCodecContext* pAudio, AVSampleFormat sample_fmt, VideoState* is)
+bool AudioPlayThread::init_resample_param(const AVCodecContext* pAudio, AVSampleFormat sample_fmt, VideoState* is)
 {
 	if (pAudio) {
 		int ret = -1;
@@ -287,7 +286,7 @@ bool AudioPlayThread::init_resample_param(AVCodecContext* pAudio, AVSampleFormat
 			int format = av_buffersink_get_format(sink);
 
 			ret = swr_alloc_set_opts2(&swrCtx,
-				&pAudio->ch_layout, sample_fmt, pAudio->sample_rate,
+				(AVChannelLayout*)&pAudio->ch_layout, sample_fmt, pAudio->sample_rate,
 				&channel_layout, (AVSampleFormat)format, pAudio->sample_rate,
 				0, NULL);
 

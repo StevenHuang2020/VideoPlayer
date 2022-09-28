@@ -3,6 +3,7 @@
 #include <QDialog>
 #include <QProcess>
 #include <QDir>
+#include <memory>
 
 namespace Ui { class YoutubeUrlDlg; };
 
@@ -15,7 +16,8 @@ public:
 	~YoutubeUrlDlg();
 
 private:
-	Ui::YoutubeUrlDlg* ui;
+	std::unique_ptr<Ui::YoutubeUrlDlg> ui;
+
 private:
 	QString m_youtubeUrl;
 
@@ -23,6 +25,6 @@ private slots:
 	void on_btn_Ok_clicked();
 
 public:
-	const QString& get_url() const;
-	const QString parse_youtubeUrl(const QString& url);
+	QString get_url() const;
+	QString parse_youtubeUrl(const QString& url);
 };

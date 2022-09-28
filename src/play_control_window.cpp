@@ -17,11 +17,11 @@
 
 play_control_window::play_control_window(QWidget* parent)
 	: QWidget(parent)
+	, ui(std::make_unique<Ui::play_control_window>())
 	, m_hours(0)
 	, m_mins(0)
 	, m_secs(0)
 {
-	ui = new Ui::play_control_window();
 	ui->setupUi(this);
 
 	setLayout(ui->gridLayout); //gridLayout
@@ -65,7 +65,6 @@ play_control_window::play_control_window(QWidget* parent)
 
 play_control_window::~play_control_window()
 {
-	delete ui;
 }
 
 void play_control_window::volume_muted(int mute)

@@ -20,16 +20,15 @@ const Section AppSettings::m_sections[] = {
 AppSettings::AppSettings()
 {
 	QString config_file = "VideoPlayer.ini";
-	m_pSettings = new QSettings(config_file, QSettings::IniFormat);
+	m_pSettings = std::make_unique<QSettings>(config_file, QSettings::IniFormat);
 	print_settings();
 }
 
 AppSettings::~AppSettings()
 {
-	delete m_pSettings;
 }
 
-void AppSettings::print_settings()
+void AppSettings::print_settings() const
 {
 	if (m_pSettings) {
 		qDebug("videoplayer configure file:%s", qUtf8Printable(m_pSettings->fileName()));

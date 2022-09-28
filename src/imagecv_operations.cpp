@@ -15,11 +15,11 @@
 #include "imagecv_operations.h"
 
 
-const Mat load_img(const char* file, int flag) {
+Mat load_img(const char* file, int flag) {
 	return cv::imread(file, flag);
 }
 
-const Mat load_grey(const char* file) {
+Mat load_grey(const char* file) {
 	return load_img(file, IMREAD_GRAYSCALE);
 }
 
@@ -83,58 +83,49 @@ int img_h(const Mat& img) {
 	return img.rows;
 }
 
-const Mat& img2bgr(const Mat& img) {
-	int channel = img_channel(img);
+Mat img_swap_channel(const Mat& img) {
+	Mat res = img.clone();
+
+	const uint channel = img_channel(img);
 	if (channel >= 3) {
-#if 1
-		assert(channel <= 4); //max 4 image channels
-		Mat rgb_channels[4];
-		cv::split(img, rgb_channels);
+		// assert(channel <= 4); 
 
-		vector<Mat> channels;
-		channels.push_back(rgb_channels[2]); //swap r,g,b <==> b,g,r
-		channels.push_back(rgb_channels[1]);
-		channels.push_back(rgb_channels[0]);
-		for (int i = 3; i < channel; i++)
-			channels.push_back(rgb_channels[i]);
+		std::vector<Mat> src_channels;
+		cv::split(img, src_channels);
 
-		cv::merge(channels, img);
-#else
-		Mat* rgb_channels = new Mat[channel];
-		cv::split(img, rgb_channels);
+		std::vector<Mat> dst_channels;
+		dst_channels.emplace_back(src_channels[2]); //swap r,g,b <==> b,g,r
+		dst_channels.emplace_back(src_channels[1]);
+		dst_channels.emplace_back(src_channels[0]);
+		for (uint i = 3; i < channel; i++)
+			dst_channels.emplace_back(src_channels[i]);
 
-		vector<Mat> channels;
-		channels.push_back(rgb_channels[2]); //swap r,g,b <==> b,g,r
-		channels.push_back(rgb_channels[1]);
-		channels.push_back(rgb_channels[0]);
-		for (int i = 3; i < channel; i++)
-			channels.push_back(rgb_channels[i]);
-
-		cv::merge(channels, img);
-		delete[] rgb_channels;
-#endif
+		cv::merge(dst_channels, res);
 	}
 
-	return img;
+	return res;
 }
 
-const Mat& img2rgb(const Mat& img) {
-	return img2bgr(img);
+Mat img2bgr(const Mat& img) {
+	return img_swap_channel(img);
 }
 
-const Mat grey_img(const Mat& img) {
+Mat img2rgb(const Mat& img) {
+	return img_swap_channel(img);
+}
+
+Mat grey_img(const Mat& img) {
 	return covert_color_img(img, COLOR_BGR2GRAY);
 }
 
-const Mat resize_img(const Mat& img, int new_w, int new_h) {
-	Size sz = Size(new_w, new_h);
+Mat resize_img(const Mat& img, int new_w, int new_h) {
 	Mat res;
-
+	Size sz = Size(new_w, new_h);
 	cv::resize(img, res, sz);
 	return res;
 }
 
-const Mat diff_imgs(const Mat& img1, const Mat& img2) {
+Mat diff_imgs(const Mat& img1, const Mat& img2) {
 	Mat res;
 	cv::absdiff(img1, img2, res);
 	return res;
@@ -155,23 +146,23 @@ double psnr_img(const Mat& img1, const Mat& img2) {
 	return cv::PSNR(img1, img2, 255);
 }
 
-const Mat flip_img(const Mat& img, int flipCode) {
+Mat flip_img(const Mat& img, int flipCode) {
 	Mat res;
 	cv::flip(img, res, flipCode); //0, 1, -1
 	return res;
 }
 
-const Mat rotate_img(const Mat& img, int rotateCode) {
+Mat rotate_img(const Mat& img, int rotateCode) {
 	Mat res;  // Mat::zeros(img.size(), CV_8UC1);
 	cv::rotate(img, res, rotateCode); //ROTATE_90_CLOCKWISE
 	return res;
 }
 
-const Mat repeat_img(const Mat& img, int ny, int nx) {
+Mat repeat_img(const Mat& img, int ny, int nx) {
 	return cv::repeat(img, ny, nx);
 }
 
-const Mat histgram_img(const Mat& img) {
+Mat histgram_img(const Mat& img) {
 	vector<Mat> bgr_planes;
 	split(img, bgr_planes);
 	int histSize = 256;
@@ -202,30 +193,77 @@ const Mat histgram_img(const Mat& img) {
 	return histImage;
 }
 
-const Mat& equalized_hist_img(const Mat& img) {
-	assert(img.channels() <= 4);
-	Mat rbg_channel[4];
+void equalized_hist_img(Mat& img) {
+	std::vector<Mat> rbg_channel;
 	cv::split(img, rbg_channel);
 
 	vector<Mat> channels;
 	for (int i = 0; i < img.channels(); i++) {
 		Mat channel;
 		cv::equalizeHist(rbg_channel[i], channel);
-		channels.push_back(channel);
+		channels.emplace_back(channel);
 	}
 
 	cv::merge(channels, img);
-	return img;
 }
 
-const Mat threshold_img(const Mat& img, int thresh, int type) {
+void reverse_img(Mat& img) {
+	cv::bitwise_not(img, img);
+}
+
+void lighter_img(Mat& I, float ratio) {
+	CV_Assert(I.depth() == CV_8U);
+	int channels = I.channels();
+	int nRows = I.rows;
+	int nCols = I.cols * channels;
+	if (I.isContinuous()) {
+		nCols *= nRows;
+		nRows = 1;
+	}
+
+	for (int i = 0; i < nRows; ++i) {
+		uchar* p = I.ptr<uchar>(i);
+		for (int j = 0; j < nCols; ++j) {
+			int res = int(p[j] * ratio);
+			res = res > 255 ? 255 : res;
+			p[j] = (uchar)res;
+		}
+	}
+}
+
+void exposure_img(Mat& I, uchar thresh) {
+	CV_Assert(I.depth() == CV_8U);
+	int channels = I.channels();
+	int nRows = I.rows;
+	int nCols = I.cols * channels;
+	if (I.isContinuous()) {
+		nCols *= nRows;
+		nRows = 1;
+	}
+
+	for (int i = 0; i < nRows; ++i) {
+		uchar* p = I.ptr<uchar>(i);
+		for (int j = 0; j < nCols; ++j) {
+			if (p[j] < thresh)
+				p[j] = 255 - p[j];
+		}
+	}
+}
+
+
+
+
+
+
+
+Mat threshold_img(const Mat& img, int thresh, int type) {
 	Mat grey = grey_img(img);
 	Mat res;
 	cv::threshold(grey, res, thresh, 255, type);
 	return res;
 }
 
-const Mat thresholdAdaptive_img(const Mat& img, int adaptiveMethod,
+Mat thresholdAdaptive_img(const Mat& img, int adaptiveMethod,
 	int thresholdType, int blockSize, double C) {
 	Mat grey = grey_img(img);
 	Mat res;
@@ -233,30 +271,25 @@ const Mat thresholdAdaptive_img(const Mat& img, int adaptiveMethod,
 	return res;
 }
 
-const Mat covert_color_img(const Mat& img, int format) {
+Mat covert_color_img(const Mat& img, int format) {
 	Mat res = img.clone();
 	cv::cvtColor(img, res, format);
 	return res;
 }
 
-const Mat filter_img(const Mat& img, const Mat& kernel) {
+Mat filter_img(const Mat& img, const Mat& kernel) {
 	Mat res = img.clone();
 	cv::filter2D(img, res, -1, kernel);
 	return res;
 }
 
-const Mat& reverse_img(const Mat& img) {
-	cv::bitwise_not(img, img);
-	return img;
-}
-
-const Mat normalize_img(const Mat& img, double alpha, double beta, int norm_type) {
+Mat normalize_img(const Mat& img, double alpha, double beta, int norm_type) {
 	Mat res = img.clone();
 	cv::normalize(img, res, alpha, beta, norm_type);
 	return res;
 }
 
-const Mat& scane_img_colortable(Mat& I, const uchar* const table) {
+void scane_img_colortable(Mat& I, const uchar* const table) {
 	// accept only char type matrices
 	CV_Assert(I.depth() == CV_8U);
 	int channels = I.channels();
@@ -273,7 +306,6 @@ const Mat& scane_img_colortable(Mat& I, const uchar* const table) {
 			p[j] = table[p[j]];
 		}
 	}
-	return I;
 }
 
 void gen_color_table(uchar* const p, int size, int divideWith) {
@@ -283,7 +315,7 @@ void gen_color_table(uchar* const p, int size, int divideWith) {
 	}
 }
 
-const Mat& scane_img_colortable2(Mat& I, const uchar* const table) {
+void scane_img_colortable2(Mat& I, const uchar* const table) {
 	// accept only char type matrices
 	CV_Assert(I.depth() == CV_8U);
 	const int channels = I.channels();
@@ -307,66 +339,22 @@ const Mat& scane_img_colortable2(Mat& I, const uchar* const table) {
 		}
 	}
 	}
-	return I;
 }
 
-const Mat& scane_img_LUT(Mat& I, const Mat& table) {
+void scane_img_LUT(Mat& I, const Mat& table) {
 	cv::LUT(I, table, I);
-	return I;
 }
 
-const Mat& lighter_img(Mat& I, float ratio) {
-	CV_Assert(I.depth() == CV_8U);
-	int channels = I.channels();
-	int nRows = I.rows;
-	int nCols = I.cols * channels;
-	if (I.isContinuous()) {
-		nCols *= nRows;
-		nRows = 1;
-	}
-
-	for (int i = 0; i < nRows; ++i) {
-		uchar* p = I.ptr<uchar>(i);
-		for (int j = 0; j < nCols; ++j) {
-			int res = int(p[j] * ratio);
-			res = res > 255 ? 255 : res;
-			p[j] = (uchar)res;
-		}
-	}
-	return I;
-}
-
-const Mat& exposure_img(Mat& I, uchar thresh) {
-	CV_Assert(I.depth() == CV_8U);
-	int channels = I.channels();
-	int nRows = I.rows;
-	int nCols = I.cols * channels;
-	if (I.isContinuous()) {
-		nCols *= nRows;
-		nRows = 1;
-	}
-
-	for (int i = 0; i < nRows; ++i) {
-		uchar* p = I.ptr<uchar>(i);
-		for (int j = 0; j < nCols; ++j) {
-			if (p[j] < thresh)
-				p[j] = 255 - p[j];
-		}
-	}
-	return I;
-}
-
-const Mat& gamma_img(Mat& I, float gamma) {
+void gamma_img(Mat& I, float gamma) {
 	Mat lookUpTable = cv::Mat(1, 256, CV_8UC1, Scalar(0, 0, 0));
 	for (int i = 0; i < 256; i++) {
 		lookUpTable.at<uchar>(0, i) = saturate_cast<uchar>(pow(i / 255.0, 1.0 / gamma) * 255.0);
 	}
 
 	cv::LUT(I, lookUpTable, I);
-	return I;
 }
 
-const Mat& contrast_bright_img(Mat& I, double alpha, int beta) {
+void contrast_bright_img(Mat& I, double alpha, int beta) {
 	//Mat res = Mat::zeros(I.size(), I.type());
 #if 1
 	convertScaleAbs(I, I, alpha, beta);
@@ -396,17 +384,16 @@ const Mat& contrast_bright_img(Mat& I, double alpha, int beta) {
 		}
 	}
 #endif
-	return I;
 }
 
-const Mat canny_img(const Mat& I, double threshold1, double threshold2) {
+Mat canny_img(const Mat& I, double threshold1, double threshold2) {
 	Mat edges;
 	Mat grey = grey_img(I);
 	cv::Canny(grey, edges, threshold1, threshold2);
 	return edges;
 }
 
-const Mat sobel_img(const Mat& I, bool borizontal, int ksize, double scale, double delta) {
+Mat sobel_img(const Mat& I, bool borizontal, int ksize, double scale, double delta) {
 	Mat grad;
 	Mat abs_grad;
 	int ddepth = CV_16S;
@@ -422,7 +409,7 @@ const Mat sobel_img(const Mat& I, bool borizontal, int ksize, double scale, doub
 	return abs_grad;
 }
 
-const Mat sobel_img_XY(const Mat& I, int ksize, double scale, double delta) {
+Mat sobel_img_XY(const Mat& I, int ksize, double scale, double delta) {
 	Mat grad;
 	Mat abs_grad_x = sobel_img(I, true, ksize, scale, delta);
 	Mat abs_grad_y = sobel_img(I, false, ksize, scale, delta);
@@ -431,7 +418,7 @@ const Mat sobel_img_XY(const Mat& I, int ksize, double scale, double delta) {
 	return grad;
 }
 
-const Mat scharr_img(const Mat& I, bool borizontal) {
+Mat scharr_img(const Mat& I, bool borizontal) {
 	Mat grad, abs_grad;
 
 	Mat grey = grey_img(I);
@@ -446,7 +433,7 @@ const Mat scharr_img(const Mat& I, bool borizontal) {
 	return abs_grad;
 }
 
-const Mat scharr_img_XY(const Mat& I) {
+Mat scharr_img_XY(const Mat& I) {
 	Mat grad;
 	Mat abs_grad_x = scharr_img(I, true);
 	Mat abs_grad_y = scharr_img(I, false);
@@ -454,7 +441,7 @@ const Mat scharr_img_XY(const Mat& I) {
 	return grad;
 }
 
-const Mat prewitt_img(const Mat& I, bool borizontal) {
+Mat prewitt_img(const Mat& I, bool borizontal) {
 	Mat grey = grey_img(I);
 
 	if (borizontal) {
@@ -467,7 +454,7 @@ const Mat prewitt_img(const Mat& I, bool borizontal) {
 	}
 }
 
-const Mat prewitt_img_XY(const Mat& I) {
+Mat prewitt_img_XY(const Mat& I) {
 	Mat grad;
 	Mat abs_grad_x = prewitt_img(I, true);
 	Mat abs_grad_y = prewitt_img(I, false);
@@ -475,16 +462,15 @@ const Mat prewitt_img_XY(const Mat& I) {
 	return grad;
 }
 
-const Mat laplacian_img(const Mat& I, int sigma) {
+Mat laplacian_img(const Mat& I) {
 	Mat laplace, result;
 	Mat grey = grey_img(I);
 	cv::Laplacian(grey, laplace, CV_16S, 5);
-	//cv::convertScaleAbs(laplace, result, (sigma + 1) * 0.25);
 	cv::convertScaleAbs(laplace, result);
 	return result;
 }
 
-const Mat blur_img(const Mat& I, BlurType smoothType, int ksize, int sigma) {
+Mat blur_img(const Mat& I, BlurType smoothType, int ksize, int sigma) {
 	ksize = ksize | 1; // ksize must be odd number
 	Mat smoothed = I.clone();
 	if (smoothType == GAUSSIAN) {
@@ -500,14 +486,41 @@ const Mat blur_img(const Mat& I, BlurType smoothType, int ksize, int sigma) {
 	return smoothed;
 }
 
-const Mat& face_detect(Mat& img, const char* haarXML, double scale) {
+Mat cornerHarris(const Mat& src) {
+	int blockSize = 2;
+	int apertureSize = 3;
+	double k = 0.04;
+	int thresh = 200;
+	Mat src_gray = grey_img(src);
+
+	Mat dst = Mat::zeros(src.size(), CV_32FC1);
+
+	cornerHarris(src_gray, dst, blockSize, apertureSize, k);
+	Mat dst_norm, dst_norm_scaled;
+	normalize(dst, dst_norm, 0, 255, NORM_MINMAX, CV_32FC1, Mat());
+	convertScaleAbs(dst_norm, dst_norm_scaled);
+	for (int i = 0; i < dst_norm.rows; i++)
+	{
+		for (int j = 0; j < dst_norm.cols; j++)
+		{
+			if ((int)dst_norm.at<float>(i, j) > thresh)
+			{
+				circle(dst_norm_scaled, Point(j, i), 5, Scalar(0), 2, 8, 0);
+			}
+		}
+	}
+	return dst_norm_scaled;
+}
+
+void face_detect(Mat& img, const char* haarXML, double scale) {
 	vector<Rect> faces, faces2;
 	Mat gray, smallImg;
 	CascadeClassifier cascade;
 
 	cascade.load(haarXML);
-	if (cascade.empty())
-		return img;
+	if (cascade.empty()) {
+		return;
+	}
 
 	cvtColor(img, gray, COLOR_BGR2GRAY); // Convert to Gray Scale
 	double fx = 1 / scale;
@@ -517,7 +530,7 @@ const Mat& face_detect(Mat& img, const char* haarXML, double scale) {
 	equalizeHist(smallImg, smallImg);
 
 	// Detect faces of different sizes using cascade classifier 
-	cascade.detectMultiScale(smallImg, faces, 1.1, 2, 0 | CASCADE_SCALE_IMAGE, Size(30, 30));
+	cascade.detectMultiScale(smallImg, faces, 1.1, 2, 0 | CASCADE_SCALE_IMAGE); //Size(30, 30)
 
 	// Draw circles around the faces
 	for (size_t i = 0; i < faces.size(); i++) {
@@ -541,6 +554,4 @@ const Mat& face_detect(Mat& img, const char* haarXML, double scale) {
 					cvRound((r.y + r.height - 1) * scale)), color, 3, 8, 0);
 		}
 	}
-
-	return img;
 }

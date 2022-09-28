@@ -11,9 +11,9 @@
 
 YoutubeUrlDlg::YoutubeUrlDlg(QWidget* parent)
 	: QDialog(parent)
+	, ui(std::make_unique<Ui::YoutubeUrlDlg>())
 	, m_youtubeUrl("")
 {
-	ui = new Ui::YoutubeUrlDlg();
 	ui->setupUi(this);
 
 	setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
@@ -23,10 +23,9 @@ YoutubeUrlDlg::YoutubeUrlDlg(QWidget* parent)
 
 YoutubeUrlDlg::~YoutubeUrlDlg()
 {
-	delete ui;
 }
 
-const QString& YoutubeUrlDlg::get_url() const
+QString YoutubeUrlDlg::get_url() const
 {
 	return m_youtubeUrl;
 }
@@ -54,7 +53,7 @@ void YoutubeUrlDlg::on_btn_Ok_clicked()
 	msgBox.exec();
 }
 
-const QString YoutubeUrlDlg::parse_youtubeUrl(const QString& url)
+QString YoutubeUrlDlg::parse_youtubeUrl(const QString& url)
 {
 	QProcess process;
 	QString home = QDir::currentPath();

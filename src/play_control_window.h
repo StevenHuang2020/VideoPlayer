@@ -4,7 +4,7 @@
 #include <QFrame>
 #include <QPainter>
 #include <QSlider>
-
+#include <memory>
 
 namespace Ui { class play_control_window; };
 
@@ -17,7 +17,7 @@ public:
 	~play_control_window();
 
 private:
-	Ui::play_control_window* ui;
+	std::unique_ptr<Ui::play_control_window> ui;
 private:
 	int m_hours;
 	int m_mins;

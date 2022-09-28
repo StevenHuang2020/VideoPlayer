@@ -1,7 +1,7 @@
 #ifndef __APP_SETTINGS_H__
 #define __APP_SETTINGS_H__
 #include <QSettings>
-
+#include <memory>
 
 typedef enum SectionID {
 	SECTION_ID_NONE = -1,
@@ -23,11 +23,11 @@ public:
 	AppSettings();
 	~AppSettings();
 private:
-	QSettings* m_pSettings;
+	std::unique_ptr <QSettings> m_pSettings;
 
 	static const Section m_sections[];
 private:
-	void print_settings();
+	void print_settings() const;
 
 	void set_value(SectionID id, const QString& key, const QStringList& value);
 	void set_value(const QString& group, const QString& key, const QStringList& value);

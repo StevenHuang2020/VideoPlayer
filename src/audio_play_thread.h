@@ -9,6 +9,7 @@
 #include <QFile>
 #include <QDebug>
 #include <QWaitCondition>
+#include <memory>
 #include "packets_sync.h"
 
 
@@ -31,7 +32,7 @@ public:
 	~AudioPlayThread();
 private:
 	QAudioDeviceInfo* m_pDevice;
-	QAudioOutput* m_pOutput;
+	std::unique_ptr<QAudioOutput> m_pOutput;
 	QIODevice* m_audioDevice;
 
 	VideoState* m_pState;
@@ -54,7 +55,7 @@ public:
 public slots:
 	void stop_thread();
 public:
-	bool init_resample_param(AVCodecContext* pAudio, AVSampleFormat sample_fmt, VideoState* is);
+	bool init_resample_param(const AVCodecContext* pAudio, AVSampleFormat sample_fmt, VideoState* is);
 	void final_resample_param();
 	float get_device_volume() const;
 	void set_device_volume(float volume);

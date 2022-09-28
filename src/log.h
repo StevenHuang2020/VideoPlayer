@@ -6,6 +6,7 @@
 #include <QTextStream>
 #include <QFileInfo>
 #include <QTime>
+#include <memory>
 
 void logOutput(const QtMsgType type, const QMessageLogContext& context, const QString& msg);
 
@@ -15,7 +16,7 @@ private:
 	Logger(const QString& file = "log.txt");
 	~Logger();
 private:
-	QFile* m_logfile;
+	std::unique_ptr<QFile> m_logfile;
 public:
 	static Logger& instance() {
 		static Logger instance;

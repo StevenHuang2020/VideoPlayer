@@ -26,7 +26,7 @@
 
 MainWindow::MainWindow(QWidget* parent)
 	: QMainWindow(parent)
-	, ui(new Ui::MainWindow)
+	, ui(std::make_unique<Ui::MainWindow>())
 	, m_videoFile("")
 	, m_pVideoState(NULL)
 	, m_pDecodeVideoThread(NULL)
@@ -74,7 +74,6 @@ MainWindow::~MainWindow()
 {
 	stop_play();
 	save_settings();
-	delete ui;
 }
 
 void MainWindow::create_video_label()
@@ -401,7 +400,6 @@ void MainWindow::resizeEvent(QResizeEvent* event)
 void MainWindow::moveEvent(QMoveEvent* event)
 {
 	update_play_control();
-	//update_video_label();
 }
 
 void MainWindow::keyPressEvent(QKeyEvent* event)
@@ -1660,7 +1658,8 @@ void MainWindow::image_cv(QImage& image)
 	}
 
 	if (ui->actionEqualizeHist->isChecked()) {
-		mat_to_qimage(equalized_hist_img(matImg), image);
+		equalized_hist_img(matImg);
+		mat_to_qimage(matImg, image);
 	}
 
 	if (ui->actionThreshold->isChecked()) {
@@ -1672,7 +1671,8 @@ void MainWindow::image_cv(QImage& image)
 	}
 
 	if (ui->actionReverse->isChecked()) {
-		mat_to_qimage(reverse_img(matImg), image);
+		reverse_img(matImg);
+		mat_to_qimage(matImg, image);
 	}
 
 	if (ui->actionColorReduce->isChecked()) {
@@ -1680,16 +1680,18 @@ void MainWindow::image_cv(QImage& image)
 		uchar table[256];
 		gen_color_table(table, sizeof(table), divideWith);
 		Mat table_mat = cv::Mat(1, 256, CV_8UC1, table);
-		Mat res = scane_img_LUT(matImg, table_mat);
-		mat_to_qimage(res, image);	//10
+		scane_img_LUT(matImg, table_mat);
+		mat_to_qimage(matImg, image);	//10
 	}
 
 	if (ui->actionGamma->isChecked()) {
-		mat_to_qimage(gamma_img(matImg, 1.2f), image);
+		gamma_img(matImg, 1.2f);
+		mat_to_qimage(matImg, image);
 	}
 
 	if (ui->actionContrastBright->isChecked()) {
-		mat_to_qimage(contrast_bright_img(matImg, 1.2, 30), image);
+		contrast_bright_img(matImg, 1.2, 30);
+		mat_to_qimage(matImg, image);
 	}
 
 	if (ui->actionCanny->isChecked()) {

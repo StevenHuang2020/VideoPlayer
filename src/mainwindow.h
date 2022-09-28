@@ -40,7 +40,7 @@ public:
 	~MainWindow();
 
 private:
-	Ui::MainWindow* ui;
+	std::unique_ptr<Ui::MainWindow> ui;
 	QString m_videoFile;
 
 	ReadThread* m_pPacketReadThread; //read packets thread
