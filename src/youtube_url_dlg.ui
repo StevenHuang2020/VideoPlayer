@@ -6,19 +6,19 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>384</width>
+    <width>480</width>
     <height>110</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>384</width>
+    <width>480</width>
     <height>110</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>384</width>
+    <width>480</width>
     <height>110</height>
    </size>
   </property>
@@ -56,7 +56,7 @@
       <item>
        <widget class="QLabel" name="label">
         <property name="text">
-         <string>Youtube Url:</string>
+         <string>Youtube Video Url:</string>
         </property>
        </widget>
       </item>

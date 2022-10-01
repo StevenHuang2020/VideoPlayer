@@ -53,6 +53,7 @@ MainWindow::MainWindow(QWidget* parent)
 	set_default_bkground();
 
 	qApp->installEventFilter(this);
+	setAcceptDrops(true);
 
 	ffmpeg_init();
 
@@ -285,19 +286,9 @@ void MainWindow::about_media_info()
 	if (ic == NULL)
 		return;
 
-	QString info = dump_format(ic, 0, pState->filename);
+	QString str = dump_format(ic, 0, pState->filename);
 
-	//qInfo("%s", qPrintable(info));
-	QMessageBox msgBox;
-	//info.replace(" ", "&nbsp;");
-	//msgBox.setTextFormat(Qt::RichText);
-	msgBox.setWindowTitle("Media information");
-	msgBox.setStyleSheet("QLabel{min-width: 760px;}");
-	msgBox.setText(info);
-	msgBox.setModal(true);
-	msgBox.show();
-	msgBox.move(frameGeometry().center() - msgBox.rect().center());
-	msgBox.exec();
+	show_msg_dlg(str, "Media information", "QLabel{min-width: 760px;}");
 }
 
 void MainWindow::create_play_control()
@@ -331,6 +322,21 @@ void MainWindow::update_video_label()
 		pLabel->resize(sizeCenter.width(), sizeCenter.height());
 		//pLabel->move(pt);
 	}
+}
+
+void MainWindow::show_msg_dlg(const QString& message, const QString& windowTitle, const QString& styleSheet)
+{
+	QMessageBox msgBox;
+
+	msgBox.setText(message);
+	msgBox.setWindowTitle(windowTitle);
+	msgBox.setStyleSheet(styleSheet);
+
+	msgBox.setModal(true);
+	msgBox.show();
+	msgBox.move(frameGeometry().center() - msgBox.rect().center());
+	msgBox.setWindowFlags(msgBox.windowFlags() | Qt::WindowStaysOnTopHint);
+	msgBox.exec();
 }
 
 void MainWindow::update_play_control()
@@ -460,6 +466,33 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* event)
 #endif
 	}
 	return false;
+}
+
+
+void MainWindow::dropEvent(QDropEvent* event)
+{
+	const QMimeData* mimeData = event->mimeData();
+
+	// check for our needed mime type, here a file or a list of files
+	if (!mimeData->hasUrls())
+		return;
+
+	QList<QUrl> urlList = mimeData->urls();
+
+	if (urlList.size() == 0)
+		return;
+
+	QString file = urlList.at(0).toLocalFile();
+	// call a function to open the files
+
+	start_to_play(file);
+}
+
+void MainWindow::dragEnterEvent(QDragEnterEvent* event)
+{
+	const QMimeData* mimeData = event->mimeData();
+	if (mimeData->hasUrls())
+		event->acceptProposedAction();
 }
 
 void MainWindow::check_hide_menubar(QMouseEvent* mouseEvent)
@@ -618,16 +651,7 @@ void MainWindow::on_actionKeyboard_Usage_triggered()
 	str += "H" + indent + "Show help\n";
 	str += "----------------------------------------------------";
 
-	QMessageBox msgBox;
-	//info.replace(" ", "&nbsp;");
-	//msgBox.setTextFormat(Qt::RichText);
-	msgBox.setWindowTitle("Keyboard Play Control");
-	//msgBox.setStyleSheet("QLabel{min-width: 760px;}");
-	msgBox.setText(str);
-	msgBox.setModal(true);
-	msgBox.show();
-	msgBox.move(frameGeometry().center() - msgBox.rect().center());
-	msgBox.exec();
+	show_msg_dlg(str, "Keyboard Play Control");
 }
 
 void MainWindow::resize_window(int width, int height)
@@ -1064,32 +1088,31 @@ void MainWindow::play_started(bool ret)
 
 void MainWindow::start_to_play(const QString& file)
 {
+	bool ret = is_playing();
+
+	if (ret) {
+		QString str = QString("File(%1) is playing, please stop it first. ").arg(m_videoFile);
+		show_msg_dlg(str);
+		return;
+	}
+
 	m_videoFile = file;
 
-	bool ret = start_play();
+	ret = start_play();
 	if (!ret) {
-		QMessageBox msgBox;
-
-		QString str = QString("File play failed, file: %1").arg(m_videoFile);
-		msgBox.setText(str);
-		msgBox.setModal(true);
-		msgBox.show();
-		msgBox.move(frameGeometry().center() - msgBox.rect().center()); //center parent window
-		msgBox.exec();
 
 		remove_recentfiles(file);
+
+		QString str = QString("File play failed, file: %1").arg(m_videoFile);
+		show_msg_dlg(str);
 		return;
 	}
 
 	set_current_file(file);
 }
 
-bool MainWindow::start_play()
+bool MainWindow::is_playing()
 {
-	//QElapsedTimer timer;
-	//timer.start();
-
-	bool ret = false;
 	if (m_pVideoState || m_pPacketReadThread \
 		|| m_pDecodeVideoThread || m_pDecodeAudioThread \
 		|| m_pAudioPlayThread || m_pVideoPlayThread \
@@ -1099,8 +1122,18 @@ bool MainWindow::start_play()
 		qDebug("VideoDecode=%p, AudioDecode=%p, SubtitleDecode=%p\n", m_pDecodeVideoThread,
 			m_pDecodeAudioThread, m_pDecodeSubtitleThread);
 		qDebug("VideoPlay=%p, AudioPlay=%p\n", m_pVideoPlayThread, m_pAudioPlayThread);
-		return ret;
+
+		return true;
 	}
+	return false;
+}
+
+bool MainWindow::start_play()
+{
+	//QElapsedTimer timer;
+	//timer.start();
+
+	bool ret = false;
 
 	QString msg = QString("Start to play file:%1").arg(m_videoFile);
 	qInfo("");
@@ -1514,7 +1547,7 @@ bool MainWindow::create_audio_play_thread()
 			if (!ret) {
 				qWarning("audio play init_device failed.");
 				return false;
-			}
+		}
 
 			ret = m_pAudioPlayThread->init_resample_param(pAudio);
 			if (!ret) {
@@ -1523,8 +1556,8 @@ bool MainWindow::create_audio_play_thread()
 			}
 #endif
 			return true;
-		}
 	}
+}
 	return false;
 }
 

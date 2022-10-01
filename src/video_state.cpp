@@ -379,7 +379,7 @@ int VideoStateData::stream_component_open(VideoState* is, int stream_index)
 	int ret = 0;
 	int stream_lowres = 0;
 
-	if (stream_index < 0 || stream_index >= ic->nb_streams)
+	if (stream_index < 0 || ((unsigned int)stream_index) >= ic->nb_streams)
 		return -1;
 
 	avctx = avcodec_alloc_context3(NULL);
@@ -523,7 +523,7 @@ void VideoStateData::stream_component_close(VideoState* is, int stream_index)
 	AVFormatContext* ic = is->ic;
 	AVCodecParameters* codecpar;
 
-	if (stream_index < 0 || stream_index >= ic->nb_streams)
+	if (stream_index < 0 || ((unsigned int)stream_index) >= ic->nb_streams)
 		return;
 
 	codecpar = ic->streams[stream_index]->codecpar;

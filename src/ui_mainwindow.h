@@ -311,7 +311,7 @@ public:
         actionLaplacian->setText(QApplication::translate("MainWindow", "Laplacian", nullptr));
         actionScharr->setText(QApplication::translate("MainWindow", "Scharr", nullptr));
         actionPrewitt->setText(QApplication::translate("MainWindow", "Prewitt", nullptr));
-        actionRemoveCV->setText(QApplication::translate("MainWindow", "No Selection", nullptr));
+        actionRemoveCV->setText(QApplication::translate("MainWindow", "Remove Selection", nullptr));
         actionKeyboard_Usage->setText(QApplication::translate("MainWindow", "Usage Tips", nullptr));
         menuMedia->setTitle(QApplication::translate("MainWindow", "Media", nullptr));
         menuRecent_Files->setTitle(QApplication::translate("MainWindow", "Recent Files", nullptr));

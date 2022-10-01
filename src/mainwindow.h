@@ -3,7 +3,7 @@
 
 #include <QMainWindow>
 #include <QMessageBox>
-#include <qevent.h>
+#include <QMouseEvent>
 #include <QFileDialog>
 #include <QThread>
 #include <QDesktopWidget>
@@ -12,6 +12,7 @@
 #include <QTimer>
 #include <QSettings>
 #include <QMutex>
+#include <QMimeData>
 
 //#include "decode_thread.h"
 #include "video_decode_thread.h"
@@ -66,7 +67,8 @@ private:
 	void moveEvent(QMoveEvent* event) override;
 	void keyPressEvent(QKeyEvent* event) override;
 	bool eventFilter(QObject* obj, QEvent* event) override;
-
+	void dropEvent(QDropEvent* event) override;
+	void dragEnterEvent(QDragEnterEvent* event) override;
 private slots:
 	void on_actionOpen_triggered();
 	void on_actionQuit_triggered();
@@ -109,6 +111,7 @@ public slots:
 	void about_media_info();
 
 	void image_cv(QImage&);
+	void show_msg_dlg(const QString& message = "", const QString& windowTitle = "Warning", const QString& styleSheet = "");
 signals:
 	void stop_audio_play_thread();
 	void stop_video_play_thread();
@@ -179,6 +182,7 @@ private:
 public:
 	void start_to_play(const QString& file);
 	bool start_play();
+	bool is_playing();
 	void stop_play();
 	void pause_play();
 	float volume_settings(bool set = true, float vol = 0);

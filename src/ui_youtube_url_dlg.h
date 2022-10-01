@@ -44,9 +44,9 @@ public:
     {
         if (YoutubeUrlDlg->objectName().isEmpty())
             YoutubeUrlDlg->setObjectName(QString::fromUtf8("YoutubeUrlDlg"));
-        YoutubeUrlDlg->resize(384, 110);
-        YoutubeUrlDlg->setMinimumSize(QSize(384, 110));
-        YoutubeUrlDlg->setMaximumSize(QSize(384, 110));
+        YoutubeUrlDlg->resize(480, 110);
+        YoutubeUrlDlg->setMinimumSize(QSize(480, 110));
+        YoutubeUrlDlg->setMaximumSize(QSize(480, 110));
         gridLayoutWidget = new QWidget(YoutubeUrlDlg);
         gridLayoutWidget->setObjectName(QString::fromUtf8("gridLayoutWidget"));
         gridLayoutWidget->setGeometry(QRect(0, 0, 381, 108));
@@ -120,7 +120,7 @@ public:
     void retranslateUi(QDialog *YoutubeUrlDlg)
     {
         YoutubeUrlDlg->setWindowTitle(QApplication::translate("YoutubeUrlDlg", "Open Youtube", nullptr));
-        label->setText(QApplication::translate("YoutubeUrlDlg", "Youtube Url:", nullptr));
+        label->setText(QApplication::translate("YoutubeUrlDlg", "Youtube Video Url:", nullptr));
         btn_Ok->setText(QApplication::translate("YoutubeUrlDlg", "Ok", nullptr));
         btn_Cancel->setText(QApplication::translate("YoutubeUrlDlg", "Cancel", nullptr));
     } // retranslateUi

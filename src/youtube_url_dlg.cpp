@@ -8,6 +8,7 @@
 #include <QMessageBox>
 #include "youtube_url_dlg.h"
 #include "ui_youtube_url_dlg.h"
+#include "mainwindow.h"
 
 YoutubeUrlDlg::YoutubeUrlDlg(QWidget* parent)
 	: QDialog(parent)
@@ -15,6 +16,7 @@ YoutubeUrlDlg::YoutubeUrlDlg(QWidget* parent)
 	, m_youtubeUrl("")
 {
 	ui->setupUi(this);
+	setLayout(ui->gridLayout);
 
 	setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 	// QObject::connect(ui->btn_Ok, SIGNAL(clicked()), this, SLOT(accept()));
@@ -45,12 +47,11 @@ void YoutubeUrlDlg::on_btn_Ok_clicked()
 
 	qDebug("Invalid youtube url:%s", qUtf8Printable(url));
 
-	QMessageBox msgBox;
-	msgBox.setText(QString("Please input a valid youtube url."));
-	msgBox.setModal(true);
-	msgBox.show();
-	msgBox.move(frameGeometry().center() - msgBox.rect().center());
-	msgBox.exec();
+	MainWindow* pMain = (MainWindow*)parentWidget();
+	if (pMain) {
+		QString str = QString("Please input a valid youtube url. ");
+		pMain->show_msg_dlg(str);
+	}
 }
 
 QString YoutubeUrlDlg::parse_youtubeUrl(const QString& url)
