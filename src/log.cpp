@@ -92,16 +92,6 @@ void logOutput(const QtMsgType type, const QMessageLogContext& context, const QS
 Logger::Logger(const QString& file) :
 	m_logfile(nullptr)
 {
-	try
-	{
-		if (m_logfile != nullptr)
-			throw std::runtime_error("error");
-	}
-	catch (std::runtime_error& e) {
-		const QString str = "m_logfile is already initialized: " + QString(e.what());
-		Output(str.toStdWString().c_str());
-	}
-
 	m_logfile = std::make_unique<QFile>(file);
 	m_logfile->open(QIODevice::WriteOnly | QIODevice::Append);
 }
