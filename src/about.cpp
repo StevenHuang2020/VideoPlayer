@@ -24,6 +24,8 @@ About::About(QWidget* parent)
 		~Qt::WindowMaximizeButtonHint &
 		~Qt::WindowContextHelpButtonHint);
 
+	setWindowFlags(windowFlags() | Qt::Popup); //Qt::WindowStaysOnTopHint
+
 	setFixedSize(400, 260);
 	init_label();
 }

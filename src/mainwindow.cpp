@@ -211,38 +211,38 @@ void MainWindow::set_current_file(const QString& fileName)
 {
 	setWindowFilePath(fileName);
 
-	QStringList files = m_settings.get_recentfiles();
+	QStringList files = m_settings.get_recentfiles().toStringList();
 	files.removeAll(fileName);
 	files.prepend(fileName);
 	while (files.size() > MaxRecentFiles)
 		files.removeLast();
 
-	m_settings.set_recentfiles(files);
+	m_settings.set_recentfiles("files", files);
 
 	update_recentfile_actions();
 }
 
 void MainWindow::clear_recentfiles()
 {
-	QStringList files = m_settings.get_recentfiles();
+	QStringList files = m_settings.get_recentfiles().toStringList();
 	files.clear();
-	m_settings.set_recentfiles(files);
+	m_settings.set_recentfiles("files", files);
 
 	update_recentfile_actions();
 }
 
 void MainWindow::remove_recentfiles(const QString& fileName)
 {
-	QStringList files = m_settings.get_recentfiles();
+	QStringList files = m_settings.get_recentfiles().toStringList();
 	files.removeAll(fileName);
-	m_settings.set_recentfiles(files);
+	m_settings.set_recentfiles("files", files);
 
 	update_recentfile_actions();
 }
 
 void MainWindow::update_recentfile_actions()
 {
-	QStringList files = m_settings.get_recentfiles();
+	QStringList files = m_settings.get_recentfiles().toStringList();
 
 	int numRecentFiles = qMin(files.size(), (int)MaxRecentFiles);
 
@@ -335,7 +335,7 @@ void MainWindow::show_msg_dlg(const QString& message, const QString& windowTitle
 	msgBox.setModal(true);
 	msgBox.show();
 	msgBox.move(frameGeometry().center() - msgBox.rect().center());
-	msgBox.setWindowFlags(msgBox.windowFlags() | Qt::WindowStaysOnTopHint);
+	msgBox.setWindowFlags(msgBox.windowFlags() | Qt::Popup);
 	msgBox.exec();
 }
 
@@ -637,7 +637,7 @@ void MainWindow::on_actionKeyboard_Usage_triggered()
 	QString str = "";
 	QString indent = "		";
 	//str += "Keyboard" + indent + "Function\n";
-	str += "----------------------------------------------------\n";
+	//str += "----------------------------------------------------\n";
 	str += "Space" + indent + "Pause/Play\n";
 	str += "M" + indent + "Mute/Unmute\n";
 	str += "F" + indent + "Fulllscreen/Unfullscreen\n";
@@ -649,7 +649,7 @@ void MainWindow::on_actionKeyboard_Usage_triggered()
 	str += "<" + indent + "Speed down\n";
 	str += ">" + indent + "Speed up\n";
 	str += "H" + indent + "Show help\n";
-	str += "----------------------------------------------------";
+	//str += "----------------------------------------------------";
 
 	show_msg_dlg(str, "Keyboard Play Control");
 }
@@ -1135,7 +1135,7 @@ bool MainWindow::start_play()
 
 	bool ret = false;
 
-	QString msg = QString("Start to play file:%1").arg(m_videoFile);
+	QString msg = QString("Start to play file: %1").arg(m_videoFile);
 	qInfo("");
 	qInfo("%s", qPrintable(msg)); //qUtf8Printable(msg)
 	displayStatusMessage(msg);
@@ -1547,7 +1547,7 @@ bool MainWindow::create_audio_play_thread()
 			if (!ret) {
 				qWarning("audio play init_device failed.");
 				return false;
-		}
+			}
 
 			ret = m_pAudioPlayThread->init_resample_param(pAudio);
 			if (!ret) {
@@ -1556,8 +1556,8 @@ bool MainWindow::create_audio_play_thread()
 			}
 #endif
 			return true;
+		}
 	}
-}
 	return false;
 }
 
@@ -1864,64 +1864,64 @@ void MainWindow::print_decodeContext(const AVCodecContext* pDecodeCtx, bool bVid
 void MainWindow::save_settings()
 {
 	bool res = ui->actionHide_Status->isChecked();
-	m_settings.set_general(QStringList(QString::number(int(res))), "hideStatus");
+	m_settings.set_general("hideStatus", int(res));
 	res = ui->actionHide_Play_Ctronl->isChecked();
-	m_settings.set_general(QStringList(QString::number(int(res))), "hidePlayContrl");
+	m_settings.set_general("hidePlayContrl", int(res));
 	res = ui->actionFullscreen->isChecked();
-	m_settings.set_general(QStringList(QString::number(int(res))), "fullScreen");
+	m_settings.set_general("fullScreen", int(res));
 
 	res = ui->actionHardware_decode->isChecked();
-	m_settings.set_general(QStringList(QString::number(int(res))), "openDXVA2");
+	m_settings.set_general("openDXVA2", int(res));
 	res = ui->actionLoop_Play->isChecked();
-	m_settings.set_general(QStringList(QString::number(int(res))), "loopPlay");
+	m_settings.set_general("loopPlay", int(res));
 
 	QString style = get_selected_style();
-	m_settings.set_general(QStringList(style), "style");
+	m_settings.set_general( "style", style);
 
-	m_settings.set_info(QStringList("Video player"), "software");
-	m_settings.set_info(QStringList(PLAYER_VERSION), "version");
-	m_settings.set_info(QStringList("Steven Huang"), "author");
+	m_settings.set_info("software", "Video player");
+	m_settings.set_info("version", PLAYER_VERSION);
+	m_settings.set_info("author", "Steven Huang");
 }
 
 void MainWindow::read_settings()
 {
 	int value;
-	QStringList values = m_settings.get_general("hideStatus");
-	if (values.size() > 0) {
-		value = values[0].toInt();
+	QVariant values = m_settings.get_general("hideStatus");
+	if (values.isValid()) {
+		value = values.toInt();
 		ui->actionHide_Status->setChecked(!!value);
 		hide_statusbar(value);
 	}
 
 	values = m_settings.get_general("hidePlayContrl");
-	if (values.size() > 0) {
-		value = values[0].toInt();
+	if (values.isValid()) {
+		value = values.toInt();
 		ui->actionHide_Play_Ctronl->setChecked(!!value);
 		hide_play_control(value);
 	}
 
 	values = m_settings.get_general("fullScreen");
-	if (values.size() > 0) {
-		value = values[0].toInt();
+	if (values.isValid()) {
+		value = values.toInt();
 		ui->actionFullscreen->setChecked(!!value);
 		show_fullscreen(value);
 	}
 
 	values = m_settings.get_general("openDXVA2");
-	if (values.size() > 0) {
-		value = values[0].toInt();
+	if (values.isValid()) {
+		value = values.toInt();
 		ui->actionHardware_decode->setChecked(!!value);
 	}
 
 	values = m_settings.get_general("loopPlay");
-	if (values.size() > 0) {
-		value = values[0].toInt();
+	if (values.isValid()) {
+		value = values.toInt();
 		ui->actionLoop_Play->setChecked(!!value);
 	}
 
 	values = m_settings.get_general("style");
-	if (values.size() > 0) {
-		QString style = values[0];
+	if (values.isValid()) {
+		QString style = values.toString();
 		set_style_action(style);
 
 		if (m_skin.get_style().contains(style)) {
@@ -1936,13 +1936,13 @@ void MainWindow::read_settings()
 float MainWindow::volume_settings(bool set, float vol)
 {
 	if (set) {
-		m_settings.set_general(QStringList(QString::number(float(vol), 'f', 1)), "volume");
+		m_settings.set_general("volume", QString::number(float(vol), 'f', 1));
 	}
 	else {
 		float value = 0.8f;
-		QStringList values = m_settings.get_general("volume");
-		if (values.size() > 0) {
-			value = values[0].toFloat();
+		QVariant values = m_settings.get_general("volume");
+		if (values.isValid()) {
+			value = values.toFloat();
 		}
 		return value;
 	}

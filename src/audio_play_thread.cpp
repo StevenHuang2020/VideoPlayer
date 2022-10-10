@@ -203,7 +203,7 @@ int AudioPlayThread::audio_decode_frame(VideoState* is)
 #if USE_AVFILTER_AUDIO
 	data_size = av_samples_get_buffer_size(NULL, af->frame->channels, af->frame->nb_samples,
 		AV_SAMPLE_FMT_S16, 1);
-	uint8_t* buffer_audio = (uint8_t*)av_malloc(data_size * sizeof(uint8_t));
+	uint8_t* const buffer_audio = (uint8_t*)av_malloc(data_size * sizeof(uint8_t));
 
 	memcpy(buffer_audio, af->frame->data[0], data_size);
 #else

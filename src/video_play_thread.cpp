@@ -465,7 +465,7 @@ bool VideoPlayThread::init_resample_param(AVCodecContext* pVideo, bool bHardware
 		}
 
 		int numBytes = av_image_get_buffer_size(AV_PIX_FMT_RGB24, pVideo->width, pVideo->height, 32);
-		uint8_t* buffer_RGB = (uint8_t*)av_malloc(numBytes * sizeof(uint8_t));
+		uint8_t* const buffer_RGB = (uint8_t*)av_malloc(numBytes * sizeof(uint8_t));
 		if (buffer_RGB == NULL) {
 			printf("Could not allocate buffer.\n");
 			return false;

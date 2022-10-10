@@ -4,9 +4,7 @@
 #include "version.h"
 #include <memory>
 
-QT_BEGIN_NAMESPACE
-namespace Ui { class About; }
-QT_END_NAMESPACE
+namespace Ui { class About; };
 
 class About : public QDialog
 {

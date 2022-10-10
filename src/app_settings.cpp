@@ -10,17 +10,16 @@
 #include "app_settings.h"
 
 
-const Section AppSettings::m_sections[] = {
+const AppSettings::Section AppSettings::m_sections[] = {
 	{ SECTION_ID_GENERAL, "General" },
 	{ SECTION_ID_INFO, "Info" },
 	{ SECTION_ID_RECENTFILES, "RecentFiles" },
 };
 
 
-AppSettings::AppSettings()
+AppSettings::AppSettings(const QString& file)
 {
-	QString config_file = "VideoPlayer.ini";
-	m_pSettings = std::make_unique<QSettings>(config_file, QSettings::IniFormat);
+	m_pSettings = std::make_unique<QSettings>(file, QSettings::IniFormat);
 	print_settings();
 }
 
@@ -47,13 +46,20 @@ void AppSettings::print_settings() const
 	}
 }
 
-void AppSettings::set_value(const QString& group, const QString& key, const QStringList& value)
+void AppSettings::set_value(SectionID id, const QString& key, const QVariant& value)
+{
+	if (id > SECTION_ID_NONE && id < SECTION_ID_MAX) {
+		set_value(QString(m_sections[id].str), key, value);
+	}
+}
+
+void AppSettings::set_value(const QString& group, const QString& key, const QVariant& value)
 {
 	QString key_str = group + "/" + key;
 	m_pSettings->setValue(key_str, value);
 }
 
-QStringList AppSettings::get_value(SectionID id, const QString& key) const
+QVariant AppSettings::get_value(SectionID id, const QString& key) const
 {
 	if (id > SECTION_ID_NONE && id < SECTION_ID_MAX) {
 		QString group = QString(m_sections[id].str);
@@ -62,40 +68,38 @@ QStringList AppSettings::get_value(SectionID id, const QString& key) const
 	return QStringList("");
 }
 
-QStringList AppSettings::get_value(const QString& group, const QString& key) const
+QVariant AppSettings::get_value(const QString& group, const QString& key) const
 {
 	QString key_str = group + "/" + key;
-	return m_pSettings->value(key_str).toStringList();
+	return m_pSettings->value(key_str);
 }
 
-void AppSettings::set_value(SectionID id, const QString& key, const QStringList& value)
-{
-	if (id > SECTION_ID_NONE && id < SECTION_ID_MAX) {
-		set_value(QString(m_sections[id].str), key, value);
-	}
-}
-
-QStringList AppSettings::get_recentfiles(const QString& key) const
-{
-	return get_value(SECTION_ID_RECENTFILES, key);
-}
-
-void AppSettings::set_recentfiles(const QStringList& value, const QString& key)
-{
-	set_value(SECTION_ID_RECENTFILES, key, value);
-}
-
-void AppSettings::set_general(const QStringList& value, const QString& key)
+void AppSettings::set_general(const QString& key, const QVariant& value)
 {
 	set_value(SECTION_ID_GENERAL, key, value);
 }
 
-QStringList AppSettings::get_general(const QString& key) const
+QVariant AppSettings::get_general(const QString& key) const
 {
 	return get_value(SECTION_ID_GENERAL, key);
 }
 
-void AppSettings::set_info(const QStringList& value, const QString& key)
+void AppSettings::set_info(const QString& key, const QVariant& value)
 {
 	set_value(SECTION_ID_INFO, key, value);
+}
+
+QVariant AppSettings::get_info(const QString& key) const
+{
+	return get_value(SECTION_ID_INFO, key);
+}
+
+void AppSettings::set_recentfiles(const QString& key, const QVariant& value)
+{
+	set_value(SECTION_ID_RECENTFILES, key, value);
+}
+
+QVariant AppSettings::get_recentfiles(const QString& key) const
+{
+	return get_value(SECTION_ID_RECENTFILES, key);
 }
