@@ -23,12 +23,12 @@ int packet_queue_init(PacketQueue* q)
 		return AVERROR(ENOMEM);
 	q->mutex = new QMutex();
 	if (!q->mutex) {
-		av_log(NULL, AV_LOG_FATAL, "new QMutex() error.\n");
+		av_log(nullptr, AV_LOG_FATAL, "new QMutex() error.\n");
 		return AVERROR(ENOMEM);
 	}
 	q->cond = new QWaitCondition();
 	if (!q->cond) {
-		av_log(NULL, AV_LOG_FATAL, "new QWaitCondition() error.\n");
+		av_log(nullptr, AV_LOG_FATAL, "new QWaitCondition() error.\n");
 		return AVERROR(ENOMEM);
 	}
 	q->abort_request = 1;
@@ -178,11 +178,11 @@ int frame_queue_init(FrameQueue* f, PacketQueue* pktq, int max_size, int keep_la
 	int i;
 	memset(f, 0, sizeof(FrameQueue));
 	if (!(f->mutex = new QMutex())) {
-		av_log(NULL, AV_LOG_FATAL, "new QMutex() error!\n");
+		av_log(nullptr, AV_LOG_FATAL, "new QMutex() error!\n");
 		return AVERROR(ENOMEM);
 	}
 	if (!(f->cond = new QWaitCondition())) {
-		av_log(NULL, AV_LOG_FATAL, "new QWaitCondition() error\n");
+		av_log(nullptr, AV_LOG_FATAL, "new QWaitCondition() error\n");
 		return AVERROR(ENOMEM);
 	}
 	f->pktq = pktq;
@@ -246,7 +246,7 @@ Frame* frame_queue_peek_writable(FrameQueue* f)
 	f->mutex->unlock();
 
 	if (f->pktq->abort_request)
-		return NULL;
+		return nullptr;
 
 	return &f->queue[f->windex];
 }
@@ -262,7 +262,7 @@ Frame* frame_queue_peek_readable(FrameQueue* f)
 	f->mutex->unlock();
 
 	if (f->pktq->abort_request)
-		return NULL;
+		return nullptr;
 
 	return &f->queue[(f->rindex + f->rindex_shown) % f->max_size];
 }
@@ -345,7 +345,7 @@ int get_video_frame(VideoState* is, AVFrame* frame)
 {
 	int got_picture = -1;
 
-	if ((got_picture = decoder_decode_frame(&is->viddec, frame, NULL)) < 0)
+	if ((got_picture = decoder_decode_frame(&is->viddec, frame, nullptr)) < 0)
 		return -1;
 
 	if (got_picture) {
@@ -406,9 +406,9 @@ void decoder_abort(Decoder* d, FrameQueue* fq)
 {
 	packet_queue_abort(d->queue);
 	frame_queue_signal(fq);
-	//SDL_WaitThread(d->decoder_tid, NULL);
+	//SDL_WaitThread(d->decoder_tid, nullptr);
 	((QThread*)(d->decoder_tid))->wait();
-	d->decoder_tid = NULL;
+	d->decoder_tid = nullptr;
 	packet_queue_flush(d->queue);
 }
 
@@ -717,7 +717,7 @@ double compute_target_delay(double delay, VideoState* is)
 		}
 	}
 
-	av_log(NULL, AV_LOG_TRACE, "video: delay=%0.3f A-V=%f\n", delay, -diff);
+	av_log(nullptr, AV_LOG_TRACE, "video: delay=%0.3f A-V=%f\n", delay, -diff);
 	return delay;
 }
 
@@ -840,7 +840,7 @@ int configure_filtergraph(AVFilterGraph* graph, const char* filtergraph,
 {
 	int ret;
 	int nb_filters = graph->nb_filters;
-	AVFilterInOut* outputs = NULL, * inputs = NULL;
+	AVFilterInOut* outputs = nullptr, * inputs = nullptr;
 
 	if (filtergraph) {
 		outputs = avfilter_inout_alloc();
@@ -853,14 +853,14 @@ int configure_filtergraph(AVFilterGraph* graph, const char* filtergraph,
 		outputs->name = av_strdup("in");
 		outputs->filter_ctx = source_ctx;
 		outputs->pad_idx = 0;
-		outputs->next = NULL;
+		outputs->next = nullptr;
 
 		inputs->name = av_strdup("out");
 		inputs->filter_ctx = sink_ctx;
 		inputs->pad_idx = 0;
-		inputs->next = NULL;
+		inputs->next = nullptr;
 
-		if ((ret = avfilter_graph_parse_ptr(graph, filtergraph, &inputs, &outputs, NULL)) < 0)
+		if ((ret = avfilter_graph_parse_ptr(graph, filtergraph, &inputs, &outputs, nullptr)) < 0)
 			goto fail;
 	}
 	else {
@@ -872,7 +872,7 @@ int configure_filtergraph(AVFilterGraph* graph, const char* filtergraph,
 	for (unsigned int i = 0; i < graph->nb_filters - nb_filters; i++)
 		FFSWAP(AVFilterContext*, graph->filters[i], graph->filters[i + nb_filters]);
 
-	ret = avfilter_graph_config(graph, NULL);
+	ret = avfilter_graph_config(graph, nullptr);
 fail:
 	avfilter_inout_free(&outputs);
 	avfilter_inout_free(&inputs);
@@ -885,9 +885,9 @@ int configure_audio_filters(VideoState* is, const char* afilters, int force_outp
 	int sample_rates[2] = { 0, -1 };
 	int64_t channel_layouts[2] = { 0, -1 };
 	int channels[2] = { 0, -1 };
-	AVFilterContext* filt_asrc = NULL, * filt_asink = NULL;
+	AVFilterContext* filt_asrc = nullptr, * filt_asink = nullptr;
 	char aresample_swr_opts[512] = "";
-	// const AVDictionaryEntry* e = NULL;
+	// const AVDictionaryEntry* e = nullptr;
 	char asrc_args[256];
 	int ret;
 
@@ -909,13 +909,13 @@ int configure_audio_filters(VideoState* is, const char* afilters, int force_outp
 
 	ret = avfilter_graph_create_filter(&filt_asrc,
 		avfilter_get_by_name("abuffer"), "ffplay_abuffer",
-		asrc_args, NULL, is->agraph);
+		asrc_args, nullptr, is->agraph);
 	if (ret < 0)
 		goto end;
 
 	ret = avfilter_graph_create_filter(&filt_asink,
 		avfilter_get_by_name("abuffersink"), "ffplay_abuffersink",
-		NULL, NULL, is->agraph);
+		nullptr, nullptr, is->agraph);
 	if (ret < 0)
 		goto end;
 
@@ -956,10 +956,10 @@ int configure_video_filters(AVFilterGraph* graph, VideoState* is, const char* vf
 	char sws_flags_str[512] = "";
 	char buffersrc_args[256];
 	int ret;
-	AVFilterContext* filt_src = NULL, * filt_out = NULL, * last_filter = NULL;
+	AVFilterContext* filt_src = nullptr, * filt_out = nullptr, * last_filter = nullptr;
 	AVCodecParameters* codecpar = is->video_st->codecpar;
-	AVRational fr = av_guess_frame_rate(is->ic, is->video_st, NULL);
-	// const AVDictionaryEntry* e = NULL;
+	AVRational fr = av_guess_frame_rate(is->ic, is->video_st, nullptr);
+	// const AVDictionaryEntry* e = nullptr;
 	int nb_pix_fmts = 0;
 
 	/*
@@ -996,13 +996,13 @@ int configure_video_filters(AVFilterGraph* graph, VideoState* is, const char* vf
 
 	if ((ret = avfilter_graph_create_filter(&filt_src,
 		avfilter_get_by_name("buffer"),
-		"ffplay_buffer", buffersrc_args, NULL,
+		"ffplay_buffer", buffersrc_args, nullptr,
 		graph)) < 0)
 		goto fail;
 
 	ret = avfilter_graph_create_filter(&filt_out,
 		avfilter_get_by_name("buffersink"),
-		"ffplay_buffersink", NULL, NULL, graph);
+		"ffplay_buffersink", nullptr, nullptr, graph);
 	if (ret < 0)
 		goto fail;
 
@@ -1019,7 +1019,7 @@ int configure_video_filters(AVFilterGraph* graph, VideoState* is, const char* vf
                                                                              \
     ret = avfilter_graph_create_filter(&filt_ctx,                            \
                                        avfilter_get_by_name(name),           \
-                                       "ffplay_" name, arg, NULL, graph);    \
+                                       "ffplay_" name, arg, nullptr, graph);    \
     if (ret < 0)                                                             \
         goto fail;                                                           \
                                                                              \
@@ -1031,15 +1031,15 @@ int configure_video_filters(AVFilterGraph* graph, VideoState* is, const char* vf
 } while (0)
 
 	if (autorotate) {
-		int32_t* displaymatrix = (int32_t*)av_stream_get_side_data(is->video_st, AV_PKT_DATA_DISPLAYMATRIX, NULL);
+		int32_t* displaymatrix = (int32_t*)av_stream_get_side_data(is->video_st, AV_PKT_DATA_DISPLAYMATRIX, nullptr);
 		double theta = get_rotation(displaymatrix);
 
 		if (fabs(theta - 90) < 1.0) {
 			INSERT_FILT("transpose", "clock");
 		}
 		else if (fabs(theta - 180) < 1.0) {
-			INSERT_FILT("hflip", NULL);
-			INSERT_FILT("vflip", NULL);
+			INSERT_FILT("hflip", nullptr);
+			INSERT_FILT("vflip", nullptr);
 		}
 		else if (fabs(theta - 270) < 1.0) {
 			INSERT_FILT("transpose", "cclock");
@@ -1086,7 +1086,7 @@ int audio_open(void* opaque, int64_t wanted_channel_layout, int wanted_nb_channe
 	wanted_spec.channels = wanted_nb_channels;
 	wanted_spec.freq = wanted_sample_rate;
 	if (wanted_spec.freq <= 0 || wanted_spec.channels <= 0) {
-		av_log(NULL, AV_LOG_ERROR, "Invalid sample rate or channel count!\n");
+		av_log(nullptr, AV_LOG_ERROR, "Invalid sample rate or channel count!\n");
 		return -1;
 	}
 	while (next_sample_rate_idx && next_sample_rates[next_sample_rate_idx] >= wanted_spec.freq)
@@ -1096,15 +1096,15 @@ int audio_open(void* opaque, int64_t wanted_channel_layout, int wanted_nb_channe
 	wanted_spec.samples = FFMAX(SDL_AUDIO_MIN_BUFFER_SIZE, 2 << av_log2(wanted_spec.freq / SDL_AUDIO_MAX_CALLBACKS_PER_SEC));
 	wanted_spec.callback = sdl_audio_callback;
 	wanted_spec.userdata = opaque;
-	while (!(audio_dev = SDL_OpenAudioDevice(NULL, 0, &wanted_spec, &spec, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE | SDL_AUDIO_ALLOW_CHANNELS_CHANGE))) {
-		av_log(NULL, AV_LOG_WARNING, "SDL_OpenAudio (%d channels, %d Hz): %s\n",
+	while (!(audio_dev = SDL_OpenAudioDevice(nullptr, 0, &wanted_spec, &spec, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE | SDL_AUDIO_ALLOW_CHANNELS_CHANGE))) {
+		av_log(nullptr, AV_LOG_WARNING, "SDL_OpenAudio (%d channels, %d Hz): %s\n",
 			wanted_spec.channels, wanted_spec.freq, SDL_GetError());
 		wanted_spec.channels = next_nb_channels[FFMIN(7, wanted_spec.channels)];
 		if (!wanted_spec.channels) {
 			wanted_spec.freq = next_sample_rates[next_sample_rate_idx--];
 			wanted_spec.channels = wanted_nb_channels;
 			if (!wanted_spec.freq) {
-				av_log(NULL, AV_LOG_ERROR,
+				av_log(nullptr, AV_LOG_ERROR,
 					"No more combinations to try, audio open failed\n");
 				return -1;
 			}
@@ -1112,14 +1112,14 @@ int audio_open(void* opaque, int64_t wanted_channel_layout, int wanted_nb_channe
 		wanted_channel_layout = av_get_default_channel_layout(wanted_spec.channels);
 	}
 	if (spec.format != AUDIO_S16SYS) {
-		av_log(NULL, AV_LOG_ERROR,
+		av_log(nullptr, AV_LOG_ERROR,
 			"SDL advised audio format %d is not supported!\n", spec.format);
 		return -1;
 	}
 	if (spec.channels != wanted_spec.channels) {
 		wanted_channel_layout = av_get_default_channel_layout(spec.channels);
 		if (!wanted_channel_layout) {
-			av_log(NULL, AV_LOG_ERROR,
+			av_log(nullptr, AV_LOG_ERROR,
 				"SDL advised channel count %d is not supported!\n", spec.channels);
 			return -1;
 		}
@@ -1130,10 +1130,10 @@ int audio_open(void* opaque, int64_t wanted_channel_layout, int wanted_nb_channe
 	audio_hw_params->channel_layout = wanted_channel_layout;
 	audio_hw_params->channels = wanted_nb_channels; // spec.channels;
 
-	audio_hw_params->frame_size = av_samples_get_buffer_size(NULL, audio_hw_params->channels, 1, audio_hw_params->fmt, 1);
-	audio_hw_params->bytes_per_sec = av_samples_get_buffer_size(NULL, audio_hw_params->channels, audio_hw_params->freq, audio_hw_params->fmt, 1);
+	audio_hw_params->frame_size = av_samples_get_buffer_size(nullptr, audio_hw_params->channels, 1, audio_hw_params->fmt, 1);
+	audio_hw_params->bytes_per_sec = av_samples_get_buffer_size(nullptr, audio_hw_params->channels, audio_hw_params->freq, audio_hw_params->fmt, 1);
 	if (audio_hw_params->bytes_per_sec <= 0 || audio_hw_params->frame_size <= 0) {
-		av_log(NULL, AV_LOG_ERROR, "av_samples_get_buffer_size failed\n");
+		av_log(nullptr, AV_LOG_ERROR, "av_samples_get_buffer_size failed\n");
 		return -1;
 	}
 	return 0;// spec.size;

@@ -14,17 +14,14 @@ class YoutubeUrlDlg : public QDialog
 public:
 	YoutubeUrlDlg(QWidget* parent = Q_NULLPTR);
 	~YoutubeUrlDlg();
-
-private:
-	std::unique_ptr<Ui::YoutubeUrlDlg> ui;
-
-private:
-	QString m_youtubeUrl;
+public:
+	QString get_url() const;
+	QString parse_youtubeUrl(const QString& url);
 
 private slots:
 	void on_btn_Ok_clicked();
 
-public:
-	QString get_url() const;
-	QString parse_youtubeUrl(const QString& url);
+private:
+	std::unique_ptr<Ui::YoutubeUrlDlg> ui;
+	QString m_youtubeUrl;
 };

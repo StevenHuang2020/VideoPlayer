@@ -8,7 +8,7 @@ class VideoDecodeThread : public QThread
 	Q_OBJECT
 
 public:
-	VideoDecodeThread(QObject* parent = nullptr, VideoState* pState = NULL);
+	VideoDecodeThread(QObject* parent = nullptr, VideoState* pState = nullptr);
 	~VideoDecodeThread();
 private:
 	VideoState* m_pState;

@@ -67,14 +67,15 @@ void mat_to_qimage(const cv::InputArray& image, QImage& out)
 	default:
 	{
 		qDebug("Unspoorted image format:%d", image.type());
-		throw invalid_argument("Image format not supported");
+		throw std::invalid_argument("Image format not supported");
 		break;
 	}
 	}
 }
 
-const QString print_mat(const char* name, const cv::Mat& M) {
-	ostringstream oss;
-	oss << name << endl << " " << M << endl;
+QString print_mat(const char* name, const cv::Mat& M) 
+{
+	std::ostringstream oss;
+	oss << name << "\n" << " " << M << "\n";
 	return QString(oss.str().c_str());
 }

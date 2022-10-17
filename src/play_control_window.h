@@ -15,23 +15,6 @@ class play_control_window : public QWidget
 public:
 	play_control_window(QWidget* parent = Q_NULLPTR);
 	~play_control_window();
-
-private:
-	std::unique_ptr<Ui::play_control_window> ui;
-private:
-	int m_hours;
-	int m_mins;
-	int m_secs;
-private:
-	void enable_progressbar(bool enable = true);
-	void enable_slider_vol(bool enable = true);
-	void enable_slider_speed(bool enable = true);
-	void init_slider_speed();
-	QString get_play_time(int hours, int mins, int secs) const;
-	int get_time_secs(int hours, int mins, int secs) const;
-	void clear_time();
-	void enable_play_buttons(bool enable = true);
-	void get_play_time_params(int total_secs, int& hours, int& mins, int& secs) const;
 public:
 	void update_play_time(int hours, int mins, int secs);
 	void update_play_time(int total_secs);
@@ -48,4 +31,21 @@ public:
 public slots:
 	void volume_muted(int mute);
 	void speed_changed(int speed);
+
+private:
+	void enable_progressbar(bool enable = true);
+	void enable_slider_vol(bool enable = true);
+	void enable_slider_speed(bool enable = true);
+	void init_slider_speed();
+	QString get_play_time(int hours, int mins, int secs) const;
+	int get_time_secs(int hours, int mins, int secs) const;
+	void clear_time();
+	void enable_play_buttons(bool enable = true);
+	void get_play_time_params(int total_secs, int& hours, int& mins, int& secs) const;
+
+private:
+	std::unique_ptr<Ui::play_control_window> ui;
+	int m_hours;
+	int m_mins;
+	int m_secs;
 };

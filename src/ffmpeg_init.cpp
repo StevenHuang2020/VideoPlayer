@@ -70,24 +70,24 @@ void print_ffmpeg_info()
 	qInfo("");
 }
 
-const QString dump_format(AVFormatContext* ic, int index, const char* url, int is_output)
+QString dump_format(AVFormatContext* ic, int index, const char* url, int is_output)
 {
 	QString str = "";
 	char tmp[BUFF_MAXLEN];
 	const char* indent = "  ";
-	uint8_t* printed = NULL;
+	uint8_t* printed = nullptr;
 
-	if (ic == NULL) {
+	if (ic == nullptr) {
 		qErrnoWarning("invalid parameter!");
 		goto fail;
 	}
 
-	if (url == NULL || (!url[0])) {
+	if (url == nullptr || (!url[0])) {
 		qErrnoWarning("url is invalid!");
 		goto fail;
 	}
 
-	printed = ic->nb_streams ? (uint8_t*)av_mallocz(ic->nb_streams) : NULL;
+	printed = ic->nb_streams ? (uint8_t*)av_mallocz(ic->nb_streams) : nullptr;
 	if (ic->nb_streams && !printed)
 		goto fail;
 
@@ -97,7 +97,7 @@ const QString dump_format(AVFormatContext* ic, int index, const char* url, int i
 		is_output ? "to" : "from", url);
 	str += tmp;
 
-	str += dump_metadata(NULL, ic->metadata, indent);
+	str += dump_metadata(nullptr, ic->metadata, indent);
 
 	if (!is_output) {
 		snprintf(tmp, sizeof(tmp), "%sDuration: ", indent);
@@ -124,7 +124,7 @@ const QString dump_format(AVFormatContext* ic, int index, const char* url, int i
 			int secs, us;
 			secs = llabs(ic->start_time / AV_TIME_BASE);
 			us = llabs(ic->start_time % AV_TIME_BASE);
-			//av_log(NULL, AV_LOG_INFO, ", start: %s%d.%06d", 	ic->start_time >= 0 ? "" : "-",	secs, (int)av_rescale(us, 1000000, AV_TIME_BASE));
+			//av_log(nullptr, AV_LOG_INFO, ", start: %s%d.%06d", 	ic->start_time >= 0 ? "" : "-",	secs, (int)av_rescale(us, 1000000, AV_TIME_BASE));
 			snprintf(tmp, sizeof(tmp), ", start: %s%d.%06d", ic->start_time >= 0 ? "" : "-", secs, (int)av_rescale(us, 1000000, AV_TIME_BASE));
 			str += tmp;
 		}
@@ -152,18 +152,18 @@ const QString dump_format(AVFormatContext* ic, int index, const char* url, int i
 			ch->end * av_q2d(ch->time_base));
 		str += tmp;
 
-		str += dump_metadata(NULL, ch->metadata, "      ");
+		str += dump_metadata(nullptr, ch->metadata, "      ");
 	}
 
 	if (ic->nb_programs) {
 		unsigned int j, k, total = 0;
 		for (j = 0; j < ic->nb_programs; j++) {
 			const AVProgram* program = ic->programs[j];
-			const AVDictionaryEntry* name = av_dict_get(program->metadata, "name", NULL, 0);
+			const AVDictionaryEntry* name = av_dict_get(program->metadata, "name", nullptr, 0);
 			snprintf(tmp, sizeof(tmp), "  Program %d %s\n", program->id, name ? name->value : "");
 			str += tmp;
 
-			str += dump_metadata(NULL, program->metadata, "    ");
+			str += dump_metadata(nullptr, program->metadata, "    ");
 
 			for (k = 0; k < program->nb_stream_indexes; k++) {
 				str += dump_stream_format(ic, program->stream_index[k], index, is_output);
@@ -188,13 +188,13 @@ fail:
 	return QString("");
 }
 
-const QString dump_metadata(void* ctx, const AVDictionary* m, const char* indent)
+QString dump_metadata(void* ctx, const AVDictionary* m, const char* indent)
 {
 	QString str = "";
 	char tmp[BUFF_MAXLEN];
 
-	if (m && !(av_dict_count(m) == 1 && av_dict_get(m, "language", NULL, 0))) {
-		const AVDictionaryEntry* tag = NULL;
+	if (m && !(av_dict_count(m) == 1 && av_dict_get(m, "language", nullptr, 0))) {
+		const AVDictionaryEntry* tag = nullptr;
 
 		snprintf(tmp, sizeof(tmp), "%sMetadata:\n", indent);
 		str += tmp;
@@ -226,7 +226,7 @@ const QString dump_metadata(void* ctx, const AVDictionary* m, const char* indent
 	return str;
 }
 
-const QString dump_stream_format(const AVFormatContext* ic, int i, int index, int is_output)
+QString dump_stream_format(const AVFormatContext* ic, int i, int index, int is_output)
 {
 	QString str = "";
 	char tmp[BUFF_MAXLEN];
@@ -235,13 +235,13 @@ const QString dump_stream_format(const AVFormatContext* ic, int i, int index, in
 	int flags = (is_output ? ic->oformat->flags : ic->iformat->flags);
 	const AVStream* st = ic->streams[i];
 	//const FFStream* const sti = cffstream(st);
-	const AVDictionaryEntry* lang = av_dict_get(st->metadata, "language", NULL, 0);
+	const AVDictionaryEntry* lang = av_dict_get(st->metadata, "language", nullptr, 0);
 	const char* separator = (const char*)ic->dump_separator;
 	AVCodecContext* avctx;
 	//AVCodecContext* st_avctx = (AVCodecContext*)st->priv_data;
 	int ret;
 
-	avctx = avcodec_alloc_context3(NULL);
+	avctx = avcodec_alloc_context3(nullptr);
 	if (!avctx)
 		goto fail;
 
@@ -349,15 +349,15 @@ const QString dump_stream_format(const AVFormatContext* ic, int i, int index, in
 		str += " (still image)";
 	str += "\n";
 
-	str += dump_metadata(NULL, st->metadata, "    ");
-	str += dump_sidedata(NULL, st, "    ");
+	str += dump_metadata(nullptr, st->metadata, "    ");
+	str += dump_sidedata(nullptr, st, "    ");
 	return str;
 
 fail:
 	return QString("");
 }
 
-const QString print_fps(double d, const char* postfix)
+QString print_fps(double d, const char* postfix)
 {
 	char tmp[BUFF_MAXLEN];
 
@@ -378,7 +378,7 @@ const QString print_fps(double d, const char* postfix)
 	return QString(tmp);
 }
 
-const QString dump_sidedata(void* ctx, const AVStream* st, const char* indent)
+QString dump_sidedata(void* ctx, const AVStream* st, const char* indent)
 {
 	QString str = "";
 	char tmp[BUFF_MAXLEN];

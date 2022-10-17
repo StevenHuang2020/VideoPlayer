@@ -10,9 +10,10 @@ class video_label : public QLabel
 public:
 	video_label(QWidget* parent = Q_NULLPTR);
 	~video_label();
-private:
-	void keyPressEvent(QKeyEvent* event) override;
 public:
 	void show_fullscreen(bool bFullscreen = true);
+
+private:
+	void keyPressEvent(QKeyEvent* event) override;
 };
 

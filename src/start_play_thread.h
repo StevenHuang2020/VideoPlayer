@@ -1,6 +1,5 @@
 #pragma once
 #include <QThread>
-#include "mainwindow.h"
 
 
 class StartPlayThread : public QThread

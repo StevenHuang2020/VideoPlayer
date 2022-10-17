@@ -8,11 +8,11 @@ class AudioDecodeThread : public QThread
 	Q_OBJECT
 
 public:
-	AudioDecodeThread(QObject* parent = nullptr, VideoState* pState = NULL);
+	AudioDecodeThread(QObject* parent = nullptr, VideoState* pState = nullptr);
 	~AudioDecodeThread();
-private:
-	VideoState* m_pState;
-
 protected:
 	void run() override;
+
+private:
+	VideoState* m_pState;
 };

@@ -12,11 +12,6 @@ void logOutput(const QtMsgType type, const QMessageLogContext& context, const QS
 
 
 class Logger {
-private:
-	Logger(const QString& file = "log.txt");
-	~Logger();
-private:
-	std::unique_ptr<QFile> m_logfile;
 public:
 	static Logger& instance() {
 		static Logger instance;
@@ -24,6 +19,12 @@ public:
 	}
 
 	void log(const QString& str);
+
+private:
+	Logger(const QString& file = "log.txt");
+	~Logger();
+private:
+	std::unique_ptr<QFile> m_logfile;
 };
 
 #endif /* end __LOG_H__ */

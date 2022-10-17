@@ -12,12 +12,11 @@
 
 AudioPlayThread::AudioPlayThread(QObject* parent, VideoState* pState)
 	: QThread(parent)
-	, m_pDevice(NULL)
 	, m_pOutput(nullptr)
 	, m_pState(pState)
 	, m_bExitThread(false)
+	, m_audioResample({})
 {
-	memset(&m_audioResample, 0, sizeof(Audio_Resample));
 	//print_device();
 }
 
@@ -28,7 +27,7 @@ AudioPlayThread::~AudioPlayThread()
 	final_resample_param();
 }
 
-void AudioPlayThread::print_device()
+void AudioPlayThread::print_device() const
 {
 	QAudioDeviceInfo deviceInfo = QAudioDeviceInfo::defaultOutputDevice();
 	auto deviceInfos = QAudioDeviceInfo::availableDevices(QAudio::AudioInput);
@@ -66,7 +65,6 @@ void AudioPlayThread::print_device()
 bool AudioPlayThread::init_device(int sample_rate, int channel, AVSampleFormat sample_fmt, float default_vol)
 {
 	QAudioDeviceInfo deviceInfo = QAudioDeviceInfo::defaultOutputDevice();
-	m_pDevice = &deviceInfo;
 
 	QAudioFormat format;
 	// Set up the format, eg.
@@ -78,12 +76,12 @@ bool AudioPlayThread::init_device(int sample_rate, int channel, AVSampleFormat s
 	format.setSampleType(QAudioFormat::SignedInt);
 
 	// qDebug("sample size=%d\n", 8 * av_get_bytes_per_sample(sample_fmt));
-	if (!m_pDevice->isFormatSupported(format)) {
+	if (!deviceInfo.isFormatSupported(format)) {
 		qWarning() << "Raw audio format not supported by backend, cannot play audio.";
 		return false;
 	}
 
-	m_pOutput = std::make_unique<QAudioOutput>(*m_pDevice, format);
+	m_pOutput = std::make_unique<QAudioOutput>(deviceInfo, format);
 	set_device_volume(default_vol);
 
 	m_audioDevice = m_pOutput->start();
@@ -163,7 +161,7 @@ void AudioPlayThread::run()
 
 		if (!isnan(is->audio_clock)) {
 			AVCodecContext* pAudioCodex = is->auddec.avctx;
-			int bytes_per_sec = av_samples_get_buffer_size(NULL, pAudioCodex->channels, pAudioCodex->sample_rate, AV_SAMPLE_FMT_S16, 1);
+			int bytes_per_sec = av_samples_get_buffer_size(nullptr, pAudioCodex->channels, pAudioCodex->sample_rate, AV_SAMPLE_FMT_S16, 1);
 			int64_t audio_callback_time = av_gettime_relative();
 			set_clock_at(&is->audclk, is->audio_clock - (double)(audio_size) / bytes_per_sec, is->audio_clock_serial, audio_callback_time / 1000000.0);
 			sync_clock_to_slave(&is->extclk, &is->audclk);
@@ -196,21 +194,21 @@ int AudioPlayThread::audio_decode_frame(VideoState* is)
 		frame_queue_next(&is->sampq);
 	} while (af->serial != is->audioq.serial);
 
-	/*data_size = av_samples_get_buffer_size(NULL, af->frame->channels,
+	/*data_size = av_samples_get_buffer_size(nullptr, af->frame->channels,
 		af->frame->nb_samples,
 		AVSampleFormat(af->frame->format), 1);*/
 
 #if USE_AVFILTER_AUDIO
-	data_size = av_samples_get_buffer_size(NULL, af->frame->channels, af->frame->nb_samples,
+	data_size = av_samples_get_buffer_size(nullptr, af->frame->channels, af->frame->nb_samples,
 		AV_SAMPLE_FMT_S16, 1);
 	uint8_t* const buffer_audio = (uint8_t*)av_malloc(data_size * sizeof(uint8_t));
 
 	memcpy(buffer_audio, af->frame->data[0], data_size);
 #else
 	struct SwrContext* swrCtx = m_audioResample.swrCtx;
-	data_size = av_samples_get_buffer_size(NULL, af->frame->channels, af->frame->nb_samples,
+	data_size = av_samples_get_buffer_size(nullptr, af->frame->channels, af->frame->nb_samples,
 		AV_SAMPLE_FMT_S16, 0);  //AVSampleFormat(af->frame->format)
-	uint8_t* buffer_audio = (uint8_t*)av_malloc(data_size * sizeof(uint8_t));
+	uint8_t* const buffer_audio = (uint8_t*)av_malloc(data_size * sizeof(uint8_t));
 
 	int ret = swr_convert(swrCtx, &buffer_audio, af->frame->nb_samples, (const uint8_t**)(af->frame->data), af->frame->nb_samples);
 	if (ret < 0) {
@@ -273,7 +271,7 @@ bool AudioPlayThread::init_resample_param(const AVCodecContext* pAudio, AVSample
 {
 	if (pAudio) {
 		int ret = -1;
-		struct SwrContext* swrCtx = NULL;
+		struct SwrContext* swrCtx = nullptr;
 #if USE_AVFILTER_AUDIO
 		if (is) {
 			AVFilterContext* sink = is->out_audio_filter;
@@ -288,7 +286,7 @@ bool AudioPlayThread::init_resample_param(const AVCodecContext* pAudio, AVSample
 			ret = swr_alloc_set_opts2(&swrCtx,
 				(AVChannelLayout*)&pAudio->ch_layout, sample_fmt, pAudio->sample_rate,
 				&channel_layout, (AVSampleFormat)format, pAudio->sample_rate,
-				0, NULL);
+				0, nullptr);
 
 			/*m_audioResample.channel_layout = channel_layout;
 			m_audioResample.sample_fmt = sample_fmt;

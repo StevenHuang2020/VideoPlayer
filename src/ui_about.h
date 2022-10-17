@@ -17,14 +17,12 @@
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QSpacerItem>
-#include <QtWidgets/QWidget>
 
 QT_BEGIN_NAMESPACE
 
 class Ui_About
 {
 public:
-    QWidget *layoutWidget;
     QGridLayout *gridLayout;
     QLabel *label;
     QHBoxLayout *horizontalLayout;
@@ -36,22 +34,21 @@ public:
     {
         if (About->objectName().isEmpty())
             About->setObjectName(QString::fromUtf8("About"));
-        About->resize(340, 220);
+        About->resize(400, 260);
         QSizePolicy sizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(About->sizePolicy().hasHeightForWidth());
         About->setSizePolicy(sizePolicy);
+        About->setMinimumSize(QSize(400, 260));
+        About->setMaximumSize(QSize(400, 260));
         About->setAcceptDrops(false);
-        layoutWidget = new QWidget(About);
-        layoutWidget->setObjectName(QString::fromUtf8("layoutWidget"));
-        layoutWidget->setGeometry(QRect(10, 0, 281, 201));
-        gridLayout = new QGridLayout(layoutWidget);
+        About->setModal(true);
+        gridLayout = new QGridLayout(About);
         gridLayout->setSpacing(6);
         gridLayout->setContentsMargins(11, 11, 11, 11);
         gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
-        gridLayout->setContentsMargins(0, 0, 0, 0);
-        label = new QLabel(layoutWidget);
+        label = new QLabel(About);
         label->setObjectName(QString::fromUtf8("label"));
         label->setTextFormat(Qt::PlainText);
         label->setScaledContents(false);
@@ -63,14 +60,14 @@ public:
         horizontalLayout = new QHBoxLayout();
         horizontalLayout->setSpacing(6);
         horizontalLayout->setObjectName(QString::fromUtf8("horizontalLayout"));
-        btn_Ok = new QPushButton(layoutWidget);
+        btn_Ok = new QPushButton(About);
         btn_Ok->setObjectName(QString::fromUtf8("btn_Ok"));
         sizePolicy.setHeightForWidth(btn_Ok->sizePolicy().hasHeightForWidth());
         btn_Ok->setSizePolicy(sizePolicy);
 
         horizontalLayout->addWidget(btn_Ok);
 
-        btn_Cancel = new QPushButton(layoutWidget);
+        btn_Cancel = new QPushButton(About);
         btn_Cancel->setObjectName(QString::fromUtf8("btn_Cancel"));
         sizePolicy.setHeightForWidth(btn_Cancel->sizePolicy().hasHeightForWidth());
         btn_Cancel->setSizePolicy(sizePolicy);

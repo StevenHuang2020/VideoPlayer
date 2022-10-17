@@ -23,7 +23,7 @@ void PlayerSkin::clear_skin()
 	qApp->setStyleSheet("");
 }
 
-const QStringList PlayerSkin::get_style() const
+QStringList PlayerSkin::get_style() const
 {
 	/*qDebug("system styles:");
 	for (const QString style: QStyleFactory::keys())
@@ -51,7 +51,7 @@ void PlayerSkin::set_custom_style(const QString& filename)
 	}
 }
 
-const QStringList PlayerSkin::get_custom_styles() const
+QStringList PlayerSkin::get_custom_styles() const
 {
 	QDir directory(m_qss_path);
 	return directory.entryList(QStringList() << "*.qss", QDir::Files);

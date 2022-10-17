@@ -31,7 +31,7 @@ void SubtitleDecodeThread::run()
 		if (!(sp = frame_queue_peek_writable(&is->subpq)))
 			return;
 
-		if ((got_subtitle = decoder_decode_frame(&is->subdec, NULL, &sp->sub)) < 0)
+		if ((got_subtitle = decoder_decode_frame(&is->subdec, nullptr, &sp->sub)) < 0)
 			break;
 
 		pts = 0;

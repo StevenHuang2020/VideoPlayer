@@ -38,7 +38,7 @@ void AudioDecodeThread::run()
 		return;
 
 	do {
-		if ((got_frame = decoder_decode_frame(&is->auddec, frame, NULL)) < 0)
+		if ((got_frame = decoder_decode_frame(&is->auddec, frame, nullptr)) < 0)
 			goto the_end;
 
 		if (got_frame) {
@@ -58,7 +58,7 @@ void AudioDecodeThread::run()
 				char buf1[1024], buf2[1024];
 				av_get_channel_layout_string(buf1, sizeof(buf1), -1, is->audio_filter_src.channel_layout);
 				av_get_channel_layout_string(buf2, sizeof(buf2), -1, dec_channel_layout);
-				av_log(NULL, AV_LOG_DEBUG,
+				av_log(nullptr, AV_LOG_DEBUG,
 					"Audio frame changed from rate:%d ch:%d fmt:%s layout:%s serial:%d to rate:%d ch:%d fmt:%s layout:%s serial:%d\n",
 					is->audio_filter_src.freq, is->audio_filter_src.channels, av_get_sample_fmt_name(is->audio_filter_src.fmt), buf1, last_serial,
 					frame->sample_rate, frame->channels, av_get_sample_fmt_name(AVSampleFormat(frame->format)), buf2, is->auddec.pkt_serial);
@@ -116,7 +116,7 @@ the_end:
 	avfilter_graph_free(&is->agraph);
 	if (is->afilters) {
 		av_free(is->afilters);
-		is->afilters = NULL;
+		is->afilters = nullptr;
 	}
 #endif
 

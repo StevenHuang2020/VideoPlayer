@@ -12,16 +12,17 @@ public:
 	PlayerSkin();
 	~PlayerSkin();
 
-private:
-	const static QString m_qss_path;
+public:
+	QStringList get_style() const;
+	void set_system_style(const QString& style);
+	void set_custom_style(const QString& filename);
+	QStringList get_custom_styles() const;
 
 private:
 	void clear_skin();
-public:
-	const QStringList get_style() const;
-	void set_system_style(const QString& style);
-	void set_custom_style(const QString& filename);
-	const QStringList get_custom_styles() const;
+
+private:
+	const static QString m_qss_path;
 };
 
 

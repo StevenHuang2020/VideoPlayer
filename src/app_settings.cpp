@@ -65,7 +65,7 @@ QVariant AppSettings::get_value(SectionID id, const QString& key) const
 		QString group = QString(m_sections[id].str);
 		return get_value(group, key);
 	}
-	return QStringList("");
+	return QVariant(QVariant::Invalid);
 }
 
 QVariant AppSettings::get_value(const QString& group, const QString& key) const

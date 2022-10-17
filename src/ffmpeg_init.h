@@ -1,7 +1,5 @@
-#ifndef __FFMPEFG_INIT_H__
-#define __FFMPEFG_INIT_H__
+#pragma once
 
-#include <stdio.h>
 #include <QDebug>
 
 extern "C" {
@@ -20,9 +18,8 @@ extern "C" {
 
 int ffmpeg_init();
 void print_ffmpeg_info();
-const QString dump_format(AVFormatContext* ic, int index, const char* url, int is_output = 0);
-const QString dump_metadata(void* ctx, const AVDictionary* m, const char* indent = "  ");
-const QString dump_stream_format(const AVFormatContext* ic, int i, int index, int is_output);
-const QString print_fps(double d, const char* postfix);
-const QString dump_sidedata(void* ctx, const AVStream* st, const char* indent);
-#endif /* end of __FFMPEFG_INIT_H__ */
+QString dump_format(AVFormatContext* ic, int index, const char* url, int is_output = 0);
+QString dump_metadata(void* ctx, const AVDictionary* m, const char* indent = "  ");
+QString dump_stream_format(const AVFormatContext* ic, int i, int index, int is_output);
+QString print_fps(double d, const char* postfix);
+QString dump_sidedata(void* ctx, const AVStream* st, const char* indent);

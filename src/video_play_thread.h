@@ -18,15 +18,10 @@ class VideoPlayThread : public QThread
 {
 	Q_OBJECT
 public:
-	VideoPlayThread(QObject* parent = NULL, VideoState* pState = NULL);
+	VideoPlayThread(QObject* parent = nullptr, VideoState* pState = nullptr);
 	~VideoPlayThread();
-private:
-	VideoState* m_pState;
-
-	Video_Resample m_Resample;
-	bool m_bExitThread;
-protected:
-	void run() override;
+public:
+	bool init_resample_param(AVCodecContext* pVideo, bool bHardware = false);
 
 public slots:
 	void stop_thread();
@@ -34,6 +29,9 @@ public slots:
 signals:
 	void frame_ready(const QImage&);
 	void subtitle_ready(const QString&);
+
+protected:
+	void run() override;
 
 private:
 	void video_refresh(VideoState* is, double* remaining_time);
@@ -47,8 +45,10 @@ private:
 		return a < 0 ? (a % b + b) : (a % b);
 	}
 	void parse_subtitle_ass(const QString& text);
-public:
-	bool init_resample_param(AVCodecContext* pVideo, bool bHardware = false);
 
+private:
+	VideoState* m_pState;
+	Video_Resample m_Resample;
+	bool m_bExitThread;
 };
 #endif

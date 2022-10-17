@@ -20,28 +20,21 @@ About::About(QWidget* parent)
 	ui->setupUi(this);
 
 	setLayout(ui->gridLayout);
+
 	setWindowFlags(windowFlags() &
 		~Qt::WindowMaximizeButtonHint &
 		~Qt::WindowContextHelpButtonHint);
 
-	setWindowFlags(windowFlags() | Qt::Popup); //Qt::WindowStaysOnTopHint
+	init_label();
 
 	setFixedSize(400, 260);
-	init_label();
+
+	connect(ui->btn_Ok, &QPushButton::clicked, this, &About::accept);
+	connect(ui->btn_Cancel, &QPushButton::clicked, this, &About::reject);
 }
 
 About::~About()
 {
-}
-
-void About::on_btn_Ok_clicked()
-{
-	QDialog::close();
-}
-
-void About::on_btn_Cancel_clicked()
-{
-	QDialog::close();
 }
 
 void About::init_label()

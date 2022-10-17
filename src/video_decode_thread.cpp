@@ -26,16 +26,16 @@ void VideoDecodeThread::run()
 	VideoState* is = m_pState;
 	AVFrame* frame = av_frame_alloc();
 	AVFrame* sw_frame = av_frame_alloc();
-	AVFrame* tmp_frame = NULL;
+	AVFrame* tmp_frame = nullptr;
 	double pts;
 	double duration;
 	int ret;
 	AVRational tb = is->video_st->time_base;
-	AVRational frame_rate = av_guess_frame_rate(is->ic, is->video_st, NULL);
+	AVRational frame_rate = av_guess_frame_rate(is->ic, is->video_st, nullptr);
 
 #if USE_AVFILTER_VIDEO
-	//AVFilterGraph* graph = NULL;
-	AVFilterContext* filt_out = NULL, * filt_in = NULL;
+	//AVFilterGraph* graph = nullptr;
+	AVFilterContext* filt_out = nullptr, * filt_in = nullptr;
 	int last_w = 0;
 	int last_h = 0;
 	enum AVPixelFormat last_format = AV_PIX_FMT_NONE;
@@ -60,7 +60,7 @@ void VideoDecodeThread::run()
 			|| last_serial != is->viddec.pkt_serial
 			|| last_vfilter_idx != is->vfilter_idx
 			|| is->req_vfilter_reconfigure) {
-			av_log(NULL, AV_LOG_DEBUG,
+			av_log(nullptr, AV_LOG_DEBUG,
 				"Video frame changed from size:%dx%d format:%s serial:%d to size:%dx%d format:%s serial:%d\n",
 				last_w, last_h,
 				(const char*)av_x_if_null(av_get_pix_fmt_name(last_format), "none"), last_serial,
@@ -118,7 +118,7 @@ void VideoDecodeThread::run()
 			tmp_frame = frame;
 			if (frame->format == AV_PIX_FMT_DXVA2_VLD) {
 				if ((ret = av_hwframe_transfer_data(sw_frame, frame, 0)) < 0) {
-					av_log(NULL, AV_LOG_WARNING, "Error transferring the data to system memory\n");
+					av_log(nullptr, AV_LOG_WARNING, "Error transferring the data to system memory\n");
 					goto the_end;
 				}
 				//sw_frame->hw_frames_ctx = frame->hw_frames_ctx;
@@ -150,7 +150,7 @@ the_end:
 	avfilter_graph_free(&is->vgraph);
 	if (is->vfilters) {
 		av_free(is->vfilters);
-		is->vfilters = NULL;
+		is->vfilters = nullptr;
 	}
 #endif
 	av_frame_free(&frame);

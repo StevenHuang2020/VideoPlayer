@@ -67,7 +67,7 @@ QString YoutubeUrlDlg::parse_youtubeUrl(const QString& url)
 	process.waitForFinished(); // sets current thread to sleep and waits for pingProcess end
 
 	QProcess::ExitStatus Status = process.exitStatus();
-	if (Status == 0) {
+	if (Status == QProcess::ExitStatus::NormalExit) {
 		QString output(process.readAllStandardOutput());
 		qDebug("output:%s", qUtf8Printable(output));
 		return output;

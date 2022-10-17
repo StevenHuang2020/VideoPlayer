@@ -34,19 +34,19 @@ int ReadThread::loop_read()
 {
 	int ret = -1;
 	VideoState* is = m_pPlayData;
-	AVPacket* pkt = NULL;
+	AVPacket* pkt = nullptr;
 	int pkt_in_play_range = 0;
 	int64_t stream_start_time = 0;
 	int64_t pkt_ts = 0;
 	//AVFormatContext* pFormatCtx = is->ic;
 	assert(is);
 	//assert(pFormatCtx);
-	if (is == NULL)
+	if (is == nullptr)
 		return -1;
 
 	pkt = av_packet_alloc();
 	if (!pkt) {
-		av_log(NULL, AV_LOG_FATAL, "Could not allocate packet.\n");
+		av_log(nullptr, AV_LOG_FATAL, "Could not allocate packet.\n");
 		ret = AVERROR(ENOMEM);
 		return -1;
 	}
@@ -74,7 +74,7 @@ int ReadThread::loop_read()
 
 			ret = avformat_seek_file(is->ic, -1, seek_min, seek_target, seek_max, is->seek_flags);
 			if (ret < 0) {
-				av_log(NULL, AV_LOG_ERROR, "%s: error while seeking\n", is->ic->url);
+				av_log(nullptr, AV_LOG_ERROR, "%s: error while seeking\n", is->ic->url);
 			}
 			else {
 				if (is->audio_stream >= 0)
@@ -130,14 +130,14 @@ int ReadThread::loop_read()
 					packet_queue_put_nullpacket(&is->audioq, pkt, is->audio_stream);
 				if (is->subtitle_stream >= 0)
 					packet_queue_put_nullpacket(&is->subtitleq, pkt, is->subtitle_stream);
-				
+
 				if (is->loop) { //loop
 					stream_seek(is, 0, 0, 0);
 				}
 				else {
 					is->eof = 1;
 					break; //add steven for auto exit read thread
-				}				
+				}
 			}
 			if (is->ic->pb && is->ic->pb->error) {
 				break;

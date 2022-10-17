@@ -21,6 +21,7 @@
 #include "audio_play_thread.h"
 #include "video_play_thread.h"
 #include "read_thread.h"
+#include "start_play_thread.h"
 #include "video_state.h"
 #include "play_control_window.h"
 #include "app_settings.h"
@@ -40,28 +41,18 @@ public:
 	MainWindow(QWidget* parent = nullptr);
 	~MainWindow();
 
-private:
-	std::unique_ptr<Ui::MainWindow> ui;
-	QString m_videoFile;
-
-	ReadThread* m_pPacketReadThread; //read packets thread
-	VideoDecodeThread* m_pDecodeVideoThread; //decode video thread
-	AudioDecodeThread* m_pDecodeAudioThread; //decode audio thread
-	SubtitleDecodeThread* m_pDecodeSubtitleThread; //decode subtitle thread
-
-	QTimer m_timer; //mouse moving timer
-
-	AppSettings m_settings;
-	PlayerSkin m_skin;
-	QString m_subtitle;
-
-private:
-	enum { MaxRecentFiles = 10 };	// keep recent play files
-	QAction* recentFileActs[MaxRecentFiles];
 public:
-	VideoStateData* m_pVideoState;	//for sync packets
-	AudioPlayThread* m_pAudioPlayThread; //audio play thread
-	VideoPlayThread* m_pVideoPlayThread; //video play thread
+	void start_to_play(const QString& file);
+	bool start_play();
+	bool is_playing();
+	void stop_play();
+	void pause_play();
+	float volume_settings(bool set = true, float vol = 0);
+
+	AudioPlayThread* get_audio_play_thread() { return m_pAudioPlayThread.get(); }
+	VideoPlayThread* get_video_play_thread() { return m_pVideoPlayThread.get(); }
+	VideoStateData* get_video_state_data() { return m_pVideoState.get(); }
+
 private:
 	void resizeEvent(QResizeEvent* event) override;
 	void moveEvent(QMoveEvent* event) override;
@@ -179,12 +170,30 @@ private:
 
 	void video_seek_inc(double incr);
 	void video_seek(double pos = 0, double incr = 0);
-public:
-	void start_to_play(const QString& file);
-	bool start_play();
-	bool is_playing();
-	void stop_play();
-	void pause_play();
-	float volume_settings(bool set = true, float vol = 0);
+
+private:
+	std::unique_ptr<Ui::MainWindow> ui;
+
+	std::unique_ptr<ReadThread> m_pPacketReadThread; //read packets thread
+	std::unique_ptr<VideoDecodeThread> m_pDecodeVideoThread; //decode video thread
+	std::unique_ptr<AudioDecodeThread> m_pDecodeAudioThread; //decode audio thread
+	std::unique_ptr<SubtitleDecodeThread> m_pDecodeSubtitleThread; //decode subtitle thread
+	std::unique_ptr<AudioPlayThread> m_pAudioPlayThread; //audio play thread
+	std::unique_ptr<VideoPlayThread> m_pVideoPlayThread; //video play thread
+	std::unique_ptr<VideoStateData> m_pVideoState;	//for sync packets
+	std::unique_ptr<StartPlayThread> m_pBeforePlayThread; //for time-consuming operations before play
+
+	QString m_videoFile;
+	QTimer m_timer; //mouse moving checker timer
+	AppSettings m_settings;
+	PlayerSkin m_skin;
+	QString m_subtitle;
+
+	std::unique_ptr<video_label> m_video_label;
+	std::unique_ptr<play_control_window> m_play_control_wnd;
+private:
+	enum { MaxRecentFiles = 20 };	// maximum recent play files
+	std::unique_ptr<QAction> m_recentFileActs[MaxRecentFiles];
+	std::unique_ptr<QAction> m_recentClear;
 };
 #endif // MAINWINDOW_H

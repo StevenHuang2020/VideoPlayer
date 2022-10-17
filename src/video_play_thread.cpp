@@ -127,7 +127,7 @@ void VideoPlayThread::video_refresh(VideoState* is, double* remaining_time)
 					if (frame_queue_nb_remaining(&is->subpq) > 1)
 						sp2 = frame_queue_peek_next(&is->subpq);
 					else
-						sp2 = NULL;
+						sp2 = nullptr;
 
 					if (sp->serial != is->subtitleq.serial
 						|| (is->vidclk.pts > (sp->pts + ((float)sp->sub.end_display_time / 1000)))
@@ -289,7 +289,7 @@ void VideoPlayThread::video_audio_display(VideoState* s)
 			s->rdft_data = av_malloc_array(nb_freq, 4 * sizeof(*s->rdft_data));
 		}
 		if (!s->rdft || !s->rdft_data) {
-			av_log(NULL, AV_LOG_ERROR, "Failed to allocate buffers for RDFT, switching to waves display\n");
+			av_log(nullptr, AV_LOG_ERROR, "Failed to allocate buffers for RDFT, switching to waves display\n");
 			s->show_mode = SHOW_MODE_WAVES;
 		}
 		else {
@@ -326,7 +326,7 @@ void VideoPlayThread::video_audio_display(VideoState* s)
 				}
 				SDL_UnlockTexture(s->vis_texture);
 			}
-			SDL_RenderCopy(renderer, s->vis_texture, NULL, NULL);
+			SDL_RenderCopy(renderer, s->vis_texture, nullptr, nullptr);
 		}
 		if (!s->paused)
 			s->xpos++;
@@ -338,7 +338,7 @@ void VideoPlayThread::video_audio_display(VideoState* s)
 
 void VideoPlayThread::video_image_display(VideoState* is)
 {
-	Frame* sp = NULL;
+	Frame* sp = nullptr;
 	Frame* vp = frame_queue_peek_last(&is->pictq);
 	Video_Resample* pResample = &m_Resample;
 
@@ -388,9 +388,9 @@ void VideoPlayThread::video_image_display(VideoState* is)
 					is->sub_convert_ctx = sws_getCachedContext(is->sub_convert_ctx,
 						sub_rect->w, sub_rect->h, AV_PIX_FMT_PAL8,
 						sub_rect->w, sub_rect->h, AV_PIX_FMT_BGRA,
-						0, NULL, NULL, NULL);
+						0, nullptr, nullptr, nullptr);
 					if (!is->sub_convert_ctx) {
-						av_log(NULL, AV_LOG_FATAL, "Cannot initialize the conversion context\n");
+						av_log(nullptr, AV_LOG_FATAL, "Cannot initialize the conversion context\n");
 						return;
 					}
 #if 1
@@ -409,7 +409,7 @@ void VideoPlayThread::video_image_display(VideoState* is)
 			}
 		}
 		else {
-			sp = NULL;
+			sp = nullptr;
 		}
 	}
 
@@ -453,20 +453,20 @@ bool VideoPlayThread::init_resample_param(AVCodecContext* pVideo, bool bHardware
 			pVideo->height,
 			AV_PIX_FMT_RGB24,   // sws_scale destination color scheme
 			SWS_BILINEAR,
-			NULL,
-			NULL,
-			NULL
+			nullptr,
+			nullptr,
+			nullptr
 		);
 
 		AVFrame* pFrameRGB = av_frame_alloc();
-		if (pFrameRGB == NULL) {
+		if (pFrameRGB == nullptr) {
 			printf("Could not allocate rgb frame.\n");
 			return false;
 		}
 
 		int numBytes = av_image_get_buffer_size(AV_PIX_FMT_RGB24, pVideo->width, pVideo->height, 32);
 		uint8_t* const buffer_RGB = (uint8_t*)av_malloc(numBytes * sizeof(uint8_t));
-		if (buffer_RGB == NULL) {
+		if (buffer_RGB == nullptr) {
 			printf("Could not allocate buffer.\n");
 			return false;
 		}
