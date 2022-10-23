@@ -93,7 +93,8 @@ void MainWindow::create_style_menu()
 
 	pMenu->addSeparator()->setText("System styles");
 
-	QActionGroup* alignmentGroup = new QActionGroup(this);
+	m_styleActsGroup = std::make_unique<QActionGroup>(this);
+	uint id = 0;
 
 	QStringList styles = m_skin.get_style();
 	for (int i = 0; i < styles.size(); ++i) {
@@ -101,10 +102,14 @@ void MainWindow::create_style_menu()
 
 		qDebug("style:%s", qUtf8Printable(style));
 		//const char* style = styles[i].toStdString().c_str();
-
 		QString name = "action" + style;
 
-		QAction* action = new QAction(this);
+		if (id >= MaxSkinStlyes)
+			break;
+
+		m_styleActions[id] = std::make_unique<QAction>(this);
+		const std::unique_ptr<QAction>& action = m_styleActions[id];
+
 		action->setCheckable(true);
 		action->setData(style);
 		if (i == 0) {
@@ -112,14 +117,15 @@ void MainWindow::create_style_menu()
 		}
 		action->setObjectName(QString::fromUtf8(name.toStdString().c_str()));
 		action->setText(QApplication::translate("MainWindow", style.toStdString().c_str(), nullptr));
-		pMenu->addAction(action);
+		pMenu->addAction(action.get());
 
-		connect(action, &QAction::triggered, this, &MainWindow::on_actionSystemStyle);
-		alignmentGroup->addAction(action);
+		connect(action.get(), &QAction::triggered, this, &MainWindow::on_actionSystemStyle);
+		m_styleActsGroup->addAction(action.get());
+
+		id++;
 	}
 
 	pMenu->addSeparator()->setText("Custom styles");
-	//pMenu->addSection("custom styles");
 
 	QStringList paths = m_skin.get_custom_styles();
 	for (int i = 0; i < paths.size(); ++i) {
@@ -132,15 +138,22 @@ void MainWindow::create_style_menu()
 		qDebug("path:%s, %s", qUtf8Printable(path), qUtf8Printable(filename));
 		QString name = "action" + filename;
 
-		QAction* action = new QAction(this);
+		if (id >= MaxSkinStlyes)
+			break;
+
+		m_styleActions[id] = std::make_unique<QAction>(this);
+		const std::unique_ptr<QAction>& action = m_styleActions[id];
+
 		action->setData(filename);
 		action->setCheckable(true);
 		action->setObjectName(QString::fromUtf8(name.toStdString().c_str()));
 		action->setText(QApplication::translate("MainWindow", filename.toStdString().c_str(), nullptr));
-		pMenu->addAction(action);
+		pMenu->addAction(action.get());
 
-		connect(action, &QAction::triggered, this, &MainWindow::on_actionCustomStyle);
-		alignmentGroup->addAction(action);
+		connect(action.get(), &QAction::triggered, this, &MainWindow::on_actionCustomStyle);
+		m_styleActsGroup->addAction(action.get());
+
+		id++;
 	}
 }
 
@@ -149,23 +162,23 @@ void MainWindow::create_cv_action_group()
 	QMenu* pMenuCV = ui->menuCV;
 	pMenuCV->setToolTipsVisible(true);
 
-	QActionGroup* alignmentGroup = new QActionGroup(this);
-	alignmentGroup->addAction(ui->actionRotate);
-	alignmentGroup->addAction(ui->actionRepeat);
-	alignmentGroup->addAction(ui->actionEqualizeHist);
-	alignmentGroup->addAction(ui->actionThreshold);
-	alignmentGroup->addAction(ui->actionThreshold_Adaptive);
-	alignmentGroup->addAction(ui->actionReverse);
-	alignmentGroup->addAction(ui->actionColorReduce);
-	alignmentGroup->addAction(ui->actionGamma);
-	alignmentGroup->addAction(ui->actionContrastBright);
-	alignmentGroup->addAction(ui->actionCanny);
-	alignmentGroup->addAction(ui->actionBlur);
-	alignmentGroup->addAction(ui->actionSobel);
-	alignmentGroup->addAction(ui->actionLaplacian);
-	alignmentGroup->addAction(ui->actionScharr);
-	alignmentGroup->addAction(ui->actionPrewitt);
-	alignmentGroup->addAction(ui->actionRemoveCV);
+	m_CvActsGroup = std::make_unique<QActionGroup>(this);
+	m_CvActsGroup->addAction(ui->actionRotate);
+	m_CvActsGroup->addAction(ui->actionRepeat);
+	m_CvActsGroup->addAction(ui->actionEqualizeHist);
+	m_CvActsGroup->addAction(ui->actionThreshold);
+	m_CvActsGroup->addAction(ui->actionThreshold_Adaptive);
+	m_CvActsGroup->addAction(ui->actionReverse);
+	m_CvActsGroup->addAction(ui->actionColorReduce);
+	m_CvActsGroup->addAction(ui->actionGamma);
+	m_CvActsGroup->addAction(ui->actionContrastBright);
+	m_CvActsGroup->addAction(ui->actionCanny);
+	m_CvActsGroup->addAction(ui->actionBlur);
+	m_CvActsGroup->addAction(ui->actionSobel);
+	m_CvActsGroup->addAction(ui->actionLaplacian);
+	m_CvActsGroup->addAction(ui->actionScharr);
+	m_CvActsGroup->addAction(ui->actionPrewitt);
+	m_CvActsGroup->addAction(ui->actionRemoveCV);
 
 #if NDEBUG
 	ui->actionTest_CV->setVisible(false);

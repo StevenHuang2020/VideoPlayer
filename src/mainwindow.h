@@ -13,6 +13,7 @@
 #include <QSettings>
 #include <QMutex>
 #include <QMimeData>
+#include <QActionGroup>
 
 //#include "decode_thread.h"
 #include "video_decode_thread.h"
@@ -130,7 +131,6 @@ private:
 	void print_size();
 	void keep_aspect_ratio(bool bWidth = true);
 	void create_style_menu();
-	//QLabel* get_video_label();
 	video_label* get_video_label() const;
 	QObject* get_object(const QString name) const;
 	void create_play_control();
@@ -192,8 +192,16 @@ private:
 	std::unique_ptr<video_label> m_video_label;
 	std::unique_ptr<play_control_window> m_play_control_wnd;
 private:
-	enum { MaxRecentFiles = 20 };	// maximum recent play files
+	enum {
+		MaxRecentFiles = 20,  // maximum recent play files
+		MaxSkinStlyes = 20,   // maximum sytyles
+	};
 	std::unique_ptr<QAction> m_recentFileActs[MaxRecentFiles];
 	std::unique_ptr<QAction> m_recentClear;
+
+	std::unique_ptr<QActionGroup> m_styleActsGroup; //style menus group
+	std::unique_ptr<QAction> m_styleActions[MaxSkinStlyes];
+
+	std::unique_ptr<QActionGroup> m_CvActsGroup; //cv menus group
 };
 #endif // MAINWINDOW_H

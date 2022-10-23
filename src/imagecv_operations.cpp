@@ -250,12 +250,6 @@ void exposure_img(Mat& I, uchar thresh) {
 	}
 }
 
-
-
-
-
-
-
 Mat threshold_img(const Mat& img, int thresh, int type) {
 	Mat grey = grey_img(img);
 	Mat res;

@@ -216,6 +216,7 @@ QImage gamma_image(const QImage& img, double exp)
 	return retImg;
 }
 
+/*
 QImage applyEffectToImage(QImage& src, QGraphicsEffect* effect, int extent)
 {
 	QGraphicsScene scene;
@@ -261,3 +262,4 @@ QImage opacity_img(QImage& img, double opacity)
 	//e->setOpacityMask();
 	return applyEffectToImage(img, e);
 }
+*/
