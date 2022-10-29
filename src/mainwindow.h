@@ -28,6 +28,7 @@
 #include "app_settings.h"
 #include "video_label.h"
 #include "player_skin.h"
+#include "audio_effect_gl.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -49,10 +50,16 @@ public:
 	void stop_play();
 	void pause_play();
 	float volume_settings(bool set = true, float vol = 0);
-
 	AudioPlayThread* get_audio_play_thread() { return m_pAudioPlayThread.get(); }
 	VideoPlayThread* get_video_play_thread() { return m_pVideoPlayThread.get(); }
 	VideoStateData* get_video_state_data() { return m_pVideoState.get(); }
+	void play_mute(bool mute);
+	void play_seek();
+	void play_seek_pre();
+	void play_seek_next();
+	void set_volume(int volume);
+	void set_play_speed();
+	void show_msg_dlg(const QString& message = "", const QString& windowTitle = "Warning", const QString& styleSheet = "");
 
 private:
 	void resizeEvent(QResizeEvent* event) override;
@@ -61,6 +68,7 @@ private:
 	bool eventFilter(QObject* obj, QEvent* event) override;
 	void dropEvent(QDropEvent* event) override;
 	void dragEnterEvent(QDragEnterEvent* event) override;
+
 private slots:
 	void on_actionOpen_triggered();
 	void on_actionQuit_triggered();
@@ -77,33 +85,23 @@ private slots:
 	void on_actionLoop_Play_triggered();
 	void on_actionMedia_Info_triggered();
 	void on_actionKeyboard_Usage_triggered();
+	void on_actionAudio_visualize_triggered();
+
 public slots:
 	void image_ready(const QImage&);
 	void subtitle_ready(const QString&);
-	void update_image(const QImage&);
-	void print_decodeContext(const AVCodecContext* pVideo, bool bVideo = true);
+	void audio_data(AudioData data);
+	void open_recentFile();
+	void clear_recentfiles();
+	void read_packet_stopped();
 	void decode_video_stopped();
 	void decode_audio_stopped();
 	void decode_subtitle_stopped();
 	void audio_play_stopped();
 	void video_play_stopped();
-	void read_packet_stopped();
 	void update_play_time();
 	void play_started(bool ret = true);
-	//void play_seek(int value);
-	void play_seek();
-	void play_seek_pre();
-	void play_seek_next();
-	void play_mute(bool mute);
-	void set_volume(int volume);
-	void set_play_spped();
 
-	void open_recentFile();
-	void clear_recentfiles();
-	void about_media_info();
-
-	void image_cv(QImage&);
-	void show_msg_dlg(const QString& message = "", const QString& windowTitle = "Warning", const QString& styleSheet = "");
 signals:
 	void stop_audio_play_thread();
 	void stop_video_play_thread();
@@ -113,6 +111,10 @@ signals:
 	void wait_stop_video_play_thread();
 
 private:
+	void update_image(const QImage&);
+	void print_decodeContext(const AVCodecContext* pVideo, bool bVideo = true);
+	void about_media_info();
+	void image_cv(QImage&);
 	void resize_window(int width = 800, int height = 480);
 	void center_window(QRect screen_rec);
 	void show_fullscreen(bool bFullscreen = true);
@@ -128,16 +130,15 @@ private:
 	void update_paly_control_volume();
 	void update_paly_control_status();
 	void update_paly_control_muted();
-	void print_size();
+	void print_size() const;
 	void keep_aspect_ratio(bool bWidth = true);
 	void create_style_menu();
 	video_label* get_video_label() const;
 	QObject* get_object(const QString name) const;
 	void create_play_control();
 	void update_play_control();
-	play_control_window* get_play_control() const;
+	PlayControlWnd* get_play_control() const;
 	void set_volume_updown(bool bUp = true, float unit = 0.2);
-
 	void create_recentfiles_menu();
 	void set_current_file(const QString& fileName);
 	void remove_recentfiles(const QString& fileName);
@@ -152,13 +153,13 @@ private:
 	void play_speed_adjust(bool up = true);
 	void create_video_label();
 	void update_video_label();
-private:
+	void create_audio_effect();
+	void start_send_data(bool bSend = true);
+	void show_audio_effect(bool bShow = true);
 	void play_control_key(Qt::Key key);
 	void set_default_bkground();
-
 	bool create_video_state(const char* filename, QThread* pThread);
 	void delete_video_state();
-
 	bool create_read_thread(); //read packet thread
 	bool create_decode_video_thread(); //decode thread
 	bool create_decode_audio_thread(); //decode audio thread
@@ -167,7 +168,6 @@ private:
 	bool create_audio_play_thread(); //audio play thread	
 	bool start_play_thread(); //this thread will init audio device to avoid frezzing ui
 	void all_thread_start();
-
 	void video_seek_inc(double incr);
 	void video_seek(double pos = 0, double incr = 0);
 
@@ -190,7 +190,8 @@ private:
 	QString m_subtitle;
 
 	std::unique_ptr<video_label> m_video_label;
-	std::unique_ptr<play_control_window> m_play_control_wnd;
+	std::unique_ptr<PlayControlWnd> m_play_control_wnd;
+	std::unique_ptr<AudioEffectGL> m_audio_effect_wnd;
 private:
 	enum {
 		MaxRecentFiles = 20,  // maximum recent play files
@@ -198,10 +199,8 @@ private:
 	};
 	std::unique_ptr<QAction> m_recentFileActs[MaxRecentFiles];
 	std::unique_ptr<QAction> m_recentClear;
-
 	std::unique_ptr<QActionGroup> m_styleActsGroup; //style menus group
 	std::unique_ptr<QAction> m_styleActions[MaxSkinStlyes];
-
 	std::unique_ptr<QActionGroup> m_CvActsGroup; //cv menus group
 };
 #endif // MAINWINDOW_H

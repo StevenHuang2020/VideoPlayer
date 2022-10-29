@@ -6,9 +6,7 @@
 #ifndef __PACKETS_SYNC_H__
 #define __PACKETS_SYNC_H__
 #include <QThread>
-#include <QDebug>
 #include <QMutex>
- // #include <QQueue>
 #include <QWaitCondition>
 
 #define USE_AVFILTER_AUDIO	1

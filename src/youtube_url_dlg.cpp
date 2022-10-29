@@ -27,11 +27,6 @@ YoutubeUrlDlg::~YoutubeUrlDlg()
 {
 }
 
-QString YoutubeUrlDlg::get_url() const
-{
-	return m_youtubeUrl;
-}
-
 void YoutubeUrlDlg::on_btn_Ok_clicked()
 {
 	QString url = ui->lineEdit->text();

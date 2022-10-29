@@ -153,6 +153,7 @@
     <addaction name="actionLoop_Play"/>
     <addaction name="separator"/>
     <addaction name="actionMedia_Info"/>
+    <addaction name="actionAudio_visualize"/>
    </widget>
    <addaction name="menuMedia"/>
    <addaction name="menuView"/>
@@ -425,6 +426,11 @@
   <action name="actionKeyboard_Usage">
    <property name="text">
     <string>Usage Tips</string>
+   </property>
+  </action>
+  <action name="actionAudio_visualize">
+   <property name="text">
+    <string>Audio visualize</string>
    </property>
   </action>
  </widget>

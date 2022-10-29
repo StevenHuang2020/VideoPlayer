@@ -67,8 +67,8 @@ void logOutput(const QtMsgType type, const QMessageLogContext& context, const QS
 	}
 
 #if !NDEBUG	// log to debug window with debug version
-	txt = QString("[%1][%2]%3 (file:%4:%5, fun:%6)").arg(time, type_str, msg.toLocal8Bit().constData(),
-		file.fileName(), QString::number(context.line), context.function);
+	txt = QString("[%1][%2]%3 (file:%4:%5, fun:%6)").arg(time).arg(type_str).arg(msg).arg(
+		file.fileName()).arg(context.line).arg(context.function);
 
 	QString output = txt + "\n";
 	Output(output.toStdWString().c_str());
@@ -76,7 +76,7 @@ void logOutput(const QtMsgType type, const QMessageLogContext& context, const QS
 	if (type <= QtDebugMsg)
 		return;
 
-	txt = QString("[%1][%2]%3").arg(time, type_str, msg.toLocal8Bit().constData());
+	txt = QString("[%1][%2]%3").arg(time).arg(type_str).arg(msg);
 
 	//QFile outFile("log");
 	//outFile.open(QIODevice::WriteOnly | QIODevice::Append); // QIODevice::Truncate

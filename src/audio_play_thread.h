@@ -13,6 +13,22 @@
 #include "packets_sync.h"
 
 
+#define BUFFER_LEN 5000 //1024
+
+typedef struct AudioData {
+	uint16_t len;
+	char buffer[BUFFER_LEN];
+}AudioData;
+
+typedef struct AudioFrameFmt {
+	uint sample_rate;
+	uint sample_fmt;	// AV_SAMPLE_FMT_S16
+	uint channel;
+	int byte_order;		// QAudioFormat::LittleEndian;
+	int sample_type;	// QAudioFormat::SignedInt
+}AudioFrameFmt;
+
+
 class AudioPlayThread : public QThread
 {
 	Q_OBJECT
@@ -31,8 +47,10 @@ public:
 	void final_resample_param();
 	float get_device_volume() const;
 	void set_device_volume(float volume);
+	void send_visual_open(bool bSend = true) { m_bSendToVisual = bSend; };
 signals:
 	void update_play_time();
+	void data_visual_ready(AudioData data);
 public slots:
 	void stop_thread();
 
@@ -59,5 +77,6 @@ private:
 	VideoState* m_pState;
 	Audio_Resample m_audioResample;
 	bool m_bExitThread;
+	bool m_bSendToVisual;
 };
 #endif /* end of __H_AUDIO_PLAY_H__ */

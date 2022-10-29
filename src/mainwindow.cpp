@@ -17,7 +17,6 @@
 #include "imagecv_operations.h"
 
 
-
 #if NDEBUG
 #define AUTO_HIDE_PLAYCONTROL 1		//release version
 #else
@@ -48,6 +47,7 @@ MainWindow::MainWindow(QWidget* parent)
 	create_style_menu();
 	create_recentfiles_menu();
 	create_cv_action_group();
+	create_audio_effect();
 
 	setWindowTitle(tr("Video Player"));
 	set_default_bkground();
@@ -85,6 +85,31 @@ void MainWindow::create_video_label()
 	m_video_label->setScaledContents(true);
 	//m_video_label->setWindowFlags(label_Video->windowFlags() | Qt::Widget);
 	m_video_label->show();
+}
+
+void MainWindow::create_audio_effect()
+{
+	m_audio_effect_wnd = std::make_unique<AudioEffectGL>(centralWidget());
+	m_audio_effect_wnd->setObjectName(QString::fromUtf8("audio_effect"));
+	m_audio_effect_wnd->hide();
+
+	connect(m_audio_effect_wnd.get(), &AudioEffectGL::hiden, this, &MainWindow::start_send_data);
+}
+
+void MainWindow::show_audio_effect(bool bShow)
+{
+	if (m_audio_effect_wnd == nullptr)
+		return;
+
+	QPoint pt = frameGeometry().center() - m_audio_effect_wnd->rect().center();
+	m_audio_effect_wnd->move(pt);
+
+	if (bShow) {
+		m_audio_effect_wnd->show();
+	}
+	else {
+		m_audio_effect_wnd->hide();
+	}
 }
 
 void MainWindow::create_style_menu()
@@ -299,7 +324,7 @@ void MainWindow::about_media_info()
 
 void MainWindow::create_play_control()
 {
-	m_play_control_wnd = std::make_unique<play_control_window>(this);
+	m_play_control_wnd = std::make_unique<PlayControlWnd>(this);
 	m_play_control_wnd->setObjectName(QString::fromUtf8("play_control"));
 	m_play_control_wnd->setGeometry(0, 0, 0, 65);
 	//m_play_control_wnd->setStyleSheet("border: 1px solid green;");
@@ -310,7 +335,7 @@ void MainWindow::create_play_control()
 	//m_play_control_wnd->show();
 }
 
-play_control_window* MainWindow::get_play_control() const
+PlayControlWnd* MainWindow::get_play_control() const
 {
 	// return (play_control_window*)get_object("play_control");
 	return m_play_control_wnd.get();
@@ -348,7 +373,7 @@ void MainWindow::show_msg_dlg(const QString& message, const QString& windowTitle
 
 void MainWindow::update_play_control()
 {
-	play_control_window* pPlayControl = get_play_control();
+	PlayControlWnd* pPlayControl = get_play_control();
 	if (pPlayControl) {
 		QSize sizeCenter = centralWidget()->size();
 		QStatusBar* pStatusBar = statusBar();
@@ -376,7 +401,7 @@ void MainWindow::set_default_bkground()
 	update_image(img);
 }
 
-void MainWindow::print_size()
+void MainWindow::print_size() const
 {
 	QRect rt = geometry();
 	qDebug("geometry rt:(x:%d, y:%d, w:%d, h:%d)", rt.x(), rt.y(), rt.width(), rt.height());
@@ -480,7 +505,6 @@ void MainWindow::dropEvent(QDropEvent* event)
 {
 	const QMimeData* mimeData = event->mimeData();
 
-	// check for our needed mime type, here a file or a list of files
 	if (!mimeData->hasUrls())
 		return;
 
@@ -490,7 +514,6 @@ void MainWindow::dropEvent(QDropEvent* event)
 		return;
 
 	QString file = urlList.at(0).toLocalFile();
-	// call a function to open the files
 
 	start_to_play(file);
 }
@@ -519,7 +542,7 @@ void MainWindow::check_hide_play_control()
 
 void MainWindow::auto_hide_play_control(bool bHide)
 {
-	play_control_window* pPlayControl = get_play_control();
+	PlayControlWnd* pPlayControl = get_play_control();
 	if (pPlayControl == nullptr)
 		return;
 
@@ -636,7 +659,8 @@ void MainWindow::on_actionLoop_Play_triggered()
 
 void MainWindow::on_actionMedia_Info_triggered()
 {
-	about_media_info();
+	if (is_playing())
+		about_media_info();
 }
 
 void MainWindow::on_actionKeyboard_Usage_triggered()
@@ -659,6 +683,14 @@ void MainWindow::on_actionKeyboard_Usage_triggered()
 	//str += "----------------------------------------------------";
 
 	show_msg_dlg(str, "Keyboard Play Control");
+}
+
+void MainWindow::on_actionAudio_visualize_triggered()
+{
+	if (is_playing()) {
+		show_audio_effect();
+		start_send_data();
+	}
 }
 
 void MainWindow::resize_window(int width, int height)
@@ -747,7 +779,7 @@ void MainWindow::keep_aspect_ratio(bool bWidth)
 
 void MainWindow::hide_play_control(bool bHide)
 {
-	play_control_window* pPlayControl = get_play_control();
+	PlayControlWnd* pPlayControl = get_play_control();
 	if (pPlayControl) {
 		bool bVisible = pPlayControl->isVisible();
 		if (bVisible == bHide) {
@@ -758,7 +790,7 @@ void MainWindow::hide_play_control(bool bHide)
 
 void MainWindow::set_paly_control_wnd(bool set)
 {
-	play_control_window* pPlayControl = get_play_control();
+	PlayControlWnd* pPlayControl = get_play_control();
 	if (pPlayControl == nullptr)
 		return;
 
@@ -785,8 +817,7 @@ void MainWindow::set_paly_control_wnd(bool set)
 			mins %= 60;
 
 			//qInfo("duration:%02d:%02d:%02d.%03d", hours, mins, secs, us);
-			duration_str = QString("%1:%2:%3.%4").arg(QString::number(hours), QString::number(mins),
-				QString::number(secs), QString::number(us));
+			duration_str = QString("%1:%2:%3.%4").arg(hours).arg(mins).arg(secs).arg(us);
 
 			pPlayControl->set_total_time(hours, mins, secs);
 		}
@@ -823,7 +854,7 @@ void MainWindow::set_volume_updown(bool bUp, float unit)
 
 void MainWindow::update_paly_control_volume()
 {
-	play_control_window* pPlayControl = get_play_control();
+	PlayControlWnd* pPlayControl = get_play_control();
 	if (pPlayControl == nullptr)
 		return;
 
@@ -836,7 +867,7 @@ void MainWindow::update_paly_control_volume()
 
 void MainWindow::update_paly_control_muted()
 {
-	play_control_window* pPlayControl = get_play_control();
+	PlayControlWnd* pPlayControl = get_play_control();
 	if (pPlayControl == nullptr)
 		return;
 
@@ -852,7 +883,7 @@ void MainWindow::update_paly_control_muted()
 
 void MainWindow::update_paly_control_status()
 {
-	play_control_window* pPlayControl = get_play_control();
+	PlayControlWnd* pPlayControl = get_play_control();
 	if (pPlayControl == nullptr)
 		return;
 
@@ -868,7 +899,7 @@ void MainWindow::update_paly_control_status()
 
 void MainWindow::update_play_time()
 {
-	play_control_window* pPlayControl = get_play_control();
+	PlayControlWnd* pPlayControl = get_play_control();
 	if (pPlayControl) {
 		if (m_pVideoState) {
 			VideoState* pState = m_pVideoState->get_state();
@@ -933,7 +964,7 @@ void MainWindow::play_seek()
 {
 	pause_play();
 
-	play_control_window* pPlayControl = get_play_control();
+	PlayControlWnd* pPlayControl = get_play_control();
 	if (pPlayControl) {
 		const QSlider* pSlider = pPlayControl->get_progress_slider();
 		int maxValue = pSlider->maximum();
@@ -973,7 +1004,7 @@ void MainWindow::play_mute(bool mute)
 
 void MainWindow::set_volume(int volume)
 {
-	play_control_window* pPlayControl = get_play_control();
+	PlayControlWnd* pPlayControl = get_play_control();
 	if (pPlayControl == nullptr)
 		return;
 
@@ -988,9 +1019,9 @@ void MainWindow::set_volume(int volume)
 	volume_settings(true, vol);
 }
 
-void MainWindow::set_play_spped()
+void MainWindow::set_play_speed()
 {
-	play_control_window* pPlayControl = get_play_control();
+	PlayControlWnd* pPlayControl = get_play_control();
 	if (pPlayControl == nullptr)
 		return;
 
@@ -1009,13 +1040,13 @@ void MainWindow::set_play_spped()
 
 void MainWindow::play_speed_adjust(bool up)
 {
-	play_control_window* pPlayControl = get_play_control();
+	PlayControlWnd* pPlayControl = get_play_control();
 	if (pPlayControl == nullptr)
 		return;
 
 	pPlayControl->speed_adjust(up);
 
-	set_play_spped();
+	set_play_speed();
 }
 
 void MainWindow::hide_statusbar(bool bHide)
@@ -1537,6 +1568,7 @@ bool MainWindow::create_audio_play_thread()
 			connect(m_pAudioPlayThread.get(), &AudioPlayThread::finished, this, &MainWindow::audio_play_stopped);
 			connect(this, &MainWindow::stop_audio_play_thread, m_pAudioPlayThread.get(), &AudioPlayThread::stop_thread);
 			connect(m_pAudioPlayThread.get(), &AudioPlayThread::update_play_time, this, &MainWindow::update_play_time);
+			connect(m_pAudioPlayThread.get(), &AudioPlayThread::data_visual_ready, this, &MainWindow::audio_data);
 
 			AVCodecContext* pAudio = m_pVideoState->get_contex(AVMEDIA_TYPE_AUDIO);
 			print_decodeContext(pAudio, false);
@@ -1809,6 +1841,10 @@ void MainWindow::audio_play_stopped()
 	qDebug("************* Audio play stopped.");
 
 	set_default_bkground();
+
+	show_audio_effect(false);
+	if (m_audio_effect_wnd)
+		m_audio_effect_wnd->paint_clear();
 }
 
 void MainWindow::video_play_stopped()
@@ -1954,4 +1990,16 @@ void MainWindow::set_style_action(const QString& style)
 				action->setChecked(true);
 		}
 	}
+}
+
+void MainWindow::audio_data(AudioData data)
+{
+	if (m_audio_effect_wnd)
+		m_audio_effect_wnd->paint_data(data);
+}
+
+void MainWindow::start_send_data(bool bSend)
+{
+	if (m_pAudioPlayThread)
+		m_pAudioPlayThread->send_visual_open(bSend);
 }

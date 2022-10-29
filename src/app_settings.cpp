@@ -38,7 +38,7 @@ void AppSettings::print_settings() const
 			m_pSettings->beginGroup(group);
 			qDebug("group:%s", qUtf8Printable(group));
 			for (const QString& key : m_pSettings->childKeys()) {
-				QString str = QString("key:%1, valye:%2").arg(key, m_pSettings->value(key).toString());
+				QString str = QString("key:%1, valye:%2").arg(key).arg(m_pSettings->value(key).toString());
 				qDebug("%s", qUtf8Printable(str));
 			}
 			m_pSettings->endGroup();

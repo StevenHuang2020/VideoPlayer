@@ -9,6 +9,11 @@
 #include "audio_play_thread.h"
 
 #define DEBUG_PLAYFILTER	0
+#define WRITE_AUDIO_FILE	0
+
+#if WRITE_AUDIO_FILE
+#include<fstream>
+#endif
 
 AudioPlayThread::AudioPlayThread(QObject* parent, VideoState* pState)
 	: QThread(parent)
@@ -16,8 +21,11 @@ AudioPlayThread::AudioPlayThread(QObject* parent, VideoState* pState)
 	, m_pState(pState)
 	, m_bExitThread(false)
 	, m_audioResample({})
+	, m_bSendToVisual(false)
 {
 	//print_device();
+
+	qRegisterMetaType<AudioData>("AudioData");
 }
 
 AudioPlayThread::~AudioPlayThread()
@@ -219,6 +227,25 @@ int AudioPlayThread::audio_decode_frame(VideoState* is)
 	if (is->muted && data_size > 0)
 		memset(buffer_audio, 0, data_size); //mute
 
+#if WRITE_AUDIO_FILE
+	std::ofstream myfile;
+	myfile.open("audio.pcm", std::ios::out | std::ios::app | std::ios::binary);
+	if (myfile.is_open())
+	{
+		myfile.write((char*)buffer_audio, data_size);
+	}
+#endif
+
+	if (m_bSendToVisual) {
+		AudioData data;
+		assert(data_size < BUFFER_LEN);
+
+		int len = std::min(data_size, BUFFER_LEN);
+		memcpy(data.buffer, buffer_audio, len);
+		data.len = len;
+		emit data_visual_ready(data);
+	}
+
 	play_buf(buffer_audio, data_size);
 
 	av_free((void*)buffer_audio);
@@ -261,7 +288,7 @@ int AudioPlayThread::audio_decode_frame(VideoState* is)
 			is->audio_clock - last_clock,
 			is->audio_clock, audio_clock0);
 		last_clock = is->audio_clock;
-	}
+}
 #endif
 
 	return data_size;
@@ -304,9 +331,9 @@ bool AudioPlayThread::init_resample_param(const AVCodecContext* pAudio, AVSample
 			m_audioResample.swrCtx = swrCtx;
 			return true;
 		}
-	}
+		}
 	return false;
-}
+	}
 
 void AudioPlayThread::final_resample_param()
 {

@@ -8,13 +8,13 @@
 
 namespace Ui { class play_control_window; };
 
-class play_control_window : public QWidget
+class PlayControlWnd : public QWidget
 {
 	Q_OBJECT
 
 public:
-	play_control_window(QWidget* parent = Q_NULLPTR);
-	~play_control_window();
+	PlayControlWnd(QWidget* parent = Q_NULLPTR);
+	~PlayControlWnd();
 public:
 	void update_play_time(int hours, int mins, int secs);
 	void update_play_time(int total_secs);
@@ -38,7 +38,10 @@ private:
 	void enable_slider_speed(bool enable = true);
 	void init_slider_speed();
 	QString get_play_time(int hours, int mins, int secs) const;
-	int get_time_secs(int hours, int mins, int secs) const;
+	inline int get_time_secs(int hours, int mins, int secs) const 
+	{ 
+		return hours * 60 * 60 + mins * 60 + secs; 
+	}
 	void clear_time();
 	void enable_play_buttons(bool enable = true);
 	void get_play_time_params(int total_secs, int& hours, int& mins, int& secs) const;

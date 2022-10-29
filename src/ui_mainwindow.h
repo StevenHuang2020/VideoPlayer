@@ -60,6 +60,7 @@ public:
     QAction *actionPrewitt;
     QAction *actionRemoveCV;
     QAction *actionKeyboard_Usage;
+    QAction *actionAudio_visualize;
     QWidget *centralwidget;
     QMenuBar *menubar;
     QMenu *menuMedia;
@@ -190,6 +191,8 @@ public:
         actionRemoveCV->setCheckable(true);
         actionKeyboard_Usage = new QAction(MainWindow);
         actionKeyboard_Usage->setObjectName(QString::fromUtf8("actionKeyboard_Usage"));
+        actionAudio_visualize = new QAction(MainWindow);
+        actionAudio_visualize->setObjectName(QString::fromUtf8("actionAudio_visualize"));
         centralwidget = new QWidget(MainWindow);
         centralwidget->setObjectName(QString::fromUtf8("centralwidget"));
         MainWindow->setCentralWidget(centralwidget);
@@ -265,6 +268,7 @@ public:
         menuTools->addAction(actionLoop_Play);
         menuTools->addSeparator();
         menuTools->addAction(actionMedia_Info);
+        menuTools->addAction(actionAudio_visualize);
 
         retranslateUi(MainWindow);
 
@@ -313,6 +317,7 @@ public:
         actionPrewitt->setText(QApplication::translate("MainWindow", "Prewitt", nullptr));
         actionRemoveCV->setText(QApplication::translate("MainWindow", "Remove Selection", nullptr));
         actionKeyboard_Usage->setText(QApplication::translate("MainWindow", "Usage Tips", nullptr));
+        actionAudio_visualize->setText(QApplication::translate("MainWindow", "Audio visualize", nullptr));
         menuMedia->setTitle(QApplication::translate("MainWindow", "Media", nullptr));
         menuRecent_Files->setTitle(QApplication::translate("MainWindow", "Recent Files", nullptr));
         menuView->setTitle(QApplication::translate("MainWindow", "View", nullptr));

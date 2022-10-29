@@ -15,7 +15,7 @@ public:
 	YoutubeUrlDlg(QWidget* parent = Q_NULLPTR);
 	~YoutubeUrlDlg();
 public:
-	QString get_url() const;
+	QString get_url() const { return m_youtubeUrl; }
 	QString parse_youtubeUrl(const QString& url);
 
 private slots:
