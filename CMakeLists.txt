@@ -32,6 +32,8 @@ list(APPEND HEADER_FILES
     src/start_play_thread.h
     src/version.h
     src/video_label.h
+    src/audio_effect_gl.h
+    src/audio_effect_helper.h
 )
 
 # .cpp files
@@ -58,6 +60,8 @@ list(APPEND SOURCE_FILES
     src/video_state.cpp
     src/youtube_url_dlg.cpp
     src/video_label.cpp
+    src/audio_effect_gl.cpp
+    src/audio_effect_helper.cpp
 )
 
 
