@@ -123,6 +123,12 @@
     <ClCompile Include="video_label.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="audio_effect_gl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="audio_effect_helper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="mainwindow.h">
@@ -159,6 +165,9 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="video_label.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="audio_effect_gl.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

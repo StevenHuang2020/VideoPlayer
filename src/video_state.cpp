@@ -62,6 +62,7 @@ int VideoStateData::create_video_state(const char* filename)
 
 	m_pState = stream_open(filename);
 	if (m_pState == nullptr) {
+		qDebug("stream_open failed!");
 		return ret;
 	}
 
@@ -449,8 +450,8 @@ int VideoStateData::stream_component_open(VideoState* is, int stream_index)
 		//const char* afilters = nullptr;
 		//const char* afilters = "atempo=2.0";
 		is->audio_filter_src.freq = avctx->sample_rate;
-		is->audio_filter_src.channels = avctx->channels;
-		is->audio_filter_src.channel_layout = get_valid_channel_layout(avctx->channel_layout, avctx->channels);
+		is->audio_filter_src.channels = avctx->ch_layout.nb_channels; // avctx->channels;
+		is->audio_filter_src.channel_layout = avctx->channel_layout; // get_valid_channel_layout(avctx->channel_layout, avctx->channels);
 		is->audio_filter_src.fmt = avctx->sample_fmt;
 		if ((ret = configure_audio_filters(is, is->afilters, 0)) < 0)
 			goto fail;

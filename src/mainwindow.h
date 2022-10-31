@@ -45,8 +45,6 @@ public:
 
 public:
 	void start_to_play(const QString& file);
-	bool start_play();
-	bool is_playing();
 	void stop_play();
 	void pause_play();
 	float volume_settings(bool set = true, float vol = 0);
@@ -86,6 +84,10 @@ private slots:
 	void on_actionMedia_Info_triggered();
 	void on_actionKeyboard_Usage_triggered();
 	void on_actionAudio_visualize_triggered();
+	void on_actionSampling_triggered();
+	void on_actionFrequency_triggered();
+	void on_actionBar_triggered();
+	void on_actionLine_triggered();
 
 public slots:
 	void image_ready(const QImage&);
@@ -111,6 +113,11 @@ signals:
 	void wait_stop_video_play_thread();
 
 private:
+	bool start_play();
+	bool is_playing();
+	bool playing_has_video();
+	bool playing_has_audio();
+	bool playing_has_subtitle();
 	void update_image(const QImage&);
 	void print_decodeContext(const AVCodecContext* pVideo, bool bVideo = true);
 	void about_media_info();
@@ -170,6 +177,16 @@ private:
 	void all_thread_start();
 	void video_seek_inc(double incr);
 	void video_seek(double pos = 0, double incr = 0);
+	void update_menus();
+	void enable_menus(bool enable = true);
+	void enable_v_menus(bool enable = true);
+	void enable_a_menus(bool enable = true);
+	int get_youtube_optionid() const;
+	void set_youtube_optionid(int id);
+	void create_avisual_action_group(); //audio visual
+	VisualFormat get_avisual_format() const;
+	void popup_audio_effect();
+	void set_audio_effect_format(const VisualFormat& fmt);
 
 private:
 	std::unique_ptr<Ui::MainWindow> ui;
@@ -202,5 +219,8 @@ private:
 	std::unique_ptr<QActionGroup> m_styleActsGroup; //style menus group
 	std::unique_ptr<QAction> m_styleActions[MaxSkinStlyes];
 	std::unique_ptr<QActionGroup> m_CvActsGroup; //cv menus group
+
+	std::unique_ptr<QActionGroup> m_AVisualTypeActsGroup;
+	std::unique_ptr<QActionGroup> m_AVisualGrapicTypeActsGroup;
 };
 #endif // MAINWINDOW_H

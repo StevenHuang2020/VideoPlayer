@@ -3,7 +3,7 @@
 //
 //      Copy Right @ Steven Huang. All rights reserved.
 //
-// Defines the version of this software.
+// Version definition of this software.
 // ***********************************************************/
 // 
 
@@ -12,7 +12,7 @@
 
 #define VERSION_MAJOR  2
 #define VERSION_MINOR  0
-#define VERSION_MICRO  6
+#define VERSION_MICRO  7
 
 
 #define VERSION_DOT(a, b, c)   a ##.## b ##.## c

@@ -140,7 +140,7 @@ void AudioPlayThread::play_buf(const uint8_t* buf, int datasize)
 				data = data + len;
 				datasize -= len;
 			}
-			// qDebug("play buf:reslen:%d, write len:%d", len, datasize);
+			//qDebug("play buf:reslen:%d, write len:%d", len, datasize);
 		}
 	}
 }
@@ -288,7 +288,7 @@ int AudioPlayThread::audio_decode_frame(VideoState* is)
 			is->audio_clock - last_clock,
 			is->audio_clock, audio_clock0);
 		last_clock = is->audio_clock;
-}
+	}
 #endif
 
 	return data_size;
@@ -331,9 +331,9 @@ bool AudioPlayThread::init_resample_param(const AVCodecContext* pAudio, AVSample
 			m_audioResample.swrCtx = swrCtx;
 			return true;
 		}
-		}
-	return false;
 	}
+	return false;
+}
 
 void AudioPlayThread::final_resample_param()
 {

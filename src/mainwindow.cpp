@@ -48,6 +48,7 @@ MainWindow::MainWindow(QWidget* parent)
 	create_recentfiles_menu();
 	create_cv_action_group();
 	create_audio_effect();
+	create_avisual_action_group();
 
 	setWindowTitle(tr("Video Player"));
 	set_default_bkground();
@@ -69,6 +70,8 @@ MainWindow::MainWindow(QWidget* parent)
 
 	resize_window();
 	read_settings();
+
+	update_menus();
 }
 
 MainWindow::~MainWindow()
@@ -582,11 +585,18 @@ void MainWindow::on_actionOpen_triggered()
 void MainWindow::on_actionYoutube_triggered()
 {
 	YoutubeUrlDlg dialog(this);
+
+	int id = get_youtube_optionid();
+	dialog.set_options_index(id);
+
 	int result = dialog.exec();
 	if (result == QDialog::Accepted) {
 		QString file = dialog.get_url();
 		if (!file.isEmpty()) {
 			start_to_play(file);
+
+			id = dialog.get_options_index();
+			set_youtube_optionid(id);
 		}
 	}
 }
@@ -687,10 +697,45 @@ void MainWindow::on_actionKeyboard_Usage_triggered()
 
 void MainWindow::on_actionAudio_visualize_triggered()
 {
+	popup_audio_effect();
+}
+
+void MainWindow::set_audio_effect_format(const VisualFormat& fmt)
+{
+	if (m_audio_effect_wnd == nullptr)
+		return;
+	m_audio_effect_wnd->set_draw_fmt(fmt);
+}
+
+void MainWindow::popup_audio_effect()
+{
 	if (is_playing()) {
+
+		VisualFormat fmt = get_avisual_format();
+		set_audio_effect_format(fmt);
 		show_audio_effect();
 		start_send_data();
 	}
+}
+
+void MainWindow::on_actionSampling_triggered()
+{
+	popup_audio_effect();
+}
+
+void MainWindow::on_actionFrequency_triggered()
+{
+	popup_audio_effect();
+}
+
+void MainWindow::on_actionBar_triggered()
+{
+	popup_audio_effect();
+}
+
+void MainWindow::on_actionLine_triggered()
+{
+	popup_audio_effect();
 }
 
 void MainWindow::resize_window(int width, int height)
@@ -1147,6 +1192,8 @@ void MainWindow::start_to_play(const QString& file)
 	}
 
 	set_current_file(file);
+
+	update_menus();
 }
 
 bool MainWindow::is_playing()
@@ -1162,6 +1209,30 @@ bool MainWindow::is_playing()
 		qDebug("VideoPlay=%p, AudioPlay=%p\n", m_pVideoPlayThread.get(), m_pAudioPlayThread.get());
 
 		return true;
+	}
+	return false;
+}
+
+bool MainWindow::playing_has_video()
+{
+	if (m_pVideoState) {
+		return m_pVideoState->has_video();;
+	}
+	return false;
+}
+
+bool MainWindow::playing_has_audio()
+{
+	if (m_pVideoState) {
+		return m_pVideoState->has_audio();
+	}
+	return false;
+}
+
+bool MainWindow::playing_has_subtitle()
+{
+	if (m_pVideoState) {
+		return m_pVideoState->has_subtitle();
 	}
 	return false;
 }
@@ -1189,7 +1260,7 @@ bool MainWindow::start_play()
 
 	//qDebug("---------------------------------%d milliseconds", timer.elapsed());
 
-	// step 1: create read thread (video state need read-thread id)
+	// create read thread (video state need read-thread id)
 	ret = create_read_thread();
 	if (!ret) {
 		qWarning("packet read thread create failed.\n");
@@ -1210,14 +1281,18 @@ bool MainWindow::start_play()
 	//qDebug("---------------------------------%d milliseconds", timer.elapsed());
 
 	assert(m_pVideoState);
+	if (m_pVideoState == nullptr) {
+		qWarning("video state error!\n");
+		return false;
+	}
+
 	m_pPacketReadThread->set_video_state(m_pVideoState->get_state());
 
+	bool bVideo = playing_has_video();
+	bool bAudio = playing_has_audio();
+	bool bSubtitle = playing_has_subtitle();
 
-	bool bVideo = m_pVideoState->has_video();
-	bool bAudio = m_pVideoState->has_audio();
-	bool bSubtitle = m_pVideoState->has_subtitle();
-
-	if (m_pVideoState && bVideo) {
+	if (bVideo) {
 		ret = create_decode_video_thread();
 		if (!ret) {
 			qWarning("video decode thread create failed.\n");
@@ -1233,7 +1308,7 @@ bool MainWindow::start_play()
 
 	//qDebug("---------------------------------%d milliseconds", timer.elapsed());
 
-	if (m_pVideoState && bAudio) {
+	if (bAudio) {
 		ret = create_decode_audio_thread();
 		if (!ret) {
 			qWarning("audio decode thread create failed.\n");
@@ -1251,7 +1326,7 @@ bool MainWindow::start_play()
 
 	//qDebug("---------------------------------%d milliseconds", timer.elapsed());
 
-	if (m_pVideoState && bSubtitle) {
+	if (bSubtitle) {
 		ret = create_decode_subtitle_thread();
 		if (!ret) {
 			qWarning("subtitle decode thread create failed.\n");
@@ -1260,7 +1335,7 @@ bool MainWindow::start_play()
 	}
 
 	if (bAudio) {
-		start_play_thread(); //start a thread for time-consuming task
+		start_play_thread(); //start a thread for time-consuming(audio device init) task
 	}
 	else {
 		// if no audio stream but video stream, start all thread
@@ -1820,18 +1895,21 @@ void MainWindow::read_packet_stopped()
 void MainWindow::decode_video_stopped()
 {
 	m_pDecodeVideoThread.reset();
+	update_menus();
 	qDebug("************* Video decode thread stopped.");
 }
 
 void MainWindow::decode_audio_stopped()
 {
 	m_pDecodeAudioThread.reset();
+	update_menus();
 	qDebug("************* Audio decode thread stopped.");
 }
 
 void MainWindow::decode_subtitle_stopped()
 {
 	m_pDecodeSubtitleThread.reset();
+	update_menus();
 	qDebug("************* Subtitle decode thread stopped.");
 }
 
@@ -1845,6 +1923,8 @@ void MainWindow::audio_play_stopped()
 	show_audio_effect(false);
 	if (m_audio_effect_wnd)
 		m_audio_effect_wnd->paint_clear();
+
+	update_menus();
 }
 
 void MainWindow::video_play_stopped()
@@ -1853,6 +1933,7 @@ void MainWindow::video_play_stopped()
 	qDebug("************* Aideo play stopped.");
 
 	set_default_bkground();
+	update_menus();
 }
 
 void MainWindow::displayStatusMessage(const QString& message)
@@ -2002,4 +2083,72 @@ void MainWindow::start_send_data(bool bSend)
 {
 	if (m_pAudioPlayThread)
 		m_pAudioPlayThread->send_visual_open(bSend);
+}
+
+void MainWindow::update_menus()
+{
+	qDebug() << "update_menus: " << is_playing();
+	enable_menus(is_playing());
+	enable_v_menus(playing_has_video());
+	enable_a_menus(playing_has_audio());
+}
+
+void MainWindow::enable_menus(bool enable)
+{
+	ui->actionStop->setEnabled(enable);
+	ui->actionMedia_Info->setEnabled(enable);
+}
+
+void MainWindow::enable_v_menus(bool enable)
+{
+	ui->actionAspect_Ratio->setEnabled(enable);
+
+	for (const auto& pAction : ui->menuCV->actions()) {
+		if (pAction)
+			pAction->setEnabled(enable);
+	}
+}
+
+void MainWindow::enable_a_menus(bool enable)
+{
+	//ui->actionAudio_visualize->setEnabled(enable);
+	ui->menuAudio_visualize->setEnabled(enable);
+}
+
+int MainWindow::get_youtube_optionid() const
+{
+	int option = 0;
+	QVariant values = m_settings.get_general("youtube_option");
+	if (values.isValid()) {
+		option = values.toInt();
+	}
+	return option;
+}
+
+void MainWindow::set_youtube_optionid(int id)
+{
+	m_settings.set_general("youtube_option", int(id));
+}
+
+void MainWindow::create_avisual_action_group()
+{
+	m_AVisualGrapicTypeActsGroup = std::make_unique<QActionGroup>(this);
+	m_AVisualGrapicTypeActsGroup->addAction(ui->actionLine);
+	m_AVisualGrapicTypeActsGroup->addAction(ui->actionBar);
+
+	m_AVisualTypeActsGroup = std::make_unique<QActionGroup>(this);
+	m_AVisualTypeActsGroup->addAction(ui->actionSampling);
+	m_AVisualTypeActsGroup->addAction(ui->actionFrequency);
+}
+
+VisualFormat MainWindow::get_avisual_format() const
+{
+	VisualFormat fmt = { e_GtLine, e_VtSampleing };
+	if (ui->actionBar->isChecked())
+		fmt.gType = e_GtBar;
+
+	if (ui->actionFrequency->isChecked())
+		fmt.vType = e_VtFrequency;
+
+	return fmt;
 }

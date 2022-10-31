@@ -8,7 +8,11 @@
 
 #include "ffmpeg_init.h"
 
+#if !NDEBUG
+#define OPEN_FFMPEG_LOG 1
+#else
 #define OPEN_FFMPEG_LOG 0
+#endif
 
 #define PRINT_LIB_INFO(libname, LIBNAME)							 \
     if(true) {                                                       \

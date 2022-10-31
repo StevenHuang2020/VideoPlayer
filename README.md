@@ -31,7 +31,7 @@ cmake --build . --config Release
 ```
 
 ##### History
-
+- v2.0.7, audio visualization; youtube url open options; menu updates;
 - v2.0.3, play speed control; full screen
 - v2.0.1, CMake configuration
 - v2.0.0, add cv effects by using OpenCV;
@@ -53,5 +53,5 @@ cmake --build . --config Release
  - A/V library [FFmpeg.](https://ffmpeg.org/) <br/>
  - GUI framework [QT.](https://www.qt.io/)
  - QT skins [github.](https://github.com/GTRONICK/QSS)
- - [youtube-dl.](https://youtube-dl.org/)
+ - Youtube stream-media url [youtube-dl.](https://youtube-dl.org/)
  - [OpenCV](https://opencv.org/)

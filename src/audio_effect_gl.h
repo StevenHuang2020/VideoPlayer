@@ -14,6 +14,7 @@ public:
 	AudioEffectGL(QWidget* parent = nullptr);
 	void paint_data(const AudioData& data);
 	void paint_clear();
+	void set_draw_fmt(const VisualFormat& fmt) { m_helper.set_draw_fmt(fmt); }
 signals:
 	void hiden(bool bSend = false);
 protected:

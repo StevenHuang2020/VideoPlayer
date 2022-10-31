@@ -60,7 +60,10 @@ public:
     QAction *actionPrewitt;
     QAction *actionRemoveCV;
     QAction *actionKeyboard_Usage;
-    QAction *actionAudio_visualize;
+    QAction *actionLine;
+    QAction *actionBar;
+    QAction *actionSampling;
+    QAction *actionFrequency;
     QWidget *centralwidget;
     QMenuBar *menubar;
     QMenu *menuMedia;
@@ -70,6 +73,7 @@ public:
     QMenu *menuStyle;
     QMenu *menuCV;
     QMenu *menuTools;
+    QMenu *menuAudio_visualize;
     QStatusBar *statusbar;
 
     void setupUi(QMainWindow *MainWindow)
@@ -191,8 +195,20 @@ public:
         actionRemoveCV->setCheckable(true);
         actionKeyboard_Usage = new QAction(MainWindow);
         actionKeyboard_Usage->setObjectName(QString::fromUtf8("actionKeyboard_Usage"));
-        actionAudio_visualize = new QAction(MainWindow);
-        actionAudio_visualize->setObjectName(QString::fromUtf8("actionAudio_visualize"));
+        actionLine = new QAction(MainWindow);
+        actionLine->setObjectName(QString::fromUtf8("actionLine"));
+        actionLine->setCheckable(true);
+        actionBar = new QAction(MainWindow);
+        actionBar->setObjectName(QString::fromUtf8("actionBar"));
+        actionBar->setCheckable(true);
+        actionBar->setChecked(true);
+        actionSampling = new QAction(MainWindow);
+        actionSampling->setObjectName(QString::fromUtf8("actionSampling"));
+        actionSampling->setCheckable(true);
+        actionSampling->setChecked(true);
+        actionFrequency = new QAction(MainWindow);
+        actionFrequency->setObjectName(QString::fromUtf8("actionFrequency"));
+        actionFrequency->setCheckable(true);
         centralwidget = new QWidget(MainWindow);
         centralwidget->setObjectName(QString::fromUtf8("centralwidget"));
         MainWindow->setCentralWidget(centralwidget);
@@ -213,6 +229,8 @@ public:
         menuCV->setObjectName(QString::fromUtf8("menuCV"));
         menuTools = new QMenu(menubar);
         menuTools->setObjectName(QString::fromUtf8("menuTools"));
+        menuAudio_visualize = new QMenu(menuTools);
+        menuAudio_visualize->setObjectName(QString::fromUtf8("menuAudio_visualize"));
         MainWindow->setMenuBar(menubar);
         statusbar = new QStatusBar(MainWindow);
         statusbar->setObjectName(QString::fromUtf8("statusbar"));
@@ -268,7 +286,12 @@ public:
         menuTools->addAction(actionLoop_Play);
         menuTools->addSeparator();
         menuTools->addAction(actionMedia_Info);
-        menuTools->addAction(actionAudio_visualize);
+        menuTools->addAction(menuAudio_visualize->menuAction());
+        menuAudio_visualize->addAction(actionBar);
+        menuAudio_visualize->addAction(actionLine);
+        menuAudio_visualize->addSeparator();
+        menuAudio_visualize->addAction(actionSampling);
+        menuAudio_visualize->addAction(actionFrequency);
 
         retranslateUi(MainWindow);
 
@@ -317,7 +340,10 @@ public:
         actionPrewitt->setText(QApplication::translate("MainWindow", "Prewitt", nullptr));
         actionRemoveCV->setText(QApplication::translate("MainWindow", "Remove Selection", nullptr));
         actionKeyboard_Usage->setText(QApplication::translate("MainWindow", "Usage Tips", nullptr));
-        actionAudio_visualize->setText(QApplication::translate("MainWindow", "Audio visualize", nullptr));
+        actionLine->setText(QApplication::translate("MainWindow", "Line", nullptr));
+        actionBar->setText(QApplication::translate("MainWindow", "Bar", nullptr));
+        actionSampling->setText(QApplication::translate("MainWindow", "Sampling", nullptr));
+        actionFrequency->setText(QApplication::translate("MainWindow", "Frequency", nullptr));
         menuMedia->setTitle(QApplication::translate("MainWindow", "Media", nullptr));
         menuRecent_Files->setTitle(QApplication::translate("MainWindow", "Recent Files", nullptr));
         menuView->setTitle(QApplication::translate("MainWindow", "View", nullptr));
@@ -325,6 +351,7 @@ public:
         menuStyle->setTitle(QApplication::translate("MainWindow", "Style", nullptr));
         menuCV->setTitle(QApplication::translate("MainWindow", "CV", nullptr));
         menuTools->setTitle(QApplication::translate("MainWindow", "Tools", nullptr));
+        menuAudio_visualize->setTitle(QApplication::translate("MainWindow", "Audio visualize", nullptr));
 #ifndef QT_NO_TOOLTIP
         statusbar->setToolTip(QString());
 #endif // QT_NO_TOOLTIP

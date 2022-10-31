@@ -149,11 +149,21 @@
     <property name="title">
      <string>Tools</string>
     </property>
+    <widget class="QMenu" name="menuAudio_visualize">
+     <property name="title">
+      <string>Audio visualize</string>
+     </property>
+     <addaction name="actionBar"/>
+     <addaction name="actionLine"/>
+     <addaction name="separator"/>
+     <addaction name="actionSampling"/>
+     <addaction name="actionFrequency"/>
+    </widget>
     <addaction name="actionHardware_decode"/>
     <addaction name="actionLoop_Play"/>
     <addaction name="separator"/>
     <addaction name="actionMedia_Info"/>
-    <addaction name="actionAudio_visualize"/>
+    <addaction name="menuAudio_visualize"/>
    </widget>
    <addaction name="menuMedia"/>
    <addaction name="menuView"/>
@@ -428,9 +438,42 @@
     <string>Usage Tips</string>
    </property>
   </action>
-  <action name="actionAudio_visualize">
+  <action name="actionLine">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
-    <string>Audio visualize</string>
+    <string>Line</string>
+   </property>
+  </action>
+  <action name="actionBar">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Bar</string>
+   </property>
+  </action>
+  <action name="actionSampling">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Sampling</string>
+   </property>
+  </action>
+  <action name="actionFrequency">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Frequency</string>
    </property>
   </action>
  </widget>

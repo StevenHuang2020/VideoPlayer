@@ -1,3 +1,11 @@
+// ***********************************************************/
+// audio_effect_helper.cpp
+//
+//      Copy Right @ Steven Huang. All rights reserved.
+//
+// audio visualization draw functions
+// ***********************************************************/
+
 
 #include "audio_effect_helper.h"
 
@@ -7,7 +15,9 @@
 #include <algorithm>
 
 
-BarHelper::BarHelper()
+#define MAX_AUDIO_VAULE 0xffff
+
+BarHelper::BarHelper() : m_visualFmt({})
 {
 	m_datafmt.sample_fmt = 16;
 	m_datafmt.channel = 1;
@@ -18,77 +28,88 @@ BarHelper::BarHelper()
 
 	m_background = QBrush(QColor(64, 32, 64));
 	m_brush = QBrush(gradient);
-	m_pen = QPen(Qt::black);
-	m_pen.setWidth(1);
+	m_pen = QPen(Qt::green, 2); //QPen(Qt::black);
+
 	m_textPen = QPen(Qt::white);
 	m_textFont.setPixelSize(50);
 }
 
-void BarHelper::paint(QPainter* painter, QPaintEvent* event, int elapsed)
+void BarHelper::draw_data_bar(QPainter* painter, std::vector<int>& data, int n, int w, int h, int h_inter)
 {
-	QRect rt = event->rect();
-	painter->fillRect(rt, m_background);
-	//painter->translate(100, 100);
+	assert(data.size() == n);
 
-	painter->save();
-	painter->setBrush(m_brush);
-	//painter->setPen(m_pen);
-	//painter->rotate(elapsed * 0.030);
+	qreal w_step = (w - (n - 1) * h_inter) * 1.0 / n;
+	for (int i = 0; i < n; ++i) {
+		qreal top = data[i];	// rand() % height;
+		QRectF rt(i * (w_step + h_inter), h - top, w_step, top);
+		painter->drawRect(rt);
+	}
+}
 
-#if 0
-	painter->setPen(m_textPen);
-	painter->drawText(QPoint(rt.width() / 2, rt.height() / 2), "Number:" + QString::number(elapsed));
-#else
+void BarHelper::draw_data_line(QPainter* painter, std::vector<int>& data, int n, int w, int h, int h_inter)
+{
+	painter->setPen(m_pen);
+
+	qreal w_step = (w - (n - 1) * h_inter) * 1.0 / n;
+	for (size_t i = 0; i < n - 1; ++i) {
+
+		qreal x1 = i * (w_step + h_inter);
+		qreal y1 = h - data[i];
+		qreal x2 = x1 + (w_step + h_inter);
+		qreal y2 = h - data[i + 1];
+		//painter->drawRect(rt);
+		QLine line = QLine(QPoint(x1, y1), QPoint(x2, y2));
+		painter->drawLine(line);
+	}
+}
+
+void BarHelper::draw_data_style(QPainter* painter, const QRect& rt, const AudioData& data)
+{
 	int width = rt.width();
 	int height = rt.height();
 	int h_inter = 2;
-	//qreal r = elapsed / 1000.0;
-	int n = 20;
-	qint16 w_step = (width - (n - 1) * h_inter) / n;
-	for (int i = 0; i <= n; ++i) {
-		qreal top = rand() % height;
-		QRectF rt(i * (w_step + h_inter), top, w_step, height);
-		painter->drawRect(rt);
+
+	assert(data.len < BUFFER_LEN);
+	std::vector<int> v_data;
+	get_data(data, v_data);
+	if (v_data.size() == 0)
+		return;
+
+	int n = 128;
+
+	normal_overzero(v_data);
+	if (m_visualFmt.vType == e_VtSampleing) {
+		data_sample(v_data, n);
+		normal_to_size(v_data, height);
+		//painter->translate(0, -1 * height / 2);
 	}
-#endif
-	painter->restore();
+	else {
+		data_frequency(v_data, n);
+	}
+
+	if (m_visualFmt.gType == e_GtBar) {
+		draw_data_bar(painter, v_data, n, width, height, h_inter);
+	}
+	else {
+		draw_data_line(painter, v_data, n, width, height, h_inter);
+	}
 }
 
 void BarHelper::paint(QPainter* painter, QPaintEvent* event, const AudioData& data)
 {
 	QRect rt = event->rect();
 	painter->fillRect(rt, m_background);
-	//painter->translate(100, 100);
+	//painter->translate(0, -1 * rt.height() / 2);
 
 	painter->save();
 	painter->setBrush(m_brush);
 
-	int width = rt.width();
-	int height = rt.height();
-
-	int h_inter = 2;
-
-	int n = 64;
-
-	std::vector<int> v_data;
-	get_data(data, v_data);
-	if (v_data.size() > 0) {
-		bar_data(v_data, n);
-		normal_data(v_data, height);
-		assert(v_data.size() == n);
-
-		qreal w_step = (width - (n - 1) * h_inter) * 1.0 / n;
-		for (int i = 0; i < n; ++i) {
-			qreal top = v_data[i];	// rand() % height;
-			QRectF rt(i * (w_step + h_inter), height - top, w_step, top);
-			painter->drawRect(rt);
-		}
-	}
+	draw_data_style(painter, rt, data);
 
 	painter->restore();
 }
 
-void BarHelper::get_data(const AudioData& data, std::vector<int>& v, bool left)
+void BarHelper::get_data(const AudioData& data, std::vector<int>& v, bool left) const
 {
 	v.clear();
 
@@ -98,22 +119,22 @@ void BarHelper::get_data(const AudioData& data, std::vector<int>& v, bool left)
 
 	int start = left ? 0 : 1;
 
-	for (uint32_t i = start; i < len; i += 2) {
+	for (uint32_t i = start; i < len; i += 2)
 		v.push_back(*(p + i));
-	}
 
 	qDebug() << "data size: " << v.size();
 }
 
-void BarHelper::bar_data(std::vector<int>& v, uint32_t num)
+/* v data samples to num*/
+void BarHelper::data_sample_old(std::vector<int>& v, const uint32_t num)
 {
 	size_t size = v.size();
-	if (num == 0 || size < num) {
+	if (num <= 0 || size < num) {
 		v.insert(v.end(), num - size, 0);
 		return;
 	}
 
-	int numItems = size / num;
+	size_t numItems = size / num;
 	if (numItems <= 1) {
 		v.erase(v.begin() + num, v.end());
 		return;
@@ -131,10 +152,40 @@ void BarHelper::bar_data(std::vector<int>& v, uint32_t num)
 	v.erase(v.begin() + num, v.end());
 }
 
-void BarHelper::normal_data(std::vector<int>& v, int height)
+void BarHelper::data_sample(std::vector<int>& v, const uint32_t num)
 {
-	int max = *std::max_element(v.begin(), v.end());
+	size_t size = v.size();
+	if (num <= 0 || size < num) {
+		v.insert(v.end(), num - size, 0);
+		return;
+	}
+
+	size_t numItems = size / num;
+	if (numItems <= 1) {
+		v.erase(v.begin() + num, v.end());
+		return;
+	}
+
+	while (v.size() / num >= 2) {
+		binary_data(v);
+	}
+
+	v.erase(v.begin() + num, v.end());
+}
+
+void BarHelper::binary_data(std::vector<int>& v)
+{
+	size_t j = 0;
+	for (size_t i = 0; i < v.size(); i += 2)
+		v[j++] = v[i];
+
+	v.erase(v.begin() + j, v.end());
+}
+
+void BarHelper::normal_overzero(std::vector<int>& v)
+{
 	int min = *std::min_element(v.begin(), v.end());
+	int max = *std::max_element(v.begin(), v.end());
 	qDebug() << "before size: " << v.size() << ",Max value: " << max << ",Min value: " << min;
 
 	if (min < 0) {
@@ -142,14 +193,39 @@ void BarHelper::normal_data(std::vector<int>& v, int height)
 		for (int& x : v)
 			x += min;
 	}
+}
 
-	/*max = *std::max_element(v.begin(), v.end());
-	min = *std::min_element(v.begin(), v.end());
-	qDebug() << "after size: " << v.size() << ",Max value: " << max << ",Min value: " << min;*/
-
-	if (height == 0)
+void BarHelper::normal_to_size(std::vector<int>& v, const int size)
+{
+	if (size == 0)
 		return;
 
-	for (int& x : v)
-		x = (x * height) / 0xffff; //0xffff
+	for (auto& x : v)
+		x = (x * size) / MAX_AUDIO_VAULE; //0xffff
+}
+
+void BarHelper::normal_data(std::vector<int>& v, const int height)
+{
+	normal_overzero(v);
+	normal_to_size(v, height);
+}
+
+void BarHelper::data_frequency(std::vector<int>& v, const uint32_t num)
+{
+	size_t size = v.size();
+	if (num <= 0 || size < num) {
+		v.insert(v.end(), num - size, 0);
+		return;
+	}
+
+	std::vector<int> res(num, 0);
+	uint32_t maxValue = MAX_AUDIO_VAULE;
+	const uint16_t step = ceil((maxValue + 1) * 1.0 / num);
+	for (const auto& i : v) {
+		uint32_t index = (i % maxValue) / step;
+		assert(index < num);
+		res[index % num]++;
+	}
+
+	v = res;
 }

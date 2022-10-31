@@ -1,3 +1,11 @@
+// ***********************************************************/
+// audio_effect_gl.cpp
+//
+//      Copy Right @ Steven Huang. All rights reserved.
+//
+// audio visualization OpenGL window
+// ***********************************************************/
+
 #include "audio_effect_gl.h"
 #include<QPainter>
 #include<QApplication>
@@ -6,6 +14,7 @@
 
 AudioEffectGL::AudioEffectGL(QWidget* parent)
 	: QOpenGLWidget(parent)
+	, m_data({})
 {
 	Qt::WindowFlags flags = windowFlags();
 	flags |= Qt::Dialog;
@@ -14,10 +23,12 @@ AudioEffectGL::AudioEffectGL(QWidget* parent)
 	flags &= (~Qt::WindowMinMaxButtonsHint);
 
 	setWindowFlags(flags);
-	//setFixedSize(300, 200);
-	int width = 300;
-	int height = 200;
-	setGeometry(0, 0, width, height);
+	
+	int width = 480;
+	int height = 280;
+
+	//setFixedSize(width, height);
+	//setGeometry(0, 0, width, height);
 	setMinimumWidth(width);
 	setMinimumHeight(height);
 
@@ -66,7 +77,7 @@ void AudioEffectGL::keyPressEvent(QKeyEvent* event)
 void AudioEffectGL::paint_data(const AudioData& data)
 {
 	m_data = data;
-	//qDebug() << "p=" << &data;
+	//qDebug() << "p=" << &data << "datalen:" << data.len;
 	repaint();
 }
 
