@@ -591,13 +591,21 @@ void MainWindow::on_actionYoutube_triggered()
 
 	int result = dialog.exec();
 	if (result == QDialog::Accepted) {
-		QString file = dialog.get_url();
-		if (!file.isEmpty()) {
-			start_to_play(file);
 
-			id = dialog.get_options_index();
-			set_youtube_optionid(id);
+		YoutubeUrlData data = dialog.get_data();
+
+		if (data.url.isEmpty() ||
+			(!data.url.startsWith("https://www.youtube.com/", Qt::CaseInsensitive)))
+		{
+			QString str = QString("Please input a valid youtube url. ");
+			show_msg_dlg(str);
+			return;
 		}
+
+		start_youtube_url_thread(data);
+
+		id = dialog.get_options_index();
+		set_youtube_optionid(id);
 	}
 }
 
@@ -2151,4 +2159,14 @@ VisualFormat MainWindow::get_avisual_format() const
 		fmt.vType = e_VtFrequency;
 
 	return fmt;
+}
+
+bool MainWindow::start_youtube_url_thread(const YoutubeUrlData& data)
+{
+	m_pYoutubeUrlThread.reset();
+
+	m_pYoutubeUrlThread = std::make_unique<YoutubeUrlThread>(data, this);
+	connect(m_pYoutubeUrlThread.get(), &YoutubeUrlThread::resultReady, this, &MainWindow::start_to_play);
+	m_pYoutubeUrlThread->start();
+	return true;
 }

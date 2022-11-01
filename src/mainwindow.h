@@ -29,6 +29,7 @@
 #include "video_label.h"
 #include "player_skin.h"
 #include "audio_effect_gl.h"
+#include "youtube_url_thread.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -187,7 +188,7 @@ private:
 	VisualFormat get_avisual_format() const;
 	void popup_audio_effect();
 	void set_audio_effect_format(const VisualFormat& fmt);
-
+	bool start_youtube_url_thread(const YoutubeUrlData& data);
 private:
 	std::unique_ptr<Ui::MainWindow> ui;
 
@@ -199,6 +200,7 @@ private:
 	std::unique_ptr<VideoPlayThread> m_pVideoPlayThread; //video play thread
 	std::unique_ptr<VideoStateData> m_pVideoState;	//for sync packets
 	std::unique_ptr<StartPlayThread> m_pBeforePlayThread; //for time-consuming operations before play
+	std::unique_ptr<YoutubeUrlThread> m_pYoutubeUrlThread;	//for youtube url parsing
 
 	QString m_videoFile;
 	QTimer m_timer; //mouse moving checker timer

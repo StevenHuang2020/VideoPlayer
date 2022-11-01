@@ -229,6 +229,7 @@
     <ClCompile Include="video_play_thread.cpp" />
     <ClCompile Include="video_state.cpp" />
     <ClCompile Include="youtube_url_dlg.cpp" />
+    <ClCompile Include="youtube_url_thread.cpp" />
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="mainwindow.h">
@@ -273,6 +274,7 @@
     <QtMoc Include="video_play_thread.h" />
   </ItemGroup>
   <ItemGroup>
+    <QtMoc Include="youtube_url_thread.h" />
     <QtMoc Include="video_label.h" />
     <QtMoc Include="audio_decode_thread.h" />
     <QtMoc Include="audio_effect_gl.h" />

@@ -15,7 +15,7 @@
 #include <algorithm>
 
 
-#define MAX_AUDIO_VAULE 0xffff
+#define MAX_AUDIO_VAULE 0xffff //0xffff
 
 BarHelper::BarHelper() : m_visualFmt({})
 {
@@ -200,8 +200,21 @@ void BarHelper::normal_to_size(std::vector<int>& v, const int size)
 	if (size == 0)
 		return;
 
-	for (auto& x : v)
-		x = (x * size) / MAX_AUDIO_VAULE; //0xffff
+#if 0
+	static int maxValue = 0xff;
+
+	int max = *std::max_element(v.begin(), v.end());
+	if (maxValue < max)
+		maxValue = max;
+#else
+	int maxValue = MAX_AUDIO_VAULE;
+#endif
+
+	for (auto& x : v) {
+		x = (x > maxValue) ? maxValue : x;
+		x = (x * size) / maxValue; //0xffff
+	}
+
 }
 
 void BarHelper::normal_data(std::vector<int>& v, const int height)
@@ -219,7 +232,15 @@ void BarHelper::data_frequency(std::vector<int>& v, const uint32_t num)
 	}
 
 	std::vector<int> res(num, 0);
-	uint32_t maxValue = MAX_AUDIO_VAULE;
+#if 0
+	static uint32_t maxValue = 0xff;
+
+	int max = *std::max_element(v.begin(), v.end());
+	if (maxValue < max)
+		maxValue = max;
+#else
+	int maxValue = MAX_AUDIO_VAULE;
+#endif
 	const uint16_t step = ceil((maxValue + 1) * 1.0 / num);
 	for (const auto& i : v) {
 		uint32_t index = (i % maxValue) / step;
