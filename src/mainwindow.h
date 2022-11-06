@@ -144,7 +144,7 @@ private:
 	void create_style_menu();
 	inline VideoLabel* get_video_label() const { return m_video_label.get(); }
 	inline PlayControlWnd* get_play_control() const { return m_play_control_wnd.get(); }
-	inline QObject* get_object(const QString name) const { return findChild<QObject*>(name); }
+	inline QObject* get_object(const QString& name) const { return findChild<QObject*>(name); }
 	void create_play_control();
 	void update_play_control();
 	void set_volume_updown(bool bUp = true, float unit = 0.2);
