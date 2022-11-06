@@ -10,8 +10,8 @@
 
 class VideoStateData {
 public:
-	VideoStateData(QThread* pThread, bool use_hardware = false, bool loop_play = false);
-	~VideoStateData();
+	explicit VideoStateData(QThread* pThread, bool use_hardware = false, bool loop_play = false);
+	virtual ~VideoStateData();
 
 public:
 	bool has_video() const;

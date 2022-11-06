@@ -6,17 +6,19 @@
 #include"audio_play_thread.h"
 
 
-enum GraphicType { e_GtBar, e_GtLine };
-enum VisualType { e_VtSampleing, e_VtFrequency };
-typedef struct VisualFormat {
-	GraphicType gType;
-	VisualType vType;
-}VisualFormat;
-
 class BarHelper
 {
 public:
-	BarHelper();
+	explicit BarHelper();
+	virtual ~BarHelper();
+
+public:
+	enum GraphicType { e_GtBar, e_GtLine };
+	enum VisualType { e_VtSampleing, e_VtFrequency };
+	typedef struct VisualFormat {
+		GraphicType gType;
+		VisualType vType;
+	}VisualFormat;
 
 public:
 	void paint(QPainter* painter, QPaintEvent* event, const AudioData& data);

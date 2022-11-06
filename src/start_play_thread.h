@@ -7,11 +7,11 @@ class StartPlayThread : public QThread
 	Q_OBJECT
 
 public:
-	StartPlayThread(QObject* parent = nullptr);
+	explicit StartPlayThread(QObject* parent = Q_NULLPTR);
 	~StartPlayThread();
+signals:
+	void init_audio(bool ret);
 
 protected:
 	void run() override;
-signals:
-	void init_audio(bool ret);
 };

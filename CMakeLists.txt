@@ -35,6 +35,7 @@ list(APPEND HEADER_FILES
     src/audio_effect_gl.h
     src/audio_effect_helper.h
     src/youtube_url_thread.h
+    src/clickable_slider.h
 )
 
 # .cpp files
@@ -64,6 +65,7 @@ list(APPEND SOURCE_FILES
     src/audio_effect_gl.cpp
     src/audio_effect_helper.cpp
     src/youtube_url_thread.cpp
+    src/clickable_slider.cpp
 )
 
 

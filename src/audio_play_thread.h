@@ -33,8 +33,8 @@ class AudioPlayThread : public QThread
 {
 	Q_OBJECT
 public:
-	AudioPlayThread(QObject* parent = nullptr, VideoState* pState = nullptr);
-	~AudioPlayThread();
+	explicit AudioPlayThread(QObject* parent = nullptr, VideoState* pState = nullptr);
+	virtual ~AudioPlayThread();
 
 public:
 	void print_device() const;
@@ -50,7 +50,7 @@ public:
 	void send_visual_open(bool bSend = true) { m_bSendToVisual = bSend; };
 signals:
 	void update_play_time();
-	void data_visual_ready(AudioData data);
+	void data_visual_ready(const AudioData& data);
 public slots:
 	void stop_thread();
 

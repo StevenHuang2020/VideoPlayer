@@ -41,7 +41,7 @@ class MainWindow : public QMainWindow
 	Q_OBJECT
 
 public:
-	MainWindow(QWidget* parent = nullptr);
+	explicit MainWindow(QWidget* parent = Q_NULLPTR);
 	~MainWindow();
 
 public:
@@ -54,11 +54,36 @@ public:
 	VideoStateData* get_video_state_data() { return m_pVideoState.get(); }
 	void play_mute(bool mute);
 	void play_seek();
+	void play_start_seek();
 	void play_seek_pre();
 	void play_seek_next();
 	void set_volume(int volume);
 	void set_play_speed();
 	void show_msg_dlg(const QString& message = "", const QString& windowTitle = "Warning", const QString& styleSheet = "");
+
+public slots:
+	void image_ready(const QImage&);
+	void subtitle_ready(const QString&);
+	void audio_data(const AudioData& data);
+	void open_recentFile();
+	void clear_recentfiles();
+	void read_packet_stopped();
+	void decode_video_stopped();
+	void decode_audio_stopped();
+	void decode_subtitle_stopped();
+	void audio_play_stopped();
+	void video_play_stopped();
+	void update_play_time();
+	void play_started(bool ret = true);
+	void play_failed(const QString& file);
+
+signals:
+	void stop_audio_play_thread();
+	void stop_video_play_thread();
+	void stop_decode_thread();
+	void stop_read_packet_thread();
+	void wait_stop_audio_play_thread();
+	void wait_stop_video_play_thread();
 
 private:
 	void resizeEvent(QResizeEvent* event) override;
@@ -84,34 +109,10 @@ private slots:
 	void on_actionLoop_Play_triggered();
 	void on_actionMedia_Info_triggered();
 	void on_actionKeyboard_Usage_triggered();
-	void on_actionAudio_visualize_triggered();
 	void on_actionSampling_triggered();
 	void on_actionFrequency_triggered();
 	void on_actionBar_triggered();
 	void on_actionLine_triggered();
-
-public slots:
-	void image_ready(const QImage&);
-	void subtitle_ready(const QString&);
-	void audio_data(AudioData data);
-	void open_recentFile();
-	void clear_recentfiles();
-	void read_packet_stopped();
-	void decode_video_stopped();
-	void decode_audio_stopped();
-	void decode_subtitle_stopped();
-	void audio_play_stopped();
-	void video_play_stopped();
-	void update_play_time();
-	void play_started(bool ret = true);
-
-signals:
-	void stop_audio_play_thread();
-	void stop_video_play_thread();
-	void stop_decode_thread();
-	void stop_read_packet_thread();
-	void wait_stop_audio_play_thread();
-	void wait_stop_video_play_thread();
 
 private:
 	bool start_play();
@@ -129,7 +130,7 @@ private:
 	bool label_fullscreen();
 	void hide_statusbar(bool bHide = true);
 	void hide_menubar(bool bHide = true);
-	void check_hide_menubar(QMouseEvent* mouseEvent);
+	void check_hide_menubar(const QPoint& pt);
 	void check_hide_play_control();
 	void auto_hide_play_control(bool bHide = true);
 	void displayStatusMessage(const QString& message);
@@ -141,11 +142,11 @@ private:
 	void print_size() const;
 	void keep_aspect_ratio(bool bWidth = true);
 	void create_style_menu();
-	video_label* get_video_label() const;
-	QObject* get_object(const QString name) const;
+	inline VideoLabel* get_video_label() const { return m_video_label.get(); }
+	inline PlayControlWnd* get_play_control() const { return m_play_control_wnd.get(); }
+	inline QObject* get_object(const QString name) const { return findChild<QObject*>(name); }
 	void create_play_control();
 	void update_play_control();
-	PlayControlWnd* get_play_control() const;
 	void set_volume_updown(bool bUp = true, float unit = 0.2);
 	void create_recentfiles_menu();
 	void set_current_file(const QString& fileName);
@@ -157,6 +158,7 @@ private:
 	QString get_selected_style() const;
 	void set_style_action(const QString& style);
 	void clear_subtitle_str();
+	void set_subtitle(const QString& str);
 	void create_cv_action_group();
 	void play_speed_adjust(bool up = true);
 	void create_video_label();
@@ -166,7 +168,7 @@ private:
 	void show_audio_effect(bool bShow = true);
 	void play_control_key(Qt::Key key);
 	void set_default_bkground();
-	bool create_video_state(const char* filename, QThread* pThread);
+	bool create_video_state(const char* filename, QThread* pThread = nullptr);
 	void delete_video_state();
 	bool create_read_thread(); //read packet thread
 	bool create_decode_video_thread(); //decode thread
@@ -185,10 +187,10 @@ private:
 	int get_youtube_optionid() const;
 	void set_youtube_optionid(int id);
 	void create_avisual_action_group(); //audio visual
-	VisualFormat get_avisual_format() const;
+	BarHelper::VisualFormat get_avisual_format() const;
 	void popup_audio_effect();
-	void set_audio_effect_format(const VisualFormat& fmt);
-	bool start_youtube_url_thread(const YoutubeUrlData& data);
+	void set_audio_effect_format(const BarHelper::VisualFormat& fmt);
+	bool start_youtube_url_thread(const YoutubeUrlDlg::YoutubeUrlData& data);
 private:
 	std::unique_ptr<Ui::MainWindow> ui;
 
@@ -208,7 +210,7 @@ private:
 	PlayerSkin m_skin;
 	QString m_subtitle;
 
-	std::unique_ptr<video_label> m_video_label;
+	std::unique_ptr<VideoLabel> m_video_label;
 	std::unique_ptr<PlayControlWnd> m_play_control_wnd;
 	std::unique_ptr<AudioEffectGL> m_audio_effect_wnd;
 private:

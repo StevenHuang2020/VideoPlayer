@@ -355,7 +355,7 @@ int get_video_frame(VideoState* is, AVFrame* frame)
 			dpts = av_q2d(is->video_st->time_base) * frame->pts;
 
 		frame->sample_aspect_ratio = av_guess_sample_aspect_ratio(is->ic, is->video_st, frame);
-#if 0/**drop frame**/
+#if 1/**drop frame**/
 		if (framedrop > 0 || (framedrop && get_master_sync_type(is) != AV_SYNC_VIDEO_MASTER)) {
 			if (frame->pts != AV_NOPTS_VALUE) {
 				double diff = dpts - get_master_clock(is);
@@ -651,7 +651,21 @@ void stream_seek(VideoState* is, int64_t pos, int64_t rel, int seek_by_bytes)
 }
 
 /* pause or resume the video */
-void stream_toggle_pause(VideoState* is)
+//void stream_toggle_pause(VideoState* is, bool pause)
+//{
+//	if (is->paused) {
+//		is->frame_timer += av_gettime_relative() / 1000000.0 - is->vidclk.last_updated;
+//		if (is->read_pause_return != AVERROR(ENOSYS)) {
+//			is->vidclk.paused = 0;
+//		}
+//		set_clock(&is->vidclk, get_clock(&is->vidclk), is->vidclk.serial);
+//	}
+//	set_clock(&is->extclk, get_clock(&is->extclk), is->extclk.serial);
+//	is->paused = is->audclk.paused = is->vidclk.paused = is->extclk.paused = pause; // !is->paused;
+//	is->step = 0;
+//}
+
+void toggle_pause(VideoState* is, bool pause)
 {
 	if (is->paused) {
 		is->frame_timer += av_gettime_relative() / 1000000.0 - is->vidclk.last_updated;
@@ -661,13 +675,8 @@ void stream_toggle_pause(VideoState* is)
 		set_clock(&is->vidclk, get_clock(&is->vidclk), is->vidclk.serial);
 	}
 	set_clock(&is->extclk, get_clock(&is->extclk), is->extclk.serial);
-	is->paused = is->audclk.paused = is->vidclk.paused = is->extclk.paused = !is->paused;
+	is->paused = is->audclk.paused = is->vidclk.paused = is->extclk.paused = pause; // !is->paused;
 	is->step = 0;
-}
-
-void toggle_pause(VideoState* is)
-{
-	stream_toggle_pause(is);
 }
 
 void toggle_mute(VideoState* is, bool mute)
@@ -689,7 +698,7 @@ void step_to_next_frame(VideoState* is)
 {
 	/* if the stream is paused unpause it, then step */
 	if (is->paused)
-		stream_toggle_pause(is);
+		toggle_pause(is, !is->paused);
 	is->step = 1;
 }
 

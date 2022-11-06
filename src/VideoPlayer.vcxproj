@@ -211,6 +211,7 @@
     <ClCompile Include="audio_effect_gl.cpp" />
     <ClCompile Include="audio_effect_helper.cpp" />
     <ClCompile Include="audio_play_thread.cpp" />
+    <ClCompile Include="clickable_slider.cpp" />
     <ClCompile Include="ffmpeg_init.cpp" />
     <ClCompile Include="imagecv_operations.cpp" />
     <ClCompile Include="log.cpp" />
@@ -278,6 +279,7 @@
     <QtMoc Include="video_label.h" />
     <QtMoc Include="audio_decode_thread.h" />
     <QtMoc Include="audio_effect_gl.h" />
+    <QtMoc Include="clickable_slider.h" />
     <ClInclude Include="packets_sync.h" />
     <QtMoc Include="video_decode_thread.h" />
     <QtMoc Include="read_thread.h" />

@@ -8,7 +8,7 @@ class ReadThread : public QThread
 	Q_OBJECT
 
 public:
-	ReadThread(QObject* parent = nullptr, VideoState* pState = nullptr);
+	explicit ReadThread(QObject* parent = nullptr, VideoState* pState = nullptr);
 	~ReadThread();
 public:
 	void set_video_state(VideoState* pState = nullptr); //call before start thread

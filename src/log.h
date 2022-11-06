@@ -21,8 +21,8 @@ public:
 	void log(const QString& str);
 
 private:
-	Logger(const QString& file = "log.txt");
-	~Logger();
+	explicit Logger(const QString& file = "log.txt");
+	virtual ~Logger();
 private:
 	std::unique_ptr<QFile> m_logfile;
 };

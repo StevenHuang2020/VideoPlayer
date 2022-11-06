@@ -82,9 +82,8 @@ MainWindow::~MainWindow()
 
 void MainWindow::create_video_label()
 {
-	m_video_label = std::make_unique<video_label>(centralWidget());
+	m_video_label = std::make_unique<VideoLabel>(centralWidget());
 	m_video_label->setObjectName(QString::fromUtf8("label_Video"));
-	//m_video_label->setGeometry(QRect(-2, -2, 431, 341));
 	m_video_label->setScaledContents(true);
 	//m_video_label->setWindowFlags(label_Video->windowFlags() | Qt::Widget);
 	m_video_label->show();
@@ -330,32 +329,17 @@ void MainWindow::create_play_control()
 	m_play_control_wnd = std::make_unique<PlayControlWnd>(this);
 	m_play_control_wnd->setObjectName(QString::fromUtf8("play_control"));
 	m_play_control_wnd->setGeometry(0, 0, 0, 65);
-	//m_play_control_wnd->setStyleSheet("border: 1px solid green;");
-	//m_play_control_wnd->setStyleSheet("background-color: rgba(0,0,0,0)");
-	//m_play_control_wnd->setStyleSheet("background-color:black");
 	m_play_control_wnd->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
 	m_play_control_wnd->setWindowFlags(Qt::Tool | Qt::FramelessWindowHint);
 	//m_play_control_wnd->show();
 }
 
-PlayControlWnd* MainWindow::get_play_control() const
-{
-	// return (play_control_window*)get_object("play_control");
-	return m_play_control_wnd.get();
-}
-
 void MainWindow::update_video_label()
 {
 	QSize sizeCenter = centralWidget()->size();
-	QPoint ptCenter = centralWidget()->pos();
-	video_label* pLabel = get_video_label();
+	VideoLabel* pLabel = get_video_label();
 	if (pLabel) {
-		//QPoint pt = geometry().topLeft() + centralWidget()->pos();
-		//QPoint pt = mapToGlobal(ptCenter);
-		//QPoint pt = geometry().topLeft();
-		//QPoint pt = ptCenter;
 		pLabel->resize(sizeCenter.width(), sizeCenter.height());
-		//pLabel->move(pt);
 	}
 }
 
@@ -367,10 +351,10 @@ void MainWindow::show_msg_dlg(const QString& message, const QString& windowTitle
 	msgBox.setWindowTitle(windowTitle);
 	msgBox.setStyleSheet(styleSheet);
 
-	msgBox.setModal(true);
 	msgBox.show();
 	msgBox.move(frameGeometry().center() - msgBox.rect().center());
-	msgBox.setWindowFlags(msgBox.windowFlags() | Qt::Popup);
+	msgBox.setWindowFlags(msgBox.windowFlags() | Qt::Dialog | Qt::WindowStaysOnTopHint);
+	msgBox.setModal(true);
 	msgBox.exec();
 }
 
@@ -384,11 +368,14 @@ void MainWindow::update_play_control()
 		QSize szPlayControl = pPlayControl->size();
 		pPlayControl->resize(sizeCenter.width(), szPlayControl.height());
 
-		//QPoint pt = ui->statusbar->pos();
-		int borderH = frameGeometry().height() - (geometry().y() - frameGeometry().y()) - geometry().height();
-		//int borderw = frameGeometry().width() - geometry().width();
+		QRect frameGeoRt = frameGeometry();
+		QRect geoRt = geometry();
 
-		QPoint pt = geometry().bottomLeft() - QPoint(0, szPlayControl.height() - borderH);
+		//QPoint pt = ui->statusbar->pos();
+		int borderH = frameGeoRt.height() - (geoRt.y() - frameGeoRt.y()) - geoRt.height();
+		//int borderw = frameGeoRt.width() - geoRt.width();
+
+		QPoint pt = geoRt.bottomLeft() - QPoint(0, szPlayControl.height() - borderH);
 
 		if (pStatusBar->isVisible())
 			pt -= QPoint(0, szStatusBar.height());
@@ -436,11 +423,14 @@ void MainWindow::resizeEvent(QResizeEvent* event)
 	qDebug("event size:(%d,%d)", size.width(), size.height());*/
 	update_video_label();
 	update_play_control();
+
+	QMainWindow::resizeEvent(event);
 }
 
 void MainWindow::moveEvent(QMoveEvent* event)
 {
 	update_play_control();
+	QMainWindow::moveEvent(event);
 }
 
 void MainWindow::keyPressEvent(QKeyEvent* event)
@@ -490,7 +480,7 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* event)
 		QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
 		// displayStatusMessage(QString("Mouse move (%1,%2)").arg(mouseEvent->pos().x()).arg(mouseEvent->pos().y()));
 
-		check_hide_menubar(mouseEvent);
+		check_hide_menubar(mouseEvent->pos());
 
 #if AUTO_HIDE_PLAYCONTROL
 		if (!ui->actionHide_Play_Ctronl->isChecked()) {
@@ -500,9 +490,8 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* event)
 		setCursor(Qt::ArrowCursor);
 #endif
 	}
-	return false;
+	return QMainWindow::eventFilter(obj, event);
 }
-
 
 void MainWindow::dropEvent(QDropEvent* event)
 {
@@ -526,12 +515,12 @@ void MainWindow::dragEnterEvent(QDragEnterEvent* event)
 	const QMimeData* mimeData = event->mimeData();
 	if (mimeData->hasUrls())
 		event->acceptProposedAction();
+	event->accept();
 }
 
-void MainWindow::check_hide_menubar(QMouseEvent* mouseEvent)
+void MainWindow::check_hide_menubar(const QPoint& pt)
 {
-	if (isFullScreen() && mouseEvent) {
-		QPoint pt = mouseEvent->pos();
+	if (isFullScreen()) {
 		const QRect rt = menuBar()->geometry();
 		hide_menubar(pt.y() > rt.height());
 	}
@@ -577,7 +566,6 @@ void MainWindow::on_actionOpen_triggered()
 
 	if (dialog.exec()) {
 		QStringList fileNames = dialog.selectedFiles();
-		// qDebug("file:%s\n", qUtf8Printable(fileNames[0]));
 		start_to_play(fileNames[0]);
 	}
 }
@@ -592,7 +580,7 @@ void MainWindow::on_actionYoutube_triggered()
 	int result = dialog.exec();
 	if (result == QDialog::Accepted) {
 
-		YoutubeUrlData data = dialog.get_data();
+		YoutubeUrlDlg::YoutubeUrlData data = dialog.get_data();
 
 		if (data.url.isEmpty() ||
 			(!data.url.startsWith("https://www.youtube.com/", Qt::CaseInsensitive)))
@@ -600,6 +588,11 @@ void MainWindow::on_actionYoutube_triggered()
 			QString str = QString("Please input a valid youtube url. ");
 			show_msg_dlg(str);
 			return;
+		}
+
+		int pos = data.url.indexOf("&"); //remove url parameters, all chars after '&'
+		if (pos != -1) {
+			data.url.truncate(pos);
 		}
 
 		start_youtube_url_thread(data);
@@ -703,12 +696,7 @@ void MainWindow::on_actionKeyboard_Usage_triggered()
 	show_msg_dlg(str, "Keyboard Play Control");
 }
 
-void MainWindow::on_actionAudio_visualize_triggered()
-{
-	popup_audio_effect();
-}
-
-void MainWindow::set_audio_effect_format(const VisualFormat& fmt)
+void MainWindow::set_audio_effect_format(const BarHelper::VisualFormat& fmt)
 {
 	if (m_audio_effect_wnd == nullptr)
 		return;
@@ -719,7 +707,7 @@ void MainWindow::popup_audio_effect()
 {
 	if (is_playing()) {
 
-		VisualFormat fmt = get_avisual_format();
+		BarHelper::VisualFormat fmt = get_avisual_format();
 		set_audio_effect_format(fmt);
 		show_audio_effect();
 		start_send_data();
@@ -778,29 +766,18 @@ void MainWindow::center_window(QRect screen_rec)
 	this->show();
 }
 
-
 void MainWindow::show_fullscreen(bool bFullscreen)
 {
-#if 0
-	if (bFullscreen) {
-		showFullScreen();
-	}
-	else {
-		showNormal();
-		hide_menubar(false);
-	}
-#else
-	video_label* pLabel = get_video_label();
+	VideoLabel* pLabel = get_video_label();
 	pLabel->show_fullscreen(bFullscreen);
 
 	if (!bFullscreen)
 		update_video_label();
-#endif
 }
 
 bool MainWindow::label_fullscreen()
 {
-	video_label* pLabel = get_video_label();
+	VideoLabel* pLabel = get_video_label();
 	return pLabel->isFullScreen();
 }
 
@@ -808,7 +785,7 @@ void MainWindow::keep_aspect_ratio(bool bWidth)
 {
 	if (m_pVideoState) {
 		AVCodecContext* pVideoCtx = m_pVideoState->get_contex(AVMEDIA_TYPE_VIDEO);
-		video_label* pLabel = get_video_label();
+		VideoLabel* pLabel = get_video_label();
 		if (pVideoCtx && pLabel) {
 			//QSize size = this->size();
 			QSize sizeLabel = pLabel->size();
@@ -959,14 +936,7 @@ void MainWindow::update_play_time()
 			if (pState) {
 				double audio_clock = pState->audio_clock;
 
-				int total_secs = (int)audio_clock;
-				int hours = int(total_secs / 3600);
-				int mins = (total_secs - hours * 3600) / 60;
-				int secs = (total_secs - hours * 3600 - mins * 60);
-
-				//qDebug("audio: clock=%0.3f, hours:%d, mins:%d, secs:%d", audio_clock, hours, mins, secs);
-				pPlayControl->update_play_time(hours, mins, secs);
-				//pPlayControl->update_play_time((int)audio_clock);
+				pPlayControl->update_play_time(audio_clock);
 			}
 		}
 	}
@@ -1015,22 +985,21 @@ void MainWindow::video_seek(double pos, double incr)
 
 void MainWindow::play_seek()
 {
-	pause_play();
-
 	PlayControlWnd* pPlayControl = get_play_control();
 	if (pPlayControl) {
-		const QSlider* pSlider = pPlayControl->get_progress_slider();
-		int maxValue = pSlider->maximum();
-		int total_time = pPlayControl->get_total_time();
-		int value = pSlider->value();
+		int maxValue = pPlayControl->get_progress_slider_max();
+		double total_time = pPlayControl->get_total_time();
+		int value = pPlayControl->get_progress_slider_value();
 
-		int seek_time = 0;
+		double seek_time = 0;
 		if (maxValue > 0)
-			seek_time = int(value * total_time * 1.0 / maxValue);
+			seek_time = value * total_time * 1.0 / maxValue;
 
-		qDebug("seek value:%d, maxValue:%d, total_time:%d, seek_time:%d", value, maxValue, total_time, seek_time);
-		video_seek(seek_time); //
+		qDebug() << "val:" << value << ",maxVal:" << maxValue << ",total time" << total_time << ",seek time:" << seek_time;
+		video_seek(seek_time);
 	}
+
+	update_paly_control_status();
 }
 
 void MainWindow::play_seek_pre()
@@ -1064,8 +1033,7 @@ void MainWindow::set_volume(int volume)
 	if (m_pAudioPlayThread == nullptr)
 		return;
 
-	const QSlider* pSilder = pPlayControl->get_volume_slider();
-	int max_val = pSilder->maximum();
+	int max_val = pPlayControl->get_volum_slider_max();
 	float vol = volume * 1.0 / max_val;
 	m_pAudioPlayThread->set_device_volume(vol);
 
@@ -1191,11 +1159,8 @@ void MainWindow::start_to_play(const QString& file)
 
 	ret = start_play();
 	if (!ret) {
-
 		remove_recentfiles(file);
-
-		QString str = QString("File play failed, file: %1").arg(m_videoFile);
-		show_msg_dlg(str);
+		play_failed(m_videoFile);
 		return;
 	}
 
@@ -1204,13 +1169,19 @@ void MainWindow::start_to_play(const QString& file)
 	update_menus();
 }
 
+void MainWindow::play_failed(const QString& file)
+{
+	QString str = QString("File play failed, file: %1").arg(file);
+	show_msg_dlg(str);
+}
+
 bool MainWindow::is_playing()
 {
 	if (m_pVideoState || m_pPacketReadThread \
 		|| m_pDecodeVideoThread || m_pDecodeAudioThread \
 		|| m_pAudioPlayThread || m_pVideoPlayThread \
 		|| m_pDecodeSubtitleThread) {
-		qWarning("Now file is playing, please wait or stop the current playing.\n");
+		qDebug("Now file is playing, please wait or stop the current playing.\n");
 		qDebug("VideoState=%p, PacketRead=%p\n", m_pVideoState.get(), m_pPacketReadThread.get());
 		qDebug("VideoDecode=%p, AudioDecode=%p, SubtitleDecode=%p\n", m_pDecodeVideoThread.get(),
 			m_pDecodeAudioThread.get(), m_pDecodeSubtitleThread.get());
@@ -1413,10 +1384,16 @@ void MainWindow::pause_play()
 	if (m_pVideoState) {
 		VideoState* pState = m_pVideoState->get_state();
 		if (pState)
-			toggle_pause(pState);
+			toggle_pause(pState, !pState->paused);
 	}
 
 	update_paly_control_status();
+}
+
+void MainWindow::play_start_seek()
+{
+	play_seek();
+	pause_play();
 }
 
 void MainWindow::play_control_key(Qt::Key key)
@@ -1686,17 +1663,6 @@ bool MainWindow::start_play_thread()
 	return true;
 }
 
-video_label* MainWindow::get_video_label() const
-{
-	//return (video_label*)get_object("label_Video");
-	return m_video_label.get();
-}
-
-QObject* MainWindow::get_object(const QString name) const
-{
-	return findChild<QObject*>(name);
-}
-
 void MainWindow::image_ready(const QImage& img)
 {
 	QImage image = img.copy();
@@ -1868,18 +1834,23 @@ void MainWindow::image_cv(QImage& image)
 
 void MainWindow::subtitle_ready(const QString& text)
 {
-	m_subtitle = text;
+	set_subtitle(text);
+}
+
+void MainWindow::set_subtitle(const QString& str)
+{
+	m_subtitle = str;
 	qDebug("receive subtitle: %s", qUtf8Printable(m_subtitle));
 }
 
 void MainWindow::clear_subtitle_str()
 {
-	m_subtitle = "";
+	set_subtitle("");
 }
 
 void MainWindow::update_image(const QImage& img)
 {
-	video_label* pLabel = get_video_label();
+	VideoLabel* pLabel = get_video_label();
 	if (!img.isNull() && pLabel)
 		pLabel->setPixmap(QPixmap::fromImage(img));
 }
@@ -2081,7 +2052,7 @@ void MainWindow::set_style_action(const QString& style)
 	}
 }
 
-void MainWindow::audio_data(AudioData data)
+void MainWindow::audio_data(const AudioData& data)
 {
 	if (m_audio_effect_wnd)
 		m_audio_effect_wnd->paint_data(data);
@@ -2119,7 +2090,6 @@ void MainWindow::enable_v_menus(bool enable)
 
 void MainWindow::enable_a_menus(bool enable)
 {
-	//ui->actionAudio_visualize->setEnabled(enable);
 	ui->menuAudio_visualize->setEnabled(enable);
 }
 
@@ -2149,24 +2119,26 @@ void MainWindow::create_avisual_action_group()
 	m_AVisualTypeActsGroup->addAction(ui->actionFrequency);
 }
 
-VisualFormat MainWindow::get_avisual_format() const
+BarHelper::VisualFormat MainWindow::get_avisual_format() const
 {
-	VisualFormat fmt = { e_GtLine, e_VtSampleing };
+	BarHelper::VisualFormat fmt = { BarHelper::e_GtLine, BarHelper::e_VtSampleing };
 	if (ui->actionBar->isChecked())
-		fmt.gType = e_GtBar;
+		fmt.gType = BarHelper::e_GtBar;
 
 	if (ui->actionFrequency->isChecked())
-		fmt.vType = e_VtFrequency;
+		fmt.vType = BarHelper::e_VtFrequency;
 
 	return fmt;
 }
 
-bool MainWindow::start_youtube_url_thread(const YoutubeUrlData& data)
+bool MainWindow::start_youtube_url_thread(const YoutubeUrlDlg::YoutubeUrlData& data)
 {
 	m_pYoutubeUrlThread.reset();
 
 	m_pYoutubeUrlThread = std::make_unique<YoutubeUrlThread>(data, this);
 	connect(m_pYoutubeUrlThread.get(), &YoutubeUrlThread::resultReady, this, &MainWindow::start_to_play);
+	connect(m_pYoutubeUrlThread.get(), &YoutubeUrlThread::resultFailed, this, &MainWindow::play_failed);
+
 	m_pYoutubeUrlThread->start();
 	return true;
 }

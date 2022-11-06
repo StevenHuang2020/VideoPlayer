@@ -8,11 +8,11 @@ class SubtitleDecodeThread : public QThread
 	Q_OBJECT
 
 public:
-	SubtitleDecodeThread(QObject* parent = nullptr, VideoState* pState = nullptr);
+	explicit SubtitleDecodeThread(QObject* parent = nullptr, VideoState* pState = nullptr);
 	~SubtitleDecodeThread();
-private:
-	VideoState* m_pState;
 
 protected:
 	void run() override;
+private:
+	VideoState* m_pState;
 };

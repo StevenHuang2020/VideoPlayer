@@ -9,12 +9,13 @@ class YoutubeUrlThread : public QThread
 	Q_OBJECT
 
 public:
-	YoutubeUrlThread(YoutubeUrlData data, QObject* parent = nullptr);
+	explicit YoutubeUrlThread(const YoutubeUrlDlg::YoutubeUrlData& data, QObject* parent = Q_NULLPTR);
 	~YoutubeUrlThread();
 signals:
 	void resultReady(const QString& s);
+	void resultFailed(const QString& s);
 protected:
 	void run() override;
 private:
-	YoutubeUrlData m_data;
+	YoutubeUrlDlg::YoutubeUrlData m_data;
 };

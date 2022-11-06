@@ -10,16 +10,16 @@
 #include <QApplication>
 
 
-video_label::video_label(QWidget* parent)
+VideoLabel::VideoLabel(QWidget* parent)
 	: QLabel(parent)
 {
 }
 
-video_label::~video_label()
+VideoLabel::~VideoLabel()
 {
 }
 
-void video_label::keyPressEvent(QKeyEvent* event)
+void VideoLabel::keyPressEvent(QKeyEvent* event)
 {
 	switch (event->key()) {
 	case Qt::Key_Escape:
@@ -36,7 +36,7 @@ void video_label::keyPressEvent(QKeyEvent* event)
 	}
 }
 
-void video_label::show_fullscreen(bool bFullscreen)
+void VideoLabel::show_fullscreen(bool bFullscreen)
 {
 	if (bFullscreen) {
 		setWindowFlags(windowFlags() | Qt::Window);

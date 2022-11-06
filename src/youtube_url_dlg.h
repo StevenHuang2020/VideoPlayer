@@ -3,27 +3,34 @@
 #include <QDialog>
 #include <memory>
 
+QT_BEGIN_NAMESPACE
 namespace Ui { class YoutubeUrlDlg; };
-
-typedef struct YoutubeUrlData {
-	QString url;
-	QString option;
-}YoutubeUrlData;
+QT_END_NAMESPACE
 
 class YoutubeUrlDlg : public QDialog
 {
 	Q_OBJECT
 
 public:
-	YoutubeUrlDlg(QWidget* parent = Q_NULLPTR);
+	explicit YoutubeUrlDlg(QWidget* parent = Q_NULLPTR);
 	~YoutubeUrlDlg();
+
+public:
+	typedef struct YoutubeUrlData {
+		QString url;
+		QString option;
+	}YoutubeUrlData;
+
 public:
 	void set_options_index(int id);
 	YoutubeUrlData get_data() const;
 	int get_options_index() const;
+
 private:
 	void init_options();
 	QString get_options() const;
+	QString get_url() const;
+
 private:
 	std::unique_ptr<Ui::YoutubeUrlDlg> ui;
 	const static QStringList m_options;

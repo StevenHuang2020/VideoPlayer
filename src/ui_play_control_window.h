@@ -19,6 +19,7 @@
 #include <QtWidgets/QSlider>
 #include <QtWidgets/QSpacerItem>
 #include <QtWidgets/QWidget>
+#include "clickable_slider.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -27,7 +28,6 @@ class Ui_play_control_window
 public:
     QWidget *layoutWidget;
     QGridLayout *gridLayout;
-    QSpacerItem *horizontalSpacer;
     QHBoxLayout *horizontalLayout_2;
     QPushButton *btn_pre;
     QPushButton *btn_play;
@@ -40,32 +40,29 @@ public:
     QCheckBox *check_mute;
     QSlider *slider_vol;
     QLabel *label_vol;
-    QSpacerItem *horizontalSpacer_4;
     QHBoxLayout *horizontalLayout;
-    QSlider *progress_slider;
+    ClickableSlider *progress_slider;
     QSpacerItem *horizontalSpacer_2;
     QLabel *label_curTime;
     QLabel *label_3;
     QLabel *label_totalTime;
     QSpacerItem *verticalSpacer;
+    QSpacerItem *horizontalSpacer;
+    QSpacerItem *horizontalSpacer_4;
 
     void setupUi(QWidget *play_control_window)
     {
         if (play_control_window->objectName().isEmpty())
             play_control_window->setObjectName(QString::fromUtf8("play_control_window"));
-        play_control_window->resize(681, 221);
+        play_control_window->resize(900, 205);
         layoutWidget = new QWidget(play_control_window);
         layoutWidget->setObjectName(QString::fromUtf8("layoutWidget"));
-        layoutWidget->setGeometry(QRect(0, 0, 651, 111));
+        layoutWidget->setGeometry(QRect(0, 0, 686, 111));
         gridLayout = new QGridLayout(layoutWidget);
         gridLayout->setSpacing(0);
         gridLayout->setContentsMargins(11, 11, 11, 11);
         gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
         gridLayout->setContentsMargins(0, 0, 0, 0);
-        horizontalSpacer = new QSpacerItem(5, 20, QSizePolicy::Fixed, QSizePolicy::Minimum);
-
-        gridLayout->addItem(horizontalSpacer, 0, 2, 1, 1);
-
         horizontalLayout_2 = new QHBoxLayout();
         horizontalLayout_2->setSpacing(1);
         horizontalLayout_2->setObjectName(QString::fromUtf8("horizontalLayout_2"));
@@ -182,14 +179,10 @@ public:
 
         gridLayout->addLayout(horizontalLayout_2, 1, 1, 1, 1);
 
-        horizontalSpacer_4 = new QSpacerItem(2, 20, QSizePolicy::Fixed, QSizePolicy::Minimum);
-
-        gridLayout->addItem(horizontalSpacer_4, 1, 0, 1, 1);
-
         horizontalLayout = new QHBoxLayout();
         horizontalLayout->setSpacing(2);
         horizontalLayout->setObjectName(QString::fromUtf8("horizontalLayout"));
-        progress_slider = new QSlider(layoutWidget);
+        progress_slider = new ClickableSlider(layoutWidget);
         progress_slider->setObjectName(QString::fromUtf8("progress_slider"));
         progress_slider->setEnabled(false);
         QSizePolicy sizePolicy2(QSizePolicy::Expanding, QSizePolicy::Fixed);
@@ -231,6 +224,14 @@ public:
         verticalSpacer = new QSpacerItem(20, 2, QSizePolicy::Minimum, QSizePolicy::Fixed);
 
         gridLayout->addItem(verticalSpacer, 2, 1, 1, 1);
+
+        horizontalSpacer = new QSpacerItem(5, 20, QSizePolicy::Fixed, QSizePolicy::Minimum);
+
+        gridLayout->addItem(horizontalSpacer, 0, 2, 2, 1);
+
+        horizontalSpacer_4 = new QSpacerItem(2, 20, QSizePolicy::Fixed, QSizePolicy::Minimum);
+
+        gridLayout->addItem(horizontalSpacer_4, 0, 0, 2, 1);
 
 
         retranslateUi(play_control_window);

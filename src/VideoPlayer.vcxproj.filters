@@ -132,6 +132,9 @@
     <ClCompile Include="youtube_url_thread.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="clickable_slider.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="mainwindow.h">
@@ -174,6 +177,9 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="youtube_url_thread.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="clickable_slider.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

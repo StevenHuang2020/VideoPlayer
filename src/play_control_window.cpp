@@ -10,6 +10,7 @@
 #include "ui_play_control_window.h"
 #include "mainwindow.h"
 
+
 #define PLAY_SPEED_STEP		0.25
 #define PLAY_SPEED_START	0.5
 #define PLAY_SPEED_STOP		2	//4 speed multiple from start to stop in step
@@ -27,36 +28,17 @@ PlayControlWnd::PlayControlWnd(QWidget* parent)
 	setLayout(ui->gridLayout); //gridLayout
 	ui->gridLayout->setContentsMargins(0, 0, 0, 0);
 
-#if 0
-	/*setStyleSheet("QSlider::groove:horizontal {background-color: #000000; height:4px;}"
-		"QSlider::handle:horizontal {background-color:blue; height:16px; width: 16px;}"
-	);*/
-
-	setStyleSheet("QSlider::groove:horizontal {background-color: #000000; height:4px;}"
-		//"QSlider::handle:horizontal {background-color:#9F2425; border-radius:5px; width: 12px; margin: -5px 0px -5px 0px;}"
-		"QSlider::handle:horizontal {background-color:#9F2425; border-radius:4px; width: 25px; margin: -2px 0px -2px 0px;}"
-	);
-
-	//setStyleSheet("QSlider::sub-page:Horizontal { background-color: #9F2425; }"
-	//	"QSlider::add-page:Horizontal { background-color: #333333; }"
-	//	"QSlider::groove:Horizontal { background: transparent; height:4px; }"
-	//	"QSlider::handle:Horizontal { width:11px; border-radius:5px; background:#9F2425; margin: -5px 0px -5px 0px; }"
-	//	//"QSlider::groove:horizontal{ background - color: black; border: 0px solid #424242; height: 10px;	border - radius: 4px; }"
-	//	//"QSlider::handle:horizontal{ background - color: red; border: 2px solid red; width: 16px; height: 20px; line - height: 20px; margin - top: -5px;	margin - bottom: -5px; border - radius: 10px; }"
-	//	//"QSlider::handle:horizontal:hover{ border - radius: 10px; }"
-	//);
-#endif
-
 	connect(ui->slider_vol, SIGNAL(valueChanged(int)), ui->label_vol, SLOT(setNum(int)));
 	connect(ui->check_mute, &QCheckBox::stateChanged, this, &PlayControlWnd::volume_muted);
 	connect(ui->check_mute, &QCheckBox::stateChanged, (MainWindow*)parent, &MainWindow::play_mute);
 	connect(ui->btn_stop, &QPushButton::clicked, (MainWindow*)parent, &MainWindow::stop_play);
 	connect(ui->btn_play, &QPushButton::clicked, (MainWindow*)parent, &MainWindow::pause_play);
 	connect(ui->slider_vol, &QSlider::valueChanged, (MainWindow*)parent, &MainWindow::set_volume);
-	connect(ui->btn_pre, &QPushButton::clicked, (MainWindow*)parent, &MainWindow::play_seek_pre);
-	connect(ui->btn_next, &QPushButton::clicked, (MainWindow*)parent, &MainWindow::play_seek_next);
-	connect(ui->progress_slider, &QSlider::sliderReleased, (MainWindow*)parent, &MainWindow::play_seek);
+	connect(ui->btn_pre, &QPushButton::pressed, (MainWindow*)parent, &MainWindow::play_seek_pre);
+	connect(ui->btn_next, &QPushButton::pressed, (MainWindow*)parent, &MainWindow::play_seek_next);
+	connect(ui->progress_slider, &QSlider::sliderReleased, (MainWindow*)parent, &MainWindow::play_start_seek);
 	connect(ui->progress_slider, &QSlider::sliderPressed, (MainWindow*)parent, &MainWindow::pause_play);
+	connect(ui->progress_slider, &ClickableSlider::onClick, (MainWindow*)parent, &MainWindow::play_seek);
 	connect(ui->slider_speed, &QSlider::valueChanged, this, &PlayControlWnd::speed_changed);
 	connect(ui->slider_speed, &QSlider::sliderReleased, (MainWindow*)parent, &MainWindow::set_play_speed);
 
@@ -121,24 +103,44 @@ void PlayControlWnd::set_volume_slider(float volume)
 	ui->slider_vol->setValue(int(volume * max));
 }
 
-const QSlider* PlayControlWnd::get_progress_slider() const
+inline double PlayControlWnd::get_time_secs(int hours, int mins, int secs) const
+{
+	return hours * 60 * 60 + mins * 60 + secs;
+}
+
+inline QSlider* PlayControlWnd::get_progress_slider() const
 {
 	return ui->progress_slider;
 }
 
-const QSlider* PlayControlWnd::get_volume_slider() const
+inline QSlider* PlayControlWnd::get_volume_slider() const
 {
 	return ui->slider_vol;
 }
 
-const QSlider* PlayControlWnd::get_speed_slider() const
+inline QSlider* PlayControlWnd::get_speed_slider() const
 {
 	return ui->slider_speed;
 }
 
+int PlayControlWnd::get_volum_slider_max()
+{
+	return get_volume_slider()->maximum();
+}
+
+int PlayControlWnd::get_progress_slider_max()
+{
+	return get_progress_slider()->maximum();
+}
+
+int PlayControlWnd::get_progress_slider_value()
+{
+	return get_progress_slider()->value();
+}
+
 void PlayControlWnd::enable_progressbar(bool enable)
 {
-	ui->progress_slider->setEnabled(enable);
+	get_progress_slider()->setEnabled(enable);
 }
 
 void PlayControlWnd::enable_slider_vol(bool enable)
@@ -151,11 +153,18 @@ void PlayControlWnd::enable_slider_speed(bool enable)
 	ui->slider_speed->setEnabled(enable);
 }
 
-void PlayControlWnd::get_play_time_params(int total_secs, int& hours, int& mins, int& secs) const
+void PlayControlWnd::get_play_time_params(int64_t total_secs, int& hours, int& mins, int& secs) const
 {
+#if 1
+	mins = total_secs / 60;
+	secs = total_secs % 60;
+	hours = mins / 60;
+	mins %= 60;
+#else
 	hours = int(total_secs / 3600);
 	mins = (total_secs - hours * 3600) / 60;
 	secs = (total_secs - hours * 3600 - mins * 60);
+#endif
 }
 
 void PlayControlWnd::update_play_time(int hours, int mins, int secs)
@@ -164,33 +173,27 @@ void PlayControlWnd::update_play_time(int hours, int mins, int secs)
 	ui->label_curTime->setText(time_str);
 
 	int percent = 0;
-	int total = get_total_time();
-	int cur = get_time_secs(hours, mins, secs);
+	double total = get_total_time();
+	double cur = get_time_secs(hours, mins, secs);
 	cur = cur > total ? total : cur;
 	if (total > 0) {
-		percent = cur * ui->progress_slider->maximum() / total;
+		percent = cur * get_progress_slider()->maximum() / total;
 	}
-	ui->progress_slider->setValue(percent);
+	get_progress_slider()->setValue(percent);
 }
 
-void PlayControlWnd::update_play_time(int total_secs)
+void PlayControlWnd::update_play_time(int64_t total_secs)
 {
-	int percent = 0;
-	int total = get_total_time();
-	int cur = total_secs;
-	cur = cur > total ? total : cur;
-	if (total > 0) {
-		percent = cur * ui->progress_slider->maximum() / total;
-	}
-	ui->progress_slider->setValue(percent);
+	int hours = 0, mins = 0, secs = 0;
+	double total = get_total_time();
+	total_secs = total_secs > total ? total : total_secs;
 
-	int hours, mins, secs;
-	get_play_time_params(cur, hours, mins, secs);
-	QString time_str = get_play_time(hours, mins, secs);
-	ui->label_curTime->setText(time_str);
+	get_play_time_params(total_secs, hours, mins, secs);
+	// qDebug() << "total:" << total_secs << "h:" << hours << "m:" << mins << "ses:" << secs;
+	update_play_time(hours, mins, secs);
 }
 
-int PlayControlWnd::get_total_time() const
+double PlayControlWnd::get_total_time() const
 {
 	return get_time_secs(m_hours, m_mins, m_secs);
 }
@@ -208,11 +211,20 @@ void PlayControlWnd::set_total_time(int hours, int mins, int secs)
 	m_mins = mins;
 	m_secs = secs;
 
-	ui->progress_slider->setMaximum(get_total_time());
+	double total = get_total_time();
+	set_progress_bar(total);
 
 	QString duration_str = get_play_time(hours, mins, secs);
 
 	ui->label_totalTime->setText(duration_str);
+}
+
+void PlayControlWnd::set_progress_bar(double total_secs)
+{
+	get_progress_slider()->setMaximum(total_secs);
+
+	int step = total_secs / width();
+	get_progress_slider()->setSingleStep(step);
 }
 
 QString PlayControlWnd::get_play_time(int hours, int mins, int secs) const
@@ -235,7 +247,7 @@ void PlayControlWnd::clear_time()
 	m_mins = 0;
 	m_secs = 0;
 
-	ui->progress_slider->setValue(0);
+	get_progress_slider()->setValue(0);
 	ui->label_totalTime->setText("--:--");
 	ui->label_curTime->setText("--:--");
 }
@@ -258,9 +270,11 @@ void PlayControlWnd::update_btn_play(bool bPause)
 {
 	if (bPause) {
 		ui->btn_play->setText("Play");
+		qDebug("set play");
 	}
 	else {
 		ui->btn_play->setText("Pause");
+		qDebug("set pause");
 	}
 }
 

@@ -10,7 +10,7 @@
 #include "youtube_url_thread.h"
 
 
-YoutubeUrlThread::YoutubeUrlThread(YoutubeUrlData data, QObject* parent)
+YoutubeUrlThread::YoutubeUrlThread(const YoutubeUrlDlg::YoutubeUrlData& data, QObject* parent)
 	: QThread(parent)
 	, m_data(data)
 {
@@ -22,25 +22,40 @@ YoutubeUrlThread::~YoutubeUrlThread()
 
 void YoutubeUrlThread::run()
 {
+	bool success = false;
 	QString output = "";
-	if (!m_data.url.isEmpty()) {
-		QProcess process;
-		QString home = QDir::currentPath();
-		QString exec = home + "/tools/youtube-dl.exe";
+	QProcess process;
+	QString home = QDir::currentPath();
+	QString exec = home + "/tools/youtube-dl.exe";
 
-		QStringList params;
-		params << "-f" << m_data.option << "-g" << m_data.url;
-		process.start(exec, params);
+	QStringList params;
+	QProcess::ExitStatus status = QProcess::ExitStatus::CrashExit;
 
-		qDebug() << "Exe: " << exec << "params:" << params;
-		process.waitForFinished(); // sets current thread to sleep and waits for pingProcess end
+	if (m_data.url.isEmpty())
+		goto the_end;
 
-		QProcess::ExitStatus Status = process.exitStatus();
-		if (Status == QProcess::ExitStatus::NormalExit) {
-			output = QString(process.readAllStandardOutput());
-			qDebug() << "output:" << output;
+	params << "-f" << m_data.option << "-g" << m_data.url;
+	process.start(exec, params);
+
+	qDebug() << "Exe: " << exec << "params:" << params;
+	process.waitForFinished(); // sets current thread to sleep and waits for pingProcess end
+
+	status = process.exitStatus();
+	if (status == QProcess::ExitStatus::NormalExit) {
+		output = QString(process.readAllStandardOutput());
+		qDebug() << "output:" << output;
+
+		if (!output.isEmpty()) {
+			success = true;
 			emit resultReady(output);
 		}
+	}
+
+the_end:
+	if (!success)
+	{
+		qWarning() << "Parsing url failed, url:" << m_data.url << "options:" << m_data.option;
+		emit resultFailed(m_data.url);
 	}
 
 	qDebug("-------- youtube url parsing thread exit.");

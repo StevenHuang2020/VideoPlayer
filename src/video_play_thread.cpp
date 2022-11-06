@@ -162,7 +162,7 @@ void VideoPlayThread::video_refresh(VideoState* is, double* remaining_time)
 			is->force_refresh = 1;
 
 			if (is->step && !is->paused)
-				stream_toggle_pause(is);
+				toggle_pause(is, !is->step);
 		}
 
 	display:

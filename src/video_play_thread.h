@@ -18,7 +18,7 @@ class VideoPlayThread : public QThread
 {
 	Q_OBJECT
 public:
-	VideoPlayThread(QObject* parent = nullptr, VideoState* pState = nullptr);
+	explicit VideoPlayThread(QObject* parent = nullptr, VideoState* pState = nullptr);
 	~VideoPlayThread();
 public:
 	bool init_resample_param(AVCodecContext* pVideo, bool bHardware = false);

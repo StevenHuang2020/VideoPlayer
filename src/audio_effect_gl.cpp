@@ -23,7 +23,7 @@ AudioEffectGL::AudioEffectGL(QWidget* parent)
 	flags &= (~Qt::WindowMinMaxButtonsHint);
 
 	setWindowFlags(flags);
-	
+
 	int width = 480;
 	int height = 280;
 
@@ -39,10 +39,15 @@ AudioEffectGL::AudioEffectGL(QWidget* parent)
 	m_img = QImage(":/images/res/bkground.png");
 }
 
+AudioEffectGL::~AudioEffectGL()
+{
+}
+
 void AudioEffectGL::closeEvent(QCloseEvent* event)
 {
 	hide();
 	emit hiden();
+	event->accept();
 }
 
 void AudioEffectGL::paintEvent(QPaintEvent* event)

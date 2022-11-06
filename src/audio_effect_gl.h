@@ -11,10 +11,12 @@ class AudioEffectGL : public QOpenGLWidget
 	Q_OBJECT
 
 public:
-	AudioEffectGL(QWidget* parent = nullptr);
+	explicit AudioEffectGL(QWidget* parent = nullptr);
+	virtual ~AudioEffectGL();
+public:
 	void paint_data(const AudioData& data);
 	void paint_clear();
-	void set_draw_fmt(const VisualFormat& fmt) { m_helper.set_draw_fmt(fmt); }
+	void set_draw_fmt(const BarHelper::VisualFormat& fmt) { m_helper.set_draw_fmt(fmt); }
 signals:
 	void hiden(bool bSend = false);
 protected:

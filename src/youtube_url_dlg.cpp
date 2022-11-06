@@ -8,7 +8,6 @@
 #include <QMessageBox>
 #include "youtube_url_dlg.h"
 #include "ui_youtube_url_dlg.h"
-#include "mainwindow.h"
 
 
 /* https://github.com/ytdl-org/youtube-dl  FORMAT SELECTION */
@@ -49,12 +48,20 @@ void YoutubeUrlDlg::init_options()
 
 QString YoutubeUrlDlg::get_options() const
 {
-	//return ui->comboBox->currentText();
+#if 1
+	return ui->comboBox->currentText();
+#else
 	int id = get_options_index();
 	if (id >= 0 && id < m_options.size())
 		return m_options[id];
 
 	return QString("");
+#endif
+}
+
+QString YoutubeUrlDlg::get_url() const
+{
+	return ui->lineEdit->text();
 }
 
 int YoutubeUrlDlg::get_options_index() const
@@ -70,10 +77,10 @@ void YoutubeUrlDlg::set_options_index(int id)
 	ui->comboBox->setCurrentIndex(id);
 }
 
-YoutubeUrlData YoutubeUrlDlg::get_data() const
+YoutubeUrlDlg::YoutubeUrlData YoutubeUrlDlg::get_data() const
 {
 	YoutubeUrlData data;
-	data.url = ui->lineEdit->text();
+	data.url = get_url();
 	data.option = get_options();
 	return data;
 }

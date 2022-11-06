@@ -34,6 +34,10 @@ BarHelper::BarHelper() : m_visualFmt({})
 	m_textFont.setPixelSize(50);
 }
 
+BarHelper::~BarHelper()
+{
+}
+
 void BarHelper::draw_data_bar(QPainter* painter, std::vector<int>& data, int n, int w, int h, int h_inter)
 {
 	assert(data.size() == n);

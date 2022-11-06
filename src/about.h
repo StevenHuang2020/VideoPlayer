@@ -4,15 +4,18 @@
 #include "version.h"
 #include <memory>
 
+
+QT_BEGIN_NAMESPACE
 namespace Ui { class About; };
+QT_END_NAMESPACE
 
 class About : public QDialog
 {
 	Q_OBJECT
 
 public:
-	About(QWidget* parent = Q_NULLPTR);
-	~About();
+	explicit About(QWidget* parent = Q_NULLPTR);
+	virtual ~About();
 
 private:
 	void init_label();

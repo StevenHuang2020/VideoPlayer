@@ -52,6 +52,6 @@ void About::init_label()
 	str += "\nCopy Right @ Steven Huang\n";
 
 	std::string std_str = str.toStdString();
-	str = QApplication::translate("about", std_str.c_str(), nullptr);
+	str = QApplication::translate("about", std_str.c_str(), Q_NULLPTR);
 	ui->label->setText(str);
 }

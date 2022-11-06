@@ -9,7 +9,7 @@
 
 class PlayerSkin {
 public:
-	PlayerSkin();
+	explicit PlayerSkin();
 	~PlayerSkin();
 
 public:
