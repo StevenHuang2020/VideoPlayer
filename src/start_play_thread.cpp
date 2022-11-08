@@ -40,7 +40,7 @@ void StartPlayThread::run()
 		if (pAudio) {
 			AudioPlayThread* pThread = pParent->get_audio_play_thread();
 			if (pThread) {
-				ret = pThread->init_device(pAudio->sample_rate, pAudio->channels, sample_fmt, vol); //pAudio->sample_fmt
+				ret = pThread->init_device(pAudio->sample_rate, pAudio->ch_layout.nb_channels, sample_fmt, vol); //pAudio->sample_fmt
 				if (!ret) {
 					qWarning("audio play init_device failed.");
 				}

@@ -174,7 +174,7 @@ void AudioPlayThread::run()
 
 		if (!isnan(is->audio_clock)) {
 			AVCodecContext* pAudioCodex = is->auddec.avctx;
-			int bytes_per_sec = av_samples_get_buffer_size(nullptr, pAudioCodex->channels, pAudioCodex->sample_rate, AV_SAMPLE_FMT_S16, 1);
+			int bytes_per_sec = av_samples_get_buffer_size(nullptr, pAudioCodex->ch_layout.nb_channels, pAudioCodex->sample_rate, AV_SAMPLE_FMT_S16, 1);
 			int64_t audio_callback_time = av_gettime_relative();
 			set_clock_at(&is->audclk, is->audio_clock - (double)(audio_size) / bytes_per_sec, is->audio_clock_serial, audio_callback_time / 1000000.0);
 			sync_clock_to_slave(&is->extclk, &is->audclk);
@@ -212,7 +212,7 @@ int AudioPlayThread::audio_decode_frame(VideoState* is)
 		AVSampleFormat(af->frame->format), 1);*/
 
 #if USE_AVFILTER_AUDIO
-	data_size = av_samples_get_buffer_size(nullptr, af->frame->channels, af->frame->nb_samples,
+	data_size = av_samples_get_buffer_size(nullptr, af->frame->ch_layout.nb_channels, af->frame->nb_samples,
 		AV_SAMPLE_FMT_S16, 1);
 	uint8_t* const buffer_audio = (uint8_t*)av_malloc(data_size * sizeof(uint8_t));
 
@@ -221,7 +221,7 @@ int AudioPlayThread::audio_decode_frame(VideoState* is)
 	struct SwrContext* swrCtx = m_audioResample.swrCtx;
 	data_size = av_samples_get_buffer_size(nullptr, af->frame->channels, af->frame->nb_samples,
 		AV_SAMPLE_FMT_S16, 0);  //AVSampleFormat(af->frame->format)
-	uint8_t* const buffer_audio = (uint8_t*)av_malloc(data_size * sizeof(uint8_t));
+	uint8_t* buffer_audio = (uint8_t*)av_malloc(data_size * sizeof(uint8_t));
 
 	int ret = swr_convert(swrCtx, &buffer_audio, af->frame->nb_samples, (const uint8_t**)(af->frame->data), af->frame->nb_samples);
 	if (ret < 0) {
@@ -272,11 +272,10 @@ int AudioPlayThread::audio_decode_frame(VideoState* is)
 		static int pks_num = 0;
 		pks_num++;
 
-		qDebug("[%d]audio: clock=%0.3f pts=%0.3f, (nb:%d, sr:%d)frame:%0.3f\n", pks_num, is->audio_clock, af->pts, \
+		qDebug("[%d]audio: clock=%0.3f pts=%0.3f, (nb:%d, sr:%d)frame:%0.3f\n", pks_num, is->audio_clock, af->pts,
 			af->frame->nb_samples, af->frame->sample_rate, frame);
 
-		//qDebug("audio: clock=%0.3f pts=%0.3f, (nb:%d, sr:%d)frame:%0.3f\n", is->audio_clock, af->pts, \
-			af->frame->nb_samples, af->frame->sample_rate, frame);
+		// qDebug("audio: clock=%0.3f pts=%0.3f, (nb:%d, sr:%d)frame:%0.3f\n", is->audio_clock, af->pts, af->frame->nb_samples, af->frame->sample_rate, frame);
 #endif
 	}
 	else {
@@ -299,7 +298,7 @@ int AudioPlayThread::audio_decode_frame(VideoState* is)
 	return data_size;
 }
 
-bool AudioPlayThread::init_resample_param(const AVCodecContext* pAudio, AVSampleFormat sample_fmt, VideoState* is)
+bool AudioPlayThread::init_resample_param(AVCodecContext* pAudio, AVSampleFormat sample_fmt, VideoState* is)
 {
 	if (pAudio) {
 		int ret = -1;
@@ -316,7 +315,7 @@ bool AudioPlayThread::init_resample_param(const AVCodecContext* pAudio, AVSample
 			int format = av_buffersink_get_format(sink);
 
 			ret = swr_alloc_set_opts2(&swrCtx,
-				(AVChannelLayout*)&pAudio->ch_layout, sample_fmt, pAudio->sample_rate,
+				&pAudio->ch_layout, sample_fmt, pAudio->sample_rate,
 				&channel_layout, (AVSampleFormat)format, pAudio->sample_rate,
 				0, nullptr);
 

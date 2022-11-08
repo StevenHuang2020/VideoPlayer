@@ -780,17 +780,22 @@ void set_audio_playspeed(VideoState* is, double value)
 	if (value < 0 || value>4)
 		return;
 
+	if (is->audio_speed == value)
+		return;
+
 	is->audio_speed = value;
 
-	size_t len = 32;
+	const size_t len = 32;
 	if (!is->afilters)
 		is->afilters = (char*)av_malloc(len);
+
 	if (value <= 0.5) {
 		snprintf(is->afilters, len, "atempo=0.5,");
 		char tmp[128];
 		snprintf(tmp, sizeof(tmp), "atempo=%lf", value / 0.5);
 
-		strncat(is->afilters, tmp, len - strlen(is->afilters) - 1);
+		//strncat(is->afilters, tmp, len - strlen(is->afilters) - 1);
+		strncat_s(is->afilters, len, tmp, len - strlen(is->afilters) - 1);
 	}
 	else if (value <= 2.0) {
 		snprintf(is->afilters, len, "atempo=%lf", value);
@@ -799,13 +804,15 @@ void set_audio_playspeed(VideoState* is, double value)
 		snprintf(is->afilters, len, "atempo=2.0,");
 		char tmp[128];
 		snprintf(tmp, sizeof(tmp), "atempo=%lf", value / 2.0);
-
-		strncat(is->afilters, tmp, len - strlen(is->afilters) - 1);
+		//strncat(is->afilters, tmp, len - strlen(is->afilters) - 1);
+		strncat_s(is->afilters, len, tmp, len - strlen(is->afilters) - 1);
 	}
 
 	qDebug("changing audio filters to :%s", is->afilters);
 
+#if USE_AVFILTER_VIDEO
 	set_video_playspeed(is, value);
+#endif
 
 	is->audio_clock_old = is->audio_clock;
 	is->req_afilter_reconfigure = 1;
@@ -836,13 +843,13 @@ int cmp_audio_fmts(enum AVSampleFormat fmt1, int64_t channel_count1,
 		return channel_count1 != channel_count2 || fmt1 != fmt2;
 }
 
-int64_t get_valid_channel_layout(int64_t channel_layout, int channels)
-{
-	if (channel_layout && av_get_channel_layout_nb_channels(channel_layout) == channels)
-		return channel_layout;
-	else
-		return 0;
-}
+//int64_t get_valid_channel_layout(int64_t channel_layout, int channels)
+//{
+//	if (channel_layout && av_get_channel_layout_nb_channels(channel_layout) == channels)
+//		return channel_layout;
+//	else
+//		return 0;
+//}
 
 int configure_filtergraph(AVFilterGraph* graph, const char* filtergraph,
 	AVFilterContext* source_ctx, AVFilterContext* sink_ctx)
@@ -892,13 +899,15 @@ int configure_audio_filters(VideoState* is, const char* afilters, int force_outp
 {
 	static const enum AVSampleFormat sample_fmts[] = { AV_SAMPLE_FMT_S16, AV_SAMPLE_FMT_NONE };
 	int sample_rates[2] = { 0, -1 };
-	int64_t channel_layouts[2] = { 0, -1 };
+	//int64_t channel_layouts[2] = { 0, -1 };
+	//AVChannelLayout channel_layouts[2] = {};
 	int channels[2] = { 0, -1 };
 	AVFilterContext* filt_asrc = nullptr, * filt_asink = nullptr;
 	char aresample_swr_opts[512] = "";
 	// const AVDictionaryEntry* e = nullptr;
 	char asrc_args[256];
 	int ret;
+	AVBPrint bp;
 
 	avfilter_graph_free(&is->agraph);
 	if (!(is->agraph = avfilter_graph_alloc()))
@@ -911,10 +920,14 @@ int configure_audio_filters(VideoState* is, const char* afilters, int force_outp
 		aresample_swr_opts[strlen(aresample_swr_opts) - 1] = '\0';
 	av_opt_set(is->agraph, "aresample_swr_opts", aresample_swr_opts, 0);*/
 
+
+	av_bprint_init(&bp, 0, AV_BPRINT_SIZE_AUTOMATIC);
+	av_channel_layout_describe_bprint(&is->audio_filter_src.channel_layout, &bp);
+
 	ret = snprintf(asrc_args, sizeof(asrc_args),
-		"sample_rate=%d:sample_fmt=%s:time_base=%d/%d:channel_layout=%lld",
+		"sample_rate=%d:sample_fmt=%s:time_base=%d/%d:channel_layout=%s",
 		is->audio_filter_src.freq, av_get_sample_fmt_name(is->audio_filter_src.fmt),
-		1, is->audio_filter_src.freq, is->audio_filter_src.channel_layout);
+		1, is->audio_filter_src.freq, bp.str);
 
 	ret = avfilter_graph_create_filter(&filt_asrc,
 		avfilter_get_by_name("abuffer"), "ffplay_abuffer",
@@ -935,14 +948,17 @@ int configure_audio_filters(VideoState* is, const char* afilters, int force_outp
 
 	if (force_output_format) {
 		sample_rates[0] = is->audio_filter_src.freq;
-		channel_layouts[0] = is->audio_filter_src.channel_layout;
+		//channel_layouts[0] = is->audio_filter_src.channel_layout;
 		//channels[0] = is->audio_filter_src.channels;
 		if ((ret = av_opt_set_int(filt_asink, "all_channel_counts", 0, AV_OPT_SEARCH_CHILDREN)) < 0)
 			goto end;
-		if ((ret = av_opt_set_int_list(filt_asink, "channel_layouts", channel_layouts, -1, AV_OPT_SEARCH_CHILDREN)) < 0)
+
+		if ((ret = av_opt_set(filt_asink, "ch_layouts", bp.str, AV_OPT_SEARCH_CHILDREN)) < 0)
 			goto end;
-		/*if ((ret = av_opt_set_int_list(filt_asink, "channel_counts", channels, -1, AV_OPT_SEARCH_CHILDREN)) < 0)
+		/*if ((ret = av_opt_set_int_list(filt_asink, "channel_layouts", channel_layouts, -1, AV_OPT_SEARCH_CHILDREN)) < 0)
 			goto end;*/
+			/*if ((ret = av_opt_set_int_list(filt_asink, "channel_counts", channels, -1, AV_OPT_SEARCH_CHILDREN)) < 0)
+				goto end;*/
 		if ((ret = av_opt_set_int_list(filt_asink, "sample_rates", sample_rates, -1, AV_OPT_SEARCH_CHILDREN)) < 0)
 			goto end;
 	}
@@ -956,6 +972,7 @@ int configure_audio_filters(VideoState* is, const char* afilters, int force_outp
 end:
 	if (ret < 0)
 		avfilter_graph_free(&is->agraph);
+	av_bprint_finalize(&bp, NULL);
 	return ret;
 }
 
@@ -1071,6 +1088,7 @@ fail:
 	return ret;
 }
 
+#if 0
 int audio_open(void* opaque, int64_t wanted_channel_layout, int wanted_nb_channels, int wanted_sample_rate, struct AudioParams* audio_hw_params)
 {
 	//SDL_AudioSpec wanted_spec, spec;
@@ -1136,7 +1154,7 @@ int audio_open(void* opaque, int64_t wanted_channel_layout, int wanted_nb_channe
 
 	audio_hw_params->fmt = AV_SAMPLE_FMT_S16;
 	audio_hw_params->freq = wanted_sample_rate; // spec.freq;
-	audio_hw_params->channel_layout = wanted_channel_layout;
+	audio_hw_params->channel_layout.nb_channels = wanted_channel_layout;
 	audio_hw_params->channels = wanted_nb_channels; // spec.channels;
 
 	audio_hw_params->frame_size = av_samples_get_buffer_size(nullptr, audio_hw_params->channels, 1, audio_hw_params->fmt, 1);
@@ -1147,5 +1165,6 @@ int audio_open(void* opaque, int64_t wanted_channel_layout, int wanted_nb_channe
 	}
 	return 0;// spec.size;
 }
+#endif 
 
 #endif

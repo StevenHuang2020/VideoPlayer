@@ -13,7 +13,7 @@
 
 #define PLAY_SPEED_STEP		0.25
 #define PLAY_SPEED_START	0.5
-#define PLAY_SPEED_STOP		2	//4 speed multiple from start to stop in step
+#define PLAY_SPEED_STOP		3	//4 speed multiple from start to stop in step
 
 
 PlayControlWnd::PlayControlWnd(QWidget* parent)
@@ -186,6 +186,8 @@ void PlayControlWnd::update_play_time(int64_t total_secs)
 {
 	int hours = 0, mins = 0, secs = 0;
 	double total = get_total_time();
+
+	total_secs = total_secs < 0 ? 0 : total_secs;
 	total_secs = total_secs > total ? total : total_secs;
 
 	get_play_time_params(total_secs, hours, mins, secs);

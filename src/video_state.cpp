@@ -375,7 +375,7 @@ int VideoStateData::stream_component_open(VideoState* is, int stream_index)
 	AVDictionary* opts = nullptr;
 	// const AVDictionaryEntry* t = nullptr;
 	int sample_rate, nb_channels;
-	int64_t channel_layout;
+	//int64_t
 	int format;
 	int ret = 0;
 	int stream_lowres = 0;
@@ -451,7 +451,7 @@ int VideoStateData::stream_component_open(VideoState* is, int stream_index)
 		//const char* afilters = "atempo=2.0";
 		is->audio_filter_src.freq = avctx->sample_rate;
 		is->audio_filter_src.channels = avctx->ch_layout.nb_channels; // avctx->channels;
-		is->audio_filter_src.channel_layout = avctx->channel_layout; // get_valid_channel_layout(avctx->channel_layout, avctx->channels);
+		is->audio_filter_src.channel_layout = avctx->ch_layout; //  avctx->channel_layout
 		is->audio_filter_src.fmt = avctx->sample_fmt;
 		if ((ret = configure_audio_filters(is, is->afilters, 0)) < 0)
 			goto fail;
@@ -459,7 +459,7 @@ int VideoStateData::stream_component_open(VideoState* is, int stream_index)
 		sink = is->out_audio_filter;
 		sample_rate = av_buffersink_get_sample_rate(sink);
 		nb_channels = av_buffersink_get_channels(sink);
-		channel_layout = av_buffersink_get_channel_layout(sink);
+		//channel_layout = av_buffersink_get_channel_layout(sink);
 		format = av_buffersink_get_format(sink);
 		AVChannelLayout chn_layout;
 		av_buffersink_get_ch_layout(sink, &chn_layout);
@@ -468,10 +468,10 @@ int VideoStateData::stream_component_open(VideoState* is, int stream_index)
 #else
 		sample_rate = avctx->sample_rate;
 		nb_channels = avctx->channels;
-		channel_layout = avctx->channel_layout;
+		AVChannelLayout chn_layout = avctx->channel_layout;
 #endif
 		/* prepare audio output */
-		/*if ((ret = audio_open(is, channel_layout, nb_channels, sample_rate, &is->audio_tgt)) < 0)
+		/*if ((ret = audio_open(is, chn_layout, nb_channels, sample_rate, &is->audio_tgt)) < 0)
 			goto fail;
 
 		is->audio_src = is->audio_tgt;*/

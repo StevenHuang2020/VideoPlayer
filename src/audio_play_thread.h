@@ -43,7 +43,7 @@ public:
 	void stop_device();
 	void play_file(const QString& file);
 	void play_buf(const uint8_t* buf, int datasize);
-	bool init_resample_param(const AVCodecContext* pAudio, AVSampleFormat sample_fmt, VideoState* is);
+	bool init_resample_param(AVCodecContext* pAudio, AVSampleFormat sample_fmt, VideoState* is);
 	void final_resample_param();
 	float get_device_volume() const;
 	void set_device_volume(float volume);

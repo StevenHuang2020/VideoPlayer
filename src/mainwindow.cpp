@@ -1150,9 +1150,13 @@ void MainWindow::start_to_play(const QString& file)
 	bool ret = is_playing();
 
 	if (ret) {
+#if 0
+		wait_stop_play();
+#else
 		QString str = QString("File(%1) is playing, please stop it first. ").arg(m_videoFile);
 		show_msg_dlg(str);
 		return;
+#endif
 	}
 
 	m_videoFile = file;
@@ -1167,6 +1171,33 @@ void MainWindow::start_to_play(const QString& file)
 	set_current_file(file);
 
 	update_menus();
+}
+
+void MainWindow::wait_stop_play()
+{
+	stop_play();
+	bool ret = is_playing();
+
+	while (ret)
+	{
+
+		Sleep(100);
+		if (m_pDecodeAudioThread)
+			m_pDecodeAudioThread->wait();
+		if (m_pAudioPlayThread)
+			m_pAudioPlayThread->wait();
+		if (m_pPacketReadThread)
+			m_pPacketReadThread->wait();
+
+		if (m_pDecodeVideoThread)
+			m_pDecodeVideoThread->wait();
+		if (m_pVideoPlayThread)
+			m_pVideoPlayThread->wait();
+		if (m_pDecodeSubtitleThread)
+			m_pDecodeSubtitleThread->wait();
+
+		ret = is_playing();
+	}
 }
 
 void MainWindow::play_failed(const QString& file)
@@ -1235,7 +1266,7 @@ bool MainWindow::start_play()
 		return ret;
 	}
 
-	resize_window();  // set default window size
+	//resize_window();  // set default window size
 
 	//qDebug("---------------------------------%d milliseconds", timer.elapsed());
 
@@ -1934,7 +1965,7 @@ void MainWindow::print_decodeContext(const AVCodecContext* pDecodeCtx, bool bVid
 		qInfo("***************Audio decode context*****************");
 		qInfo("codec_name:%s", pDecodeCtx->codec->name);
 		qInfo("codec_type:%d, codec_id:%d, codec_tag:%d", pDecodeCtx->codec_type, pDecodeCtx->codec_id, pDecodeCtx->codec_tag);
-		qInfo("sample_rate:%d, channels:%d, sample_fmt:%d", pDecodeCtx->sample_rate, pDecodeCtx->channels, pDecodeCtx->sample_fmt);
+		qInfo("sample_rate:%d, channels:%d, sample_fmt:%d", pDecodeCtx->sample_rate, pDecodeCtx->ch_layout.nb_channels, pDecodeCtx->sample_fmt);
 		qInfo("frame_size:%d, frame_number:%d, block_align:%d", pDecodeCtx->frame_size, pDecodeCtx->frame_number, pDecodeCtx->block_align);
 		qInfo("***************Audio decode context end*****************\n");
 	}

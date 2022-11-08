@@ -9,8 +9,9 @@
 #include <QMutex>
 #include <QWaitCondition>
 
+//only need to open audio filter, video will be synced
 #define USE_AVFILTER_AUDIO	1
-#define USE_AVFILTER_VIDEO	1
+#define USE_AVFILTER_VIDEO	0
 
 extern "C" {
 #include <libavcodec/avcodec.h>
@@ -19,6 +20,7 @@ extern "C" {
 #include <libswscale/swscale.h>
 #include <libavutil/fifo.h>
 #include <libavutil/time.h>
+#include <libavutil/bprint.h>
 #include <libavutil/samplefmt.h>
 #include <libswresample/swresample.h>
 
@@ -104,7 +106,7 @@ typedef struct PacketQueue {
 typedef struct AudioParams {
 	int freq;
 	int channels;
-	int64_t channel_layout;
+	AVChannelLayout channel_layout;
 	enum AVSampleFormat fmt;
 	int frame_size;
 	int bytes_per_sec;
@@ -383,13 +385,13 @@ void set_audio_playspeed(VideoState* is, double value);
 
 int cmp_audio_fmts(enum AVSampleFormat fmt1, int64_t channel_count1,
 	enum AVSampleFormat fmt2, int64_t channel_count2);
-int64_t get_valid_channel_layout(int64_t channel_layout, int channels);
+// int64_t get_valid_channel_layout(int64_t channel_layout, int channels);
 
 int configure_audio_filters(VideoState* is, const char* afilters, int force_output_format);
 int configure_filtergraph(AVFilterGraph* graph, const char* filtergraph,
 	AVFilterContext* source_ctx, AVFilterContext* sink_ctx);
 
-int audio_open(void* opaque, int64_t wanted_channel_layout, int wanted_nb_channels, int wanted_sample_rate, struct AudioParams* audio_hw_params);
+//int audio_open(void* opaque, int64_t wanted_channel_layout, int wanted_nb_channels, int wanted_sample_rate, struct AudioParams* audio_hw_params);
 
 void set_video_playspeed(VideoState* is, double value);
 int configure_video_filters(AVFilterGraph* graph, VideoState* is, const char* vfilters, AVFrame* frame);

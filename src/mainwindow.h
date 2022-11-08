@@ -191,6 +191,7 @@ private:
 	void popup_audio_effect();
 	void set_audio_effect_format(const BarHelper::VisualFormat& fmt);
 	bool start_youtube_url_thread(const YoutubeUrlDlg::YoutubeUrlData& data);
+	void wait_stop_play();
 private:
 	std::unique_ptr<Ui::MainWindow> ui;
 

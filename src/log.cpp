@@ -24,7 +24,8 @@ void Output(const char* szFormat, ...)
 
 	va_list arg;
 	va_start(arg, szFormat);
-	_vsnwprintf(szBuff, BUFF_LEN, szFormat, arg);
+	_vsnwprintf_s(szBuff, _countof(szBuff), _TRUNCATE, szFormat, arg);
+	//_vsnwprintf(szBuff, BUFF_LEN, szFormat, arg);
 	va_end(arg);
 #else
 	char szBuff[BUFF_LEN];
