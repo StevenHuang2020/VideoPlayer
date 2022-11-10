@@ -13,7 +13,7 @@
 
 #define PLAY_SPEED_STEP		0.25
 #define PLAY_SPEED_START	0.5
-#define PLAY_SPEED_STOP		3	//4 speed multiple from start to stop in step
+#define PLAY_SPEED_STOP		2	//4 speed multiple from start to stop in step
 
 
 PlayControlWnd::PlayControlWnd(QWidget* parent)
@@ -40,7 +40,8 @@ PlayControlWnd::PlayControlWnd(QWidget* parent)
 	connect(ui->progress_slider, &QSlider::sliderPressed, (MainWindow*)parent, &MainWindow::pause_play);
 	connect(ui->progress_slider, &ClickableSlider::onClick, (MainWindow*)parent, &MainWindow::play_seek);
 	connect(ui->slider_speed, &QSlider::valueChanged, this, &PlayControlWnd::speed_changed);
-	connect(ui->slider_speed, &QSlider::sliderReleased, (MainWindow*)parent, &MainWindow::set_play_speed);
+	//connect(ui->slider_speed, &QSlider::sliderReleased, (MainWindow*)parent, &MainWindow::set_play_speed);
+	connect(ui->slider_speed, &QSlider::valueChanged, (MainWindow*)parent, &MainWindow::set_play_speed);
 
 	clear_all();
 }
@@ -103,7 +104,7 @@ void PlayControlWnd::set_volume_slider(float volume)
 	ui->slider_vol->setValue(int(volume * max));
 }
 
-inline double PlayControlWnd::get_time_secs(int hours, int mins, int secs) const
+inline double PlayControlWnd::get_time_secs(int64_t hours, int64_t mins, int64_t secs)
 {
 	return hours * 60 * 60 + mins * 60 + secs;
 }
@@ -153,7 +154,7 @@ void PlayControlWnd::enable_slider_speed(bool enable)
 	ui->slider_speed->setEnabled(enable);
 }
 
-void PlayControlWnd::get_play_time_params(int64_t total_secs, int& hours, int& mins, int& secs) const
+void PlayControlWnd::get_play_time_params(int64_t total_secs, int64_t& hours, int64_t& mins, int64_t& secs)
 {
 #if 1
 	mins = total_secs / 60;
@@ -167,7 +168,7 @@ void PlayControlWnd::get_play_time_params(int64_t total_secs, int& hours, int& m
 #endif
 }
 
-void PlayControlWnd::update_play_time(int hours, int mins, int secs)
+void PlayControlWnd::update_play_time(int64_t hours, int64_t mins, int64_t secs)
 {
 	QString time_str = get_play_time(hours, mins, secs);
 	ui->label_curTime->setText(time_str);
@@ -184,7 +185,7 @@ void PlayControlWnd::update_play_time(int hours, int mins, int secs)
 
 void PlayControlWnd::update_play_time(int64_t total_secs)
 {
-	int hours = 0, mins = 0, secs = 0;
+	int64_t hours = 0, mins = 0, secs = 0;
 	double total = get_total_time();
 
 	total_secs = total_secs < 0 ? 0 : total_secs;
@@ -200,7 +201,7 @@ double PlayControlWnd::get_total_time() const
 	return get_time_secs(m_hours, m_mins, m_secs);
 }
 
-void PlayControlWnd::set_total_time(int hours, int mins, int secs)
+void PlayControlWnd::set_total_time(int64_t hours, int64_t mins, int64_t secs)
 {
 	enable_progressbar();
 	enable_play_buttons();
@@ -225,11 +226,11 @@ void PlayControlWnd::set_progress_bar(double total_secs)
 {
 	get_progress_slider()->setMaximum(total_secs);
 
-	int step = total_secs / width();
-	get_progress_slider()->setSingleStep(step);
+	//int step = total_secs / width();
+	//get_progress_slider()->setSingleStep(step);
 }
 
-QString PlayControlWnd::get_play_time(int hours, int mins, int secs) const
+QString PlayControlWnd::get_play_time(int64_t hours, int64_t mins, int64_t secs)
 {
 	QString str = "";
 

@@ -49,6 +49,7 @@ MainWindow::MainWindow(QWidget* parent)
 	create_cv_action_group();
 	create_audio_effect();
 	create_avisual_action_group();
+	create_playlist_wnd();
 
 	setWindowTitle(tr("Video Player"));
 	set_default_bkground();
@@ -70,7 +71,6 @@ MainWindow::MainWindow(QWidget* parent)
 
 	resize_window();
 	read_settings();
-
 	update_menus();
 }
 
@@ -159,8 +159,7 @@ void MainWindow::create_style_menu()
 		QString path = paths[i];
 
 		QFileInfo fileInfo(path);
-		//QString filename(fileInfo.fileName());
-		QString filename(fileInfo.baseName());
+		QString filename = fileInfo.baseName();
 
 		qDebug("path:%s, %s", qUtf8Printable(path), qUtf8Printable(filename));
 		QString name = "action" + filename;
@@ -250,7 +249,7 @@ void MainWindow::set_current_file(const QString& fileName)
 	while (files.size() > MaxRecentFiles)
 		files.removeLast();
 
-	m_settings.set_recentfiles("files", files);
+	m_settings.set_recentfiles(files);
 
 	update_recentfile_actions();
 }
@@ -259,7 +258,7 @@ void MainWindow::clear_recentfiles()
 {
 	QStringList files = m_settings.get_recentfiles().toStringList();
 	files.clear();
-	m_settings.set_recentfiles("files", files);
+	m_settings.set_recentfiles(files);
 
 	update_recentfile_actions();
 }
@@ -268,7 +267,7 @@ void MainWindow::remove_recentfiles(const QString& fileName)
 {
 	QStringList files = m_settings.get_recentfiles().toStringList();
 	files.removeAll(fileName);
-	m_settings.set_recentfiles("files", files);
+	m_settings.set_recentfiles(files);
 
 	update_recentfile_actions();
 }
@@ -331,7 +330,6 @@ void MainWindow::create_play_control()
 	m_play_control_wnd->setGeometry(0, 0, 0, 65);
 	m_play_control_wnd->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
 	m_play_control_wnd->setWindowFlags(Qt::Tool | Qt::FramelessWindowHint);
-	//m_play_control_wnd->show();
 }
 
 void MainWindow::update_video_label()
@@ -832,22 +830,15 @@ void MainWindow::set_paly_control_wnd(bool set)
 		if (pState == nullptr)
 			return;
 
-		QString duration_str = "";
-
 		AVFormatContext* ic = pState->ic;
 		if (ic) {
 			int64_t hours, mins, secs, us;
-			int64_t duration = ic->duration + (ic->duration <= INT64_MAX - 5000 ? 5000 : 0);
-			secs = duration / AV_TIME_BASE;
-			us = duration % AV_TIME_BASE;
-			us = (100 * us) / AV_TIME_BASE;
-			mins = secs / 60;
-			secs %= 60;
-			hours = mins / 60;
-			mins %= 60;
 
+			get_duration_time(ic->duration, hours, mins, secs, us);
+
+			//QString duration_str = "";
 			//qInfo("duration:%02d:%02d:%02d.%03d", hours, mins, secs, us);
-			duration_str = QString("%1:%2:%3.%4").arg(hours).arg(mins).arg(secs).arg(us);
+			//duration_str = QString("%1:%2:%3.%4").arg(hours).arg(mins).arg(secs).arg(us);
 
 			pPlayControl->set_total_time(hours, mins, secs);
 		}
@@ -1147,16 +1138,19 @@ void MainWindow::play_started(bool ret)
 
 void MainWindow::start_to_play(const QString& file)
 {
+	if (m_videoFile == file)
+		return;
+
 	bool ret = is_playing();
 
 	if (ret) {
-#if 0
-		wait_stop_play();
+#if 1
+		wait_stop_play(file);
 #else
 		QString str = QString("File(%1) is playing, please stop it first. ").arg(m_videoFile);
 		show_msg_dlg(str);
-		return;
 #endif
+		return;
 	}
 
 	m_videoFile = file;
@@ -1169,35 +1163,19 @@ void MainWindow::start_to_play(const QString& file)
 	}
 
 	set_current_file(file);
+	add_to_playlist(file);
 
 	update_menus();
 }
 
-void MainWindow::wait_stop_play()
+void MainWindow::wait_stop_play(const QString& file)
 {
-	stop_play();
-	bool ret = is_playing();
+	m_pStopplayWaitingThread = std::make_unique<StopWaitingThread>(this, file);
 
-	while (ret)
-	{
+	connect(m_pStopplayWaitingThread.get(), &StopWaitingThread::stopPlay, this, &MainWindow::stop_play);
+	connect(m_pStopplayWaitingThread.get(), &StopWaitingThread::startPlay, this, &MainWindow::start_to_play);
 
-		Sleep(100);
-		if (m_pDecodeAudioThread)
-			m_pDecodeAudioThread->wait();
-		if (m_pAudioPlayThread)
-			m_pAudioPlayThread->wait();
-		if (m_pPacketReadThread)
-			m_pPacketReadThread->wait();
-
-		if (m_pDecodeVideoThread)
-			m_pDecodeVideoThread->wait();
-		if (m_pVideoPlayThread)
-			m_pVideoPlayThread->wait();
-		if (m_pDecodeSubtitleThread)
-			m_pDecodeSubtitleThread->wait();
-
-		ret = is_playing();
-	}
+	m_pStopplayWaitingThread->start();
 }
 
 void MainWindow::play_failed(const QString& file)
@@ -2172,4 +2150,40 @@ bool MainWindow::start_youtube_url_thread(const YoutubeUrlDlg::YoutubeUrlData& d
 
 	m_pYoutubeUrlThread->start();
 	return true;
+}
+
+void MainWindow::create_playlist_wnd()
+{
+	m_playListWnd = std::make_unique<PlayListWnd>(this);
+	connect(m_playListWnd.get(), &PlayListWnd::play_file, this, &MainWindow::start_to_play);
+	connect(m_playListWnd.get(), &PlayListWnd::save_playlist_signal, this, &MainWindow::save_playlist);
+}
+
+void MainWindow::on_actionPlayList_triggered()
+{
+	if (m_playListWnd) {
+		QStringList files = m_settings.get_playlist().toStringList();
+		m_playListWnd->update_files(files);
+		m_playListWnd->show();
+	}
+}
+
+void MainWindow::save_playlist(const QStringList& files)
+{
+	m_settings.set_playlist(files);
+}
+
+void MainWindow::add_to_playlist(const QString& file)
+{
+	if (m_playListWnd) {
+		m_playListWnd->add_file(file);
+		m_playListWnd->save_playlist();
+	}
+}
+
+QString MainWindow::get_playingfile()
+{
+	if (is_playing())
+		return m_videoFile;
+	return QString("");
 }

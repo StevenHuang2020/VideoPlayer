@@ -508,6 +508,31 @@ int decoder_decode_frame(Decoder* d, AVFrame* frame, AVSubtitle* sub) {
 	}
 }
 
+void get_file_info(const char* filename, int64_t& duration)
+{
+	AVFormatContext* pFormatCtx = avformat_alloc_context();
+	int ret = avformat_open_input(&pFormatCtx, filename, NULL, NULL);
+	if (pFormatCtx->duration < 0)
+		avformat_find_stream_info(pFormatCtx, NULL);
+	duration = pFormatCtx->duration;
+	// etc
+	avformat_close_input(&pFormatCtx);
+	avformat_free_context(pFormatCtx);
+}
+
+void get_duration_time(const int64_t duration_us, int64_t& hours, int64_t& mins, int64_t& secs, int64_t& us)
+{
+	int64_t duration = duration_us + (duration_us <= INT64_MAX - 5000 ? 5000 : 0);
+	duration = duration < 0 ? 0 : duration;
+	secs = duration / AV_TIME_BASE;
+	us = duration % AV_TIME_BASE;
+	us = (100 * us) / AV_TIME_BASE;
+	mins = secs / 60;
+	secs %= 60;
+	hours = mins / 60;
+	mins %= 60;
+}
+
 double get_clock(Clock* c)
 {
 	if (*c->queue_serial != c->serial)
@@ -1075,7 +1100,7 @@ int configure_video_filters(AVFilterGraph* graph, VideoState* is, const char* vf
 			snprintf(rotate_buf, sizeof(rotate_buf), "%f*PI/180", theta);
 			INSERT_FILT("rotate", rotate_buf);
 		}
-	}
+}
 #endif
 
 	if ((ret = configure_filtergraph(graph, vfilters, filt_src, last_filter)) < 0)

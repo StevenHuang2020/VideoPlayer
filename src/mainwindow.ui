@@ -88,6 +88,7 @@
     </widget>
     <addaction name="actionOpen"/>
     <addaction name="actionYoutube"/>
+    <addaction name="actionPlayList"/>
     <addaction name="separator"/>
     <addaction name="menuRecent_Files"/>
     <addaction name="separator"/>
@@ -474,6 +475,11 @@
    </property>
    <property name="text">
     <string>Frequency</string>
+   </property>
+  </action>
+  <action name="actionPlayList">
+   <property name="text">
+    <string>Play List</string>
    </property>
   </action>
  </widget>

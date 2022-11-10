@@ -77,10 +77,10 @@ void logOutput(const QtMsgType type, const QMessageLogContext& context, const QS
 		return;
 
 	txt = QString("[%1][%2]%3").arg(time).arg(type_str).arg(msg);
-#endif
 
 	Logger& logger = Logger::instance();
 	logger.log(txt);
+#endif	
 }
 
 

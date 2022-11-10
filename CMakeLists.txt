@@ -36,6 +36,8 @@ list(APPEND HEADER_FILES
     src/audio_effect_helper.h
     src/youtube_url_thread.h
     src/clickable_slider.h
+    src/stopplay_waiting_thread.h
+    src/playlist_window.h
 )
 
 # .cpp files
@@ -66,6 +68,8 @@ list(APPEND SOURCE_FILES
     src/audio_effect_helper.cpp
     src/youtube_url_thread.cpp
     src/clickable_slider.cpp
+    src/stopplay_waiting_thread.cpp
+    src/playlist_window.cpp
 )
 
 
@@ -75,6 +79,7 @@ list(APPEND SOURCE_FILES
     src/mainwindow.ui
     src/play_control_window.ui
     src/youtube_url_dlg.ui
+    src/playlist_window.ui
     src/qmake_qmake_qm_files.qrc
     src/VideoPlayer_en_001.ts
 )

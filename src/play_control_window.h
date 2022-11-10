@@ -18,7 +18,7 @@ public:
 	~PlayControlWnd();
 public:
 	void update_play_time(int64_t total_secs);
-	void set_total_time(int hours, int mins, int secs);
+	void set_total_time(int64_t hours, int64_t mins, int64_t secs);
 	inline QSlider* get_progress_slider() const;
 	inline QSlider* get_volume_slider() const;
 	inline QSlider* get_speed_slider() const;
@@ -32,6 +32,11 @@ public:
 	double get_speed() const;
 	void speed_adjust(bool up = true);
 
+public:
+	static void get_play_time_params(int64_t total_secs, int64_t& hours, int64_t& mins, int64_t& secs);
+	static QString get_play_time(int64_t hours, int64_t mins, int64_t secs);
+	static inline double get_time_secs(int64_t hours, int64_t mins, int64_t secs);
+
 public slots:
 	void volume_muted(int mute);
 	void speed_changed(int speed);
@@ -41,16 +46,14 @@ private:
 	void enable_slider_vol(bool enable = true);
 	void enable_slider_speed(bool enable = true);
 	void init_slider_speed();
-	QString get_play_time(int hours, int mins, int secs) const;
-	inline double get_time_secs(int hours, int mins, int secs) const;
 	void clear_time();
 	void enable_play_buttons(bool enable = true);
-	void update_play_time(int hours, int mins, int secs);
-	void get_play_time_params(int64_t total_secs, int& hours, int& mins, int& secs) const;
+	void update_play_time(int64_t hours, int64_t mins, int64_t secs);
 	void set_progress_bar(double total_secs);
+
 private:
 	std::unique_ptr<Ui::play_control_window> ui;
-	int m_hours;
-	int m_mins;
-	int m_secs;
+	int64_t m_hours;
+	int64_t m_mins;
+	int64_t m_secs;
 };

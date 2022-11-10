@@ -21,9 +21,12 @@ About::About(QWidget* parent)
 
 	setLayout(ui->gridLayout);
 
-	setWindowFlags(windowFlags() &
-		~Qt::WindowMinMaxButtonsHint &
-		~Qt::WindowContextHelpButtonHint);
+	Qt::WindowFlags flags = windowFlags();
+	flags |= Qt::WindowStaysOnTopHint;
+	flags &= (~Qt::WindowMinMaxButtonsHint);
+	flags &= (~Qt::WindowContextHelpButtonHint);
+
+	setWindowFlags(flags);
 
 	init_label();
 

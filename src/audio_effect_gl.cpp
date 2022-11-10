@@ -18,9 +18,9 @@ AudioEffectGL::AudioEffectGL(QWidget* parent)
 {
 	Qt::WindowFlags flags = windowFlags();
 	flags |= Qt::Window;
-	// flags |= Qt::WindowStaysOnTopHint;
+	flags |= Qt::WindowStaysOnTopHint;
 	flags &= (~Qt::WindowContextHelpButtonHint);
-	flags &= (~Qt::WindowMinMaxButtonsHint);
+	// flags &= (~Qt::WindowMinMaxButtonsHint);
 
 	setWindowFlags(flags);
 

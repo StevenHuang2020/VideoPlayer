@@ -1,7 +1,8 @@
 #pragma once
 
-#include <QSettings>
-#include <memory>
+#include<QSettings>
+#include<QDebug>
+#include<memory>
 
 class AppSettings {
 public:
@@ -14,14 +15,16 @@ public:
 	QVariant get_info(const QString& key) const;
 	void set_info(const QString& key, const QVariant& value);
 	QVariant get_recentfiles(const QString& key = "files") const;
-	void set_recentfiles(const QString& key = "files", const QVariant& value = QVariant::Invalid);
-
+	void set_recentfiles(const QVariant& value = QVariant::Invalid, const QString& key = "files");
+	QVariant get_playlist(const QString& key = "playlist") const;
+	void set_playlist(const QVariant& value = QVariant::Invalid, const QString& key = "playlist");
 private:
 	typedef enum SectionID {
 		SECTION_ID_NONE = -1,
 		SECTION_ID_GENERAL,
 		SECTION_ID_INFO,
 		SECTION_ID_RECENTFILES,
+		SECTION_ID_PLAYLIST,
 		SECTION_ID_MAX
 	} SectionID;
 

@@ -11,7 +11,7 @@ Please find the release player [here.](https://github.com/StevenHuang2020/VideoP
 
 <img src="src/res/player.png" width="320" height="205" />
 
-##### Compile
+##### Compilation
 - Visual Studio 19
 
 Please install ```QT tools extention``` in Visual Studio. If you use another version VS, please use CMake and CMakeLists.txt to generate your own VS project files.</br>
@@ -31,6 +31,8 @@ cmake --build . --config Release
 ```
 
 ##### History
+
+- v2.0.8, clickable progressbar; play speed bug fixed; add play list;
 - v2.0.7, audio visualization; youtube url open options; menu updates;
 - v2.0.3, play speed control; full screen
 - v2.0.1, CMake configuration

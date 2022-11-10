@@ -135,6 +135,12 @@
     <ClCompile Include="clickable_slider.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="stopplay_waiting_thread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="playlist_window.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="mainwindow.h">
@@ -182,6 +188,12 @@
     <QtMoc Include="clickable_slider.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <QtMoc Include="stopplay_waiting_thread.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="playlist_window.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="debug\moc_predefs.h.cbt">
@@ -204,6 +216,9 @@
       <Filter>Form Files</Filter>
     </QtUic>
     <QtUic Include="play_control_window.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="playlist_window.ui">
       <Filter>Form Files</Filter>
     </QtUic>
   </ItemGroup>

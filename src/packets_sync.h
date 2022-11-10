@@ -9,7 +9,7 @@
 #include <QMutex>
 #include <QWaitCondition>
 
-//only need to open audio filter, video will be synced
+ //only need to open audio filter, video will be synced
 #define USE_AVFILTER_AUDIO	1
 #define USE_AVFILTER_VIDEO	0
 
@@ -352,6 +352,8 @@ int decoder_decode_frame(Decoder* d, AVFrame* frame, AVSubtitle* sub);
 void decoder_destroy(Decoder* d);
 int decoder_start(Decoder* d, void* thread, const char* thread_name, void* arg);
 void decoder_abort(Decoder* d, FrameQueue* fq);
+void get_file_info(const char* filename, int64_t& duration);
+void get_duration_time(const int64_t duration_us, int64_t& hours, int64_t& mins, int64_t& secs, int64_t& us);
 
 /***************Clock operations*****************/
 double get_clock(Clock* c);

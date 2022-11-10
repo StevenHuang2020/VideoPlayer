@@ -14,6 +14,7 @@ const AppSettings::Section AppSettings::m_sections[] = {
 	{ SECTION_ID_GENERAL, "General" },
 	{ SECTION_ID_INFO, "Info" },
 	{ SECTION_ID_RECENTFILES, "RecentFiles" },
+	{ SECTION_ID_PLAYLIST, "PlayList" },
 };
 
 
@@ -30,16 +31,16 @@ AppSettings::~AppSettings()
 void AppSettings::print_settings() const
 {
 	if (m_pSettings) {
-		qDebug("videoplayer configure file:%s", qUtf8Printable(m_pSettings->fileName()));
-		qDebug("organizationName:%s", qUtf8Printable(m_pSettings->organizationName()));
-		qDebug("applicationName:%s", qUtf8Printable(m_pSettings->applicationName()));
+		qDebug() << "videoplayer configure file:" << m_pSettings->fileName();
+		qDebug() << "organizationName:" << m_pSettings->organizationName();
+		qDebug() << "applicationName:" << m_pSettings->applicationName();
 
 		for (const QString& group : m_pSettings->childGroups()) {
 			m_pSettings->beginGroup(group);
-			qDebug("group:%s", qUtf8Printable(group));
+			qDebug() << "group:" << group;
 			for (const QString& key : m_pSettings->childKeys()) {
 				QString str = QString("key:%1, valye:%2").arg(key).arg(m_pSettings->value(key).toString());
-				qDebug("%s", qUtf8Printable(str));
+				qDebug() << str;
 			}
 			m_pSettings->endGroup();
 		}
@@ -94,7 +95,7 @@ QVariant AppSettings::get_info(const QString& key) const
 	return get_value(SECTION_ID_INFO, key);
 }
 
-void AppSettings::set_recentfiles(const QString& key, const QVariant& value)
+void AppSettings::set_recentfiles(const QVariant& value, const QString& key)
 {
 	set_value(SECTION_ID_RECENTFILES, key, value);
 }
@@ -102,4 +103,14 @@ void AppSettings::set_recentfiles(const QString& key, const QVariant& value)
 QVariant AppSettings::get_recentfiles(const QString& key) const
 {
 	return get_value(SECTION_ID_RECENTFILES, key);
+}
+
+QVariant AppSettings::get_playlist(const QString& key) const
+{
+	return get_value(SECTION_ID_PLAYLIST, key);
+}
+
+void AppSettings::set_playlist(const QVariant& value, const QString& key)
+{
+	set_value(SECTION_ID_PLAYLIST, key, value);
 }

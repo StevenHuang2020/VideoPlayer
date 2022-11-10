@@ -30,6 +30,8 @@
 #include "player_skin.h"
 #include "audio_effect_gl.h"
 #include "youtube_url_thread.h"
+#include "stopplay_waiting_thread.h"
+#include "playlist_window.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -60,6 +62,9 @@ public:
 	void set_volume(int volume);
 	void set_play_speed();
 	void show_msg_dlg(const QString& message = "", const QString& windowTitle = "Warning", const QString& styleSheet = "");
+	bool is_playing();
+	QString get_playingfile();
+
 
 public slots:
 	void image_ready(const QImage&);
@@ -76,6 +81,7 @@ public slots:
 	void update_play_time();
 	void play_started(bool ret = true);
 	void play_failed(const QString& file);
+	void save_playlist(const QStringList& files);
 
 signals:
 	void stop_audio_play_thread();
@@ -113,10 +119,10 @@ private slots:
 	void on_actionFrequency_triggered();
 	void on_actionBar_triggered();
 	void on_actionLine_triggered();
+	void on_actionPlayList_triggered();
 
 private:
 	bool start_play();
-	bool is_playing();
 	bool playing_has_video();
 	bool playing_has_audio();
 	bool playing_has_subtitle();
@@ -191,7 +197,10 @@ private:
 	void popup_audio_effect();
 	void set_audio_effect_format(const BarHelper::VisualFormat& fmt);
 	bool start_youtube_url_thread(const YoutubeUrlDlg::YoutubeUrlData& data);
-	void wait_stop_play();
+	void wait_stop_play(const QString& file);
+	void create_playlist_wnd();
+	void add_to_playlist(const QString& file);
+
 private:
 	std::unique_ptr<Ui::MainWindow> ui;
 
@@ -204,6 +213,7 @@ private:
 	std::unique_ptr<VideoStateData> m_pVideoState;	//for sync packets
 	std::unique_ptr<StartPlayThread> m_pBeforePlayThread; //for time-consuming operations before play
 	std::unique_ptr<YoutubeUrlThread> m_pYoutubeUrlThread;	//for youtube url parsing
+	std::unique_ptr<StopWaitingThread> m_pStopplayWaitingThread; //for waiting stop play
 
 	QString m_videoFile;
 	QTimer m_timer; //mouse moving checker timer
@@ -214,6 +224,7 @@ private:
 	std::unique_ptr<VideoLabel> m_video_label;
 	std::unique_ptr<PlayControlWnd> m_play_control_wnd;
 	std::unique_ptr<AudioEffectGL> m_audio_effect_wnd;
+	std::unique_ptr<PlayListWnd> m_playListWnd;
 private:
 	enum {
 		MaxRecentFiles = 20,  // maximum recent play files
