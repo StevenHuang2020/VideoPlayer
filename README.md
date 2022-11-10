@@ -32,11 +32,11 @@ cmake --build . --config Release
 
 ##### History
 
-- v2.0.8, clickable progressbar; play speed bug fixed; add play list;
+- v2.0.8, clickable progressbar; play speed bug fixed; added play list;
 - v2.0.7, audio visualization; youtube url open options; menu updates;
 - v2.0.3, play speed control; full screen
 - v2.0.1, CMake configuration
-- v2.0.0, add cv effects by using OpenCV;
+- v2.0.0, added cv effects by using OpenCV;
 - v1.1.8, bugs fixed;
 - v1.1.6, app settings; loop play; media info;
 - v1.1.5, dxva2 decode support; recent files;
