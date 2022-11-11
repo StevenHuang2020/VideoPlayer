@@ -1138,13 +1138,13 @@ void MainWindow::play_started(bool ret)
 
 void MainWindow::start_to_play(const QString& file)
 {
-	if (m_videoFile == file)
-		return;
-
 	bool ret = is_playing();
 
 	if (ret) {
 #if 1
+		if (m_videoFile == file)
+			return;
+
 		wait_stop_play(file);
 #else
 		QString str = QString("File(%1) is playing, please stop it first. ").arg(m_videoFile);

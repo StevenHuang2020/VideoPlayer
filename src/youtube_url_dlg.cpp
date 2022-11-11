@@ -27,7 +27,13 @@ YoutubeUrlDlg::YoutubeUrlDlg(QWidget* parent)
 	ui->setupUi(this);
 	setLayout(ui->gridLayout);
 
-	setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
+	Qt::WindowFlags flags = windowFlags();
+	flags |= Qt::WindowStaysOnTopHint;
+	flags &= (~Qt::WindowMinMaxButtonsHint);
+	flags &= (~Qt::WindowContextHelpButtonHint);
+
+	setWindowFlags(flags);
+
 	QObject::connect(ui->btn_Ok, SIGNAL(clicked()), this, SLOT(accept()));
 	QObject::connect(ui->btn_Cancel, SIGNAL(clicked()), this, SLOT(reject()));
 
