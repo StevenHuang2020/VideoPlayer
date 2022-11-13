@@ -30,19 +30,20 @@ def progress_function(chunk, file_handle, bytes_remaining):
     print('\r', end='')
 
 
+def startDownload(video, downPath, prefix):
+    global gFilesize, gPercent
+    gFilesize = video.filesize
+    gPercent = 0
+
+    if downPath.strip():  # create dst folder
+        if not os.path.exists(downPath):
+            os.makedirs(downPath)
+
+    print('Sart to download:', video, 'Size:', gFilesize)
+    video.download(downPath, filename_prefix=prefix)
+
+
 def downYouTube(url, downPath=None):
-    def startDownFile(video, prefix):
-        global gFilesize, gPercent
-        gFilesize = video.filesize
-        gPercent = 0
-
-        if downPath.strip():  # create dst folder
-            if not os.path.exists(downPath):
-                os.makedirs(downPath)
-
-        print('Sart to download:', video, 'Size:', gFilesize)
-        video.download(downPath, filename_prefix=prefix)
-
     print(url, downPath)
     yt = YouTube(url, on_progress_callback=progress_function)
     print(f'Title: \'{yt.title}\'')
@@ -71,7 +72,7 @@ def downYouTube(url, downPath=None):
     for id in input().split():
         x = int(id)
         if x >= 0 and x < length:
-            startDownFile(result[x], id + '_')
+            startDownload(result[x], downPath, id + '_')
         else:
             print('Warning: Id is error, Id=', x)
 
@@ -96,7 +97,7 @@ def writeSubtitles(file, content):
 
 def validateTitle(title):
     rstr = r"[\/\\\:\*\?\"\<\>\|]"
-    new_title = re.sub(rstr, "_", title)  #
+    new_title = re.sub(rstr, "_", title)
     return new_title
 
 
