@@ -221,6 +221,7 @@
     <ClCompile Include="log.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mainwindow.cpp" />
+    <ClCompile Include="network_url_dlg.cpp" />
     <ClCompile Include="packets_sync.cpp" />
     <ClCompile Include="player_skin.cpp" />
     <ClCompile Include="playlist_window.cpp" />
@@ -268,6 +269,7 @@
     <QtUic Include="about.ui" />
     <QtUic Include="mainwindow.ui">
     </QtUic>
+    <QtUic Include="network_url_dlg.ui" />
     <QtUic Include="playlist_window.ui" />
     <QtUic Include="play_control_window.ui" />
     <QtUic Include="youtube_url_dlg.ui" />
@@ -287,6 +289,7 @@
     <QtMoc Include="audio_decode_thread.h" />
     <QtMoc Include="audio_effect_gl.h" />
     <QtMoc Include="clickable_slider.h" />
+    <QtMoc Include="network_url_dlg.h" />
     <ClInclude Include="packets_sync.h" />
     <QtMoc Include="video_decode_thread.h" />
     <QtMoc Include="read_thread.h" />

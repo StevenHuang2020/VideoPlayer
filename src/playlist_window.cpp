@@ -3,7 +3,7 @@
 //
 //      Copy Right @ Steven Huang. All rights reserved.
 //
-// play list window.
+// playlist window.
 // ***********************************************************/
 #include "playlist_window.h"
 #include "packets_sync.h"
@@ -70,12 +70,17 @@ void PlayListWnd::init_list()
 
 bool PlayListWnd::add_data_file(const QString& file)
 {
+#if 1
+	auto ret = m_data.insert(file.toStdString());
+	return ret.second;
+#else
 	if (!already_in(file)) {
 		m_data.insert(file.toStdString());
 		return true;
 	}
 
 	return false;
+#endif
 }
 
 inline bool PlayListWnd::already_in(const QString& file) const
@@ -119,12 +124,14 @@ void PlayListWnd::update_table_list()
 	for (auto const& i : m_data) {
 		PlayListLine data = {};
 		data.file = QString::fromStdString(i);
-		data.duration = get_file_duration(data.file);
 
-		if (QUrl::fromUserInput(data.file).isLocalFile()) {
+		if (is_local(data.file)) {
 			data.fileName = get_file_name(data.file);
+			data.duration = get_file_duration(data.file);
 		}
 		else {
+			data.fileName = "Unknow";
+			data.duration = "00:00";
 			qWarning() << "Not Handled!"; // not handled
 		}
 
@@ -136,7 +143,7 @@ void PlayListWnd::update_table_list()
 
 void PlayListWnd::cellSelected(int row, int col)
 {
-	QString file = get_cell_str(row, 2);
+	QString file = get_cell_str(row);
 	qDebug() << "file clicked:" << "row:" << row << "col:" << col << "file:" << file;
 	emit play_file(file);
 }
@@ -151,24 +158,35 @@ QString PlayListWnd::get_cell_str(int row, int col) const
 {
 	QTableWidget* const pTable = get_table();
 	QTableWidgetItem* pItem = pTable->item(row, col); //column file path
-	if (pItem) {
+	if (pItem)
 		return pItem->text();
-	}
+
 	return QString("");
 }
 
 void PlayListWnd::add_files(const QStringList& files)
 {
-	for (int i = 0; i < files.size(); i++) {
-		QString file = files[i];
-		add_file(file);
-	}
+	for (int i = 0; i < files.size(); i++)
+		add_file(files[i]);
 }
 
 void PlayListWnd::add_file(const QString& file)
 {
-	if (add_data_file(file))
-		update_table_list();
+	if (is_media(file))
+	{
+		if (add_data_file(file))
+			update_table_list();
+	}
+	else {
+		qWarning() << "This is not media file, file:" << file;
+	}
+}
+
+void PlayListWnd::closeEvent(QCloseEvent* event)
+{
+	hide();
+	event->ignore();
+	emit hiden();
 }
 
 void PlayListWnd::dropEvent(QDropEvent* event)
@@ -239,16 +257,8 @@ void PlayListWnd::set_sel_file(const QString& file)
 
 void PlayListWnd::get_files(QStringList& files) const
 {
-#if 1
-	for (auto const& i : m_data) {
+	for (auto const& i : m_data)
 		files.append(QString::fromStdString(i));
-	}
-#else
-	QTableWidget* const pTable = get_table();
-	for (int i = 0; i < pTable->rowCount(); i++) {
-		files.append(get_cell_str(i));
-	}
-#endif
 }
 
 void PlayListWnd::deleteBtn_clicked()
@@ -266,7 +276,6 @@ void PlayListWnd::clearBtn_clicked()
 {
 	clear_data_files();
 	update_table_list();
-
 	save_playlist();
 }
 
@@ -315,7 +324,52 @@ void PlayListWnd::set_cur_palyingfile()
 {
 	MainWindow* pParent = (MainWindow*)parent();
 	if (pParent) {
-		QString file = pParent->get_playingfile();
-		set_sel_file(file);
+		set_sel_file(pParent->get_playingfile());
 	}
+}
+
+bool PlayListWnd::is_local(const QString& file)
+{
+	return QUrl::fromUserInput(file).isLocalFile();
+}
+
+QString PlayListWnd::mimeType(const QString& file)
+{
+	QMimeType mimeType = QMimeDatabase().mimeTypeForFile(file);
+	qDebug() << file << ", MIME info:";
+	qDebug() << "name:" << mimeType.name();
+	qDebug() << "comment:" << mimeType.comment();
+	qDebug() << "genericIconName:" << mimeType.genericIconName();
+	qDebug() << "iconName:" << mimeType.iconName();
+	qDebug() << "globPatterns:" << mimeType.globPatterns();
+	qDebug() << "parentMimeTypes:" << mimeType.parentMimeTypes();
+	qDebug() << "allAncestors:" << mimeType.allAncestors();
+	qDebug() << "aliases:" << mimeType.aliases();
+	qDebug() << "suffixes:" << mimeType.suffixes();
+	qDebug() << "preferredSuffix:" << mimeType.preferredSuffix();
+	qDebug() << "filterString:" << mimeType.filterString();
+
+	return QMimeDatabase().mimeTypeForFile(file).name();
+}
+
+bool PlayListWnd::is_media(const QString& file) const
+{
+	if (!is_local(file)) //assume all network url are media files
+		return true;
+
+	QString mimetype = mimeType(file);
+	QStringList mimetypes = mimetype.split("/");
+	if (mimetypes[0] == "video" || mimetypes[0] == "audio")
+		return true;
+
+#if 0
+	QStringList mimes = { "video/mp4","video/x-matroska","video/webm","audio/x-wav" };
+	if (mimes.contains(mimetype, Qt::CaseInsensitive)) {
+		return true;
+	}
+	else {
+		qWarning() << "Not handled, MIME type:" << mimetype;
+	}
+#endif
+	return false;
 }

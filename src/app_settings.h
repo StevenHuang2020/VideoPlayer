@@ -7,7 +7,7 @@
 class AppSettings {
 public:
 	explicit AppSettings(const QString& file = "VideoPlayer.ini");
-	~AppSettings();
+	~AppSettings() {};
 
 public:
 	QVariant get_general(const QString& key) const;

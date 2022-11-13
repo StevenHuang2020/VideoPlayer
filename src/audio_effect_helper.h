@@ -10,7 +10,7 @@ class BarHelper
 {
 public:
 	explicit BarHelper();
-	virtual ~BarHelper();
+	virtual ~BarHelper() {};
 
 public:
 	enum GraphicType { e_GtBar, e_GtLine };
@@ -29,14 +29,13 @@ private:
 	void normal_data(std::vector<int>& v, const int height);
 	void normal_overzero(std::vector<int>& v);
 	void normal_to_size(std::vector<int>& v, const int size);
-
 	void data_sample_old(std::vector<int>& v, const uint32_t num); //wav sampling
 	void data_sample(std::vector<int>& v, const uint32_t num); //wav sampling
 	void binary_data(std::vector<int>& v);
-
 	void data_frequency(std::vector<int>& v, const uint32_t num);
 	void draw_data_bar(QPainter* painter, std::vector<int>& data, int n, int w, int h, int h_inter);
 	void draw_data_line(QPainter* painter, std::vector<int>& data, int n, int w, int h, int h_inter);
+
 private:
 	QBrush m_background;
 	QBrush m_brush;

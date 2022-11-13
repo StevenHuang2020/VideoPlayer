@@ -32,6 +32,7 @@
 #include "youtube_url_thread.h"
 #include "stopplay_waiting_thread.h"
 #include "playlist_window.h"
+#include "network_url_dlg.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -120,6 +121,7 @@ private slots:
 	void on_actionBar_triggered();
 	void on_actionLine_triggered();
 	void on_actionPlayList_triggered();
+	void on_actionOpenNetwoekUrl_triggered();
 
 private:
 	bool start_play();
@@ -153,7 +155,7 @@ private:
 	inline QObject* get_object(const QString& name) const { return findChild<QObject*>(name); }
 	void create_play_control();
 	void update_play_control();
-	void set_volume_updown(bool bUp = true, float unit = 0.2);
+	void set_volume_updown(bool bUp = true, float unit = 0.05);
 	void create_recentfiles_menu();
 	void set_current_file(const QString& fileName);
 	void remove_recentfiles(const QString& fileName);
@@ -200,6 +202,9 @@ private:
 	void wait_stop_play(const QString& file);
 	void create_playlist_wnd();
 	void add_to_playlist(const QString& file);
+	void show_playlist(bool show = true);
+	void playlist_hiden();
+	void hide_cursor(bool bHide = true);
 
 private:
 	std::unique_ptr<Ui::MainWindow> ui;

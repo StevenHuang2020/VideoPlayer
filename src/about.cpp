@@ -18,7 +18,6 @@ About::About(QWidget* parent)
 	, ui(std::make_unique<Ui::About>())
 {
 	ui->setupUi(this);
-
 	setLayout(ui->gridLayout);
 
 	Qt::WindowFlags flags = windowFlags();
@@ -29,11 +28,6 @@ About::About(QWidget* parent)
 	setWindowFlags(flags);
 
 	init_label();
-
-	setFixedSize(400, 260);
-
-	connect(ui->btn_Ok, &QPushButton::clicked, this, &About::accept);
-	connect(ui->btn_Cancel, &QPushButton::clicked, this, &About::reject);
 }
 
 About::~About()

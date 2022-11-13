@@ -38,6 +38,7 @@ list(APPEND HEADER_FILES
     src/clickable_slider.h
     src/stopplay_waiting_thread.h
     src/playlist_window.h
+    src/network_url_dlg.h
 )
 
 # .cpp files
@@ -70,6 +71,7 @@ list(APPEND SOURCE_FILES
     src/clickable_slider.cpp
     src/stopplay_waiting_thread.cpp
     src/playlist_window.cpp
+    src/network_url_dlg.cpp
 )
 
 

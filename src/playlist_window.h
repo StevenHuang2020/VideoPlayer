@@ -6,10 +6,11 @@
 #include<QMimeData>
 #include<QFileInfo>
 #include<QMenu>
-
+#include <QMimeDatabase> 
 #include<memory>
 #include<set>
 #include "ui_playlist_window.h"
+
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class PlayList; }
@@ -40,6 +41,7 @@ public:
 signals:
 	void play_file(const QString& file);
 	void save_playlist_signal(const QStringList& files);
+	void hiden();
 
 public slots:
 	void cellSelected(int row, int col);
@@ -49,7 +51,7 @@ public slots:
 	void displayMenu(const QPoint& pos);
 
 protected:
-	void closeEvent(QCloseEvent* event) override { hide(); event->ignore(); };
+	void closeEvent(QCloseEvent* event) override;
 	void dropEvent(QDropEvent* event) override;
 	void dragEnterEvent(QDragEnterEvent* event) override;
 	void keyPressEvent(QKeyEvent* event) override;
@@ -69,10 +71,12 @@ private:
 	QString get_file_duration(const QString& file);
 	void create_temp_menu();
 	void set_cur_palyingfile();
+	static QString mimeType(const QString& filePath);
+	static bool is_local(const QString& file);
+	bool is_media(const QString& file) const;
 
 private:
 	std::unique_ptr<Ui::PlayList> ui;
-
 	std::unique_ptr<QMenu> m_tmpMenu;
 	std::set<std::string> m_data;
 };

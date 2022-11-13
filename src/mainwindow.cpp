@@ -20,7 +20,7 @@
 #if NDEBUG
 #define AUTO_HIDE_PLAYCONTROL 1		//release version
 #else
-#define AUTO_HIDE_PLAYCONTROL 0
+#define AUTO_HIDE_PLAYCONTROL 1
 #endif
 
 MainWindow::MainWindow(QWidget* parent)
@@ -481,11 +481,13 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* event)
 		check_hide_menubar(mouseEvent->pos());
 
 #if AUTO_HIDE_PLAYCONTROL
-		if (!ui->actionHide_Play_Ctronl->isChecked()) {
+		if ((!ui->actionHide_Play_Ctronl->isChecked())
+			&& (!label_fullscreen())) {
 			m_timer.start();
 			auto_hide_play_control(false);
 		}
-		setCursor(Qt::ArrowCursor);
+
+		hide_cursor(false);
 #endif
 	}
 	return QMainWindow::eventFilter(obj, event);
@@ -527,7 +529,7 @@ void MainWindow::check_hide_menubar(const QPoint& pt)
 void MainWindow::check_hide_play_control()
 {
 	auto_hide_play_control();
-	setCursor(Qt::BlankCursor);
+	hide_cursor();
 }
 
 void MainWindow::auto_hide_play_control(bool bHide)
@@ -771,6 +773,8 @@ void MainWindow::show_fullscreen(bool bFullscreen)
 
 	if (!bFullscreen)
 		update_video_label();
+
+	hide_cursor(bFullscreen);
 }
 
 bool MainWindow::label_fullscreen()
@@ -787,18 +791,37 @@ void MainWindow::keep_aspect_ratio(bool bWidth)
 		if (pVideoCtx && pLabel) {
 			//QSize size = this->size();
 			QSize sizeLabel = pLabel->size();
-
 			QSize sz = size();
+			QRect screen_rt = QApplication::desktop()->screenGeometry();
+
+			int new_height = 0;
+			int new_width = 0;
+			int h_change = 0, w_change = 0;
 			if (bWidth) {
-				int new_height = int(sizeLabel.width() * pVideoCtx->height / pVideoCtx->width);
-				int h_change = new_height - sizeLabel.height();
+				new_height = sizeLabel.width() * pVideoCtx->height / pVideoCtx->width;
+				h_change = new_height - sizeLabel.height();
 				sz += QSize(0, h_change);
 			}
 			else {
-				int new_width = int(sizeLabel.height() * pVideoCtx->width / pVideoCtx->height);
-				int w_change = new_width - sizeLabel.width();
+				new_width = sizeLabel.height() * pVideoCtx->width / pVideoCtx->height;
+				w_change = new_width - sizeLabel.width();
 				sz += QSize(w_change, 0);
 			}
+
+#if 1
+			// size greater than screen size
+			if (sz.width() > screen_rt.width()) {
+				w_change = screen_rt.width() - sz.width();
+				h_change = w_change * sizeLabel.height() / sizeLabel.width();
+				sz += QSize(w_change, h_change);
+			}
+
+			if (sz.height() > screen_rt.height()) {
+				h_change = screen_rt.height() - sz.height();
+				w_change = h_change * sizeLabel.width() / sizeLabel.height();
+				sz += QSize(w_change, h_change);
+			}
+#endif
 
 			resize_window(sz.width(), sz.height());
 		}
@@ -1170,8 +1193,8 @@ void MainWindow::start_to_play(const QString& file)
 
 void MainWindow::wait_stop_play(const QString& file)
 {
+	//stop_play();
 	m_pStopplayWaitingThread = std::make_unique<StopWaitingThread>(this, file);
-
 	connect(m_pStopplayWaitingThread.get(), &StopWaitingThread::stopPlay, this, &MainWindow::stop_play);
 	connect(m_pStopplayWaitingThread.get(), &StopWaitingThread::startPlay, this, &MainWindow::start_to_play);
 
@@ -1243,8 +1266,6 @@ bool MainWindow::start_play()
 		qWarning("filename is invalid, please select a valid media file.");
 		return ret;
 	}
-
-	//resize_window();  // set default window size
 
 	//qDebug("---------------------------------%d milliseconds", timer.elapsed());
 
@@ -1600,8 +1621,6 @@ bool MainWindow::create_video_play_thread() //video play thread
 			print_decodeContext(pVideo);
 
 			if (pVideo) {
-				//resize_window(pVideo->width, pVideo->height); // Adjust window size
-
 				QSize size_center = centralWidget()->size();
 				QSize window_size = size() + QSize(pVideo->width, pVideo->height) - size_center;
 
@@ -1609,6 +1628,7 @@ bool MainWindow::create_video_play_thread() //video play thread
 				int height = window_size.height();
 
 				resize_window(width, height); // Adjust window size
+
 				QSize sz = minimumSize();
 				if (width < sz.width() || height < sz.height()) {
 					keep_aspect_ratio();
@@ -2040,7 +2060,7 @@ float MainWindow::volume_settings(bool set, float vol)
 QString MainWindow::get_selected_style() const
 {
 	QMenu* pMenu = ui->menuStyle;
-	foreach(QAction * action, pMenu->actions()) {
+	for (QAction* action : pMenu->actions()) {
 		if (!action->isSeparator() && !action->menu()) {
 			qDebug("action: %s", qUtf8Printable(action->text()));
 			if (action->isChecked())
@@ -2053,7 +2073,7 @@ QString MainWindow::get_selected_style() const
 void MainWindow::set_style_action(const QString& style)
 {
 	QMenu* pMenu = ui->menuStyle;
-	foreach(QAction * action, pMenu->actions()) {
+	for (QAction* action : pMenu->actions()) {
 		if (!action->isSeparator() && !action->menu()) {
 			if (action->data().toString() == style)
 				action->setChecked(true);
@@ -2091,7 +2111,7 @@ void MainWindow::enable_v_menus(bool enable)
 {
 	ui->actionAspect_Ratio->setEnabled(enable);
 
-	for (const auto& pAction : ui->menuCV->actions()) {
+	for (auto& pAction : ui->menuCV->actions()) {
 		if (pAction)
 			pAction->setEnabled(enable);
 	}
@@ -2114,7 +2134,7 @@ int MainWindow::get_youtube_optionid() const
 
 void MainWindow::set_youtube_optionid(int id)
 {
-	m_settings.set_general("youtube_option", int(id));
+	m_settings.set_general("youtube_option", id);
 }
 
 void MainWindow::create_avisual_action_group()
@@ -2143,7 +2163,6 @@ BarHelper::VisualFormat MainWindow::get_avisual_format() const
 bool MainWindow::start_youtube_url_thread(const YoutubeUrlDlg::YoutubeUrlData& data)
 {
 	m_pYoutubeUrlThread.reset();
-
 	m_pYoutubeUrlThread = std::make_unique<YoutubeUrlThread>(data, this);
 	connect(m_pYoutubeUrlThread.get(), &YoutubeUrlThread::resultReady, this, &MainWindow::start_to_play);
 	connect(m_pYoutubeUrlThread.get(), &YoutubeUrlThread::resultFailed, this, &MainWindow::play_failed);
@@ -2157,15 +2176,32 @@ void MainWindow::create_playlist_wnd()
 	m_playListWnd = std::make_unique<PlayListWnd>(this);
 	connect(m_playListWnd.get(), &PlayListWnd::play_file, this, &MainWindow::start_to_play);
 	connect(m_playListWnd.get(), &PlayListWnd::save_playlist_signal, this, &MainWindow::save_playlist);
+	connect(m_playListWnd.get(), &PlayListWnd::hiden, this, &MainWindow::playlist_hiden);
 }
 
 void MainWindow::on_actionPlayList_triggered()
 {
-	if (m_playListWnd) {
+	show_playlist(ui->actionPlayList->isChecked());
+}
+
+void MainWindow::show_playlist(bool show)
+{
+	if (m_playListWnd == nullptr)
+		return;
+
+	if (show) {
 		QStringList files = m_settings.get_playlist().toStringList();
 		m_playListWnd->update_files(files);
 		m_playListWnd->show();
 	}
+	else {
+		m_playListWnd->hide();
+	}
+}
+
+void MainWindow::playlist_hiden()
+{
+	ui->actionPlayList->setChecked(false);
 }
 
 void MainWindow::save_playlist(const QStringList& files)
@@ -2186,4 +2222,32 @@ QString MainWindow::get_playingfile()
 	if (is_playing())
 		return m_videoFile;
 	return QString("");
+}
+
+void MainWindow::on_actionOpenNetwoekUrl_triggered()
+{
+	NetworkUrlDlg dialog(this);
+
+	if (dialog.exec() == QDialog::Accepted) {
+
+		QString url = dialog.get_url();
+
+		if (!url.isEmpty()) {
+			start_to_play(url);
+		}
+		else {
+			QString str = QString("Please input a valid youtube url. ");
+			show_msg_dlg(str);
+		}
+	}
+}
+
+void MainWindow::hide_cursor(bool bHide)
+{
+	if (bHide) {
+		QApplication::setOverrideCursor(Qt::BlankCursor);
+	}
+	else {
+		QGuiApplication::restoreOverrideCursor();
+	}
 }

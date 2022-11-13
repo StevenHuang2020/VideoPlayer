@@ -25,7 +25,7 @@ PlayControlWnd::PlayControlWnd(QWidget* parent)
 {
 	ui->setupUi(this);
 
-	setLayout(ui->gridLayout); //gridLayout
+	setLayout(ui->gridLayout);
 	ui->gridLayout->setContentsMargins(0, 0, 0, 0);
 
 	connect(ui->slider_vol, SIGNAL(valueChanged(int)), ui->label_vol, SLOT(setNum(int)));

@@ -24,10 +24,6 @@ AppSettings::AppSettings(const QString& file)
 	print_settings();
 }
 
-AppSettings::~AppSettings()
-{
-}
-
 void AppSettings::print_settings() const
 {
 	if (m_pSettings) {

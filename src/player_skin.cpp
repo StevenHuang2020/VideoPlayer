@@ -10,14 +10,6 @@
 
 const QString PlayerSkin::m_qss_path = "./res/qss";
 
-PlayerSkin::PlayerSkin()
-{
-}
-
-PlayerSkin::~PlayerSkin()
-{
-}
-
 void PlayerSkin::clear_skin()
 {
 	qApp->setStyleSheet("");
@@ -25,10 +17,6 @@ void PlayerSkin::clear_skin()
 
 QStringList PlayerSkin::get_style() const
 {
-	/*qDebug("system styles:");
-	for (const QString style: QStyleFactory::keys())
-		qDebug("style:%s", qUtf8Printable(style));
-	*/
 	return QStyleFactory::keys();
 }
 

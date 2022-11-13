@@ -15,7 +15,7 @@
 #include <algorithm>
 
 
-#define MAX_AUDIO_VAULE 0xffff //0xffff
+#define MAX_AUDIO_VAULE 0xffff //unsigned 16bit pcm audio max value
 
 BarHelper::BarHelper() : m_visualFmt({})
 {
@@ -32,10 +32,6 @@ BarHelper::BarHelper() : m_visualFmt({})
 
 	m_textPen = QPen(Qt::white);
 	m_textFont.setPixelSize(50);
-}
-
-BarHelper::~BarHelper()
-{
 }
 
 void BarHelper::draw_data_bar(QPainter* painter, std::vector<int>& data, int n, int w, int h, int h_inter)
@@ -107,9 +103,7 @@ void BarHelper::paint(QPainter* painter, QPaintEvent* event, const AudioData& da
 
 	painter->save();
 	painter->setBrush(m_brush);
-
 	draw_data_style(painter, rt, data);
-
 	painter->restore();
 }
 
@@ -216,9 +210,8 @@ void BarHelper::normal_to_size(std::vector<int>& v, const int size)
 
 	for (auto& x : v) {
 		x = (x > maxValue) ? maxValue : x;
-		x = (x * size) / maxValue; //0xffff
+		x = (x * size) / maxValue;
 	}
-
 }
 
 void BarHelper::normal_data(std::vector<int>& v, const int height)

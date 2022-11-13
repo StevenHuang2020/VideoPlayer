@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>900</width>
-    <height>205</height>
+    <width>589</width>
+    <height>111</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,8 +18,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>686</width>
-     <height>111</height>
+     <width>588</width>
+     <height>81</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout">
@@ -29,6 +29,38 @@
     <property name="spacing">
      <number>0</number>
     </property>
+    <item row="0" column="0" rowspan="2">
+     <spacer name="horizontalSpacer_4">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeType">
+       <enum>QSizePolicy::Fixed</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>2</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item row="0" column="2" rowspan="2">
+     <spacer name="horizontalSpacer">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeType">
+       <enum>QSizePolicy::Fixed</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>5</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
     <item row="1" column="1">
      <layout class="QHBoxLayout" name="horizontalLayout_2">
       <property name="spacing">
@@ -156,7 +188,7 @@
          <bool>true</bool>
         </property>
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
@@ -164,13 +196,13 @@
         <property name="minimumSize">
          <size>
           <width>100</width>
-          <height>0</height>
+          <height>30</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
           <width>16777215</width>
-          <height>16777215</height>
+          <height>30</height>
          </size>
         </property>
         <property name="minimum">
@@ -259,7 +291,7 @@
       <item>
        <widget class="QSlider" name="slider_vol">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
@@ -267,23 +299,23 @@
         <property name="minimumSize">
          <size>
           <width>100</width>
-          <height>12</height>
+          <height>22</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
           <width>100</width>
-          <height>12</height>
+          <height>22</height>
          </size>
         </property>
         <property name="maximum">
          <number>100</number>
         </property>
         <property name="singleStep">
-         <number>20</number>
+         <number>5</number>
         </property>
         <property name="pageStep">
-         <number>20</number>
+         <number>5</number>
         </property>
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -348,6 +380,9 @@
         <property name="singleStep">
          <number>1</number>
         </property>
+        <property name="pageStep">
+         <number>5</number>
+        </property>
         <property name="tracking">
          <bool>true</bool>
         </property>
@@ -410,38 +445,6 @@
        <size>
         <width>20</width>
         <height>2</height>
-       </size>
-      </property>
-     </spacer>
-    </item>
-    <item row="0" column="2" rowspan="2">
-     <spacer name="horizontalSpacer">
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-      <property name="sizeType">
-       <enum>QSizePolicy::Fixed</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>5</width>
-        <height>20</height>
-       </size>
-      </property>
-     </spacer>
-    </item>
-    <item row="0" column="0" rowspan="2">
-     <spacer name="horizontalSpacer_4">
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-      <property name="sizeType">
-       <enum>QSizePolicy::Fixed</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>2</width>
-        <height>20</height>
        </size>
       </property>
      </spacer>

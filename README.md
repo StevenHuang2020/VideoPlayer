@@ -11,14 +11,22 @@ Please find the release player [here.](https://github.com/StevenHuang2020/VideoP
 
 <img src="src/res/player.png" width="320" height="205" />
 
+##### Usage Tips
+ - ```Media->Open``` is to open local media file
+ - ```Media->Open Youtube``` is to open Youtube url
+ - ```Media->Open Network Url``` is to open network stream media.
+ For example ```http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4```
+ - You can use [youtube_download.py](https://github.com/StevenHuang2020/VideoPlayer/tree/main/src/tools/youtube_download.py) to download Youtube video/audios.
+
+
 ##### Compilation
 - Visual Studio 19
 
-Please install ```QT tools extention``` in Visual Studio. If you use another version VS, please use CMake and CMakeLists.txt to generate your own VS project files.</br>
+Please install QT and   Visual Studio ```QT tools extention```. If you are using another version VS, please use CMake and CMakeLists.txt to generate your own VS project files.</br>
 
 - CMake
 ```
-cd CMakeLists.txt folder
+cd to 'CMakeLists.txt' folder
 mkdir build
 cd build
 cmake .. -G "Visual Studio 16 2019" -T host=x64 -A x64
@@ -31,7 +39,7 @@ cmake --build . --config Release
 ```
 
 ##### History
-
+- v2.0.9，added netowrk url; bug fixed;
 - v2.0.8, clickable progressbar; play speed bug fixed; added play list;
 - v2.0.7, audio visualization; youtube url open options; menu updates;
 - v2.0.3, play speed control; full screen

@@ -88,6 +88,8 @@
     </widget>
     <addaction name="actionOpen"/>
     <addaction name="actionYoutube"/>
+    <addaction name="actionOpenNetwoekUrl"/>
+    <addaction name="separator"/>
     <addaction name="actionPlayList"/>
     <addaction name="separator"/>
     <addaction name="menuRecent_Files"/>
@@ -277,7 +279,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Use DXVA2</string>
+    <string>Open DXVA2</string>
    </property>
   </action>
   <action name="actionAbout_QT">
@@ -478,8 +480,16 @@
    </property>
   </action>
   <action name="actionPlayList">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
-    <string>Play List</string>
+    <string>PlayList</string>
+   </property>
+  </action>
+  <action name="actionOpenNetwoekUrl">
+   <property name="text">
+    <string>Open Network Url</string>
    </property>
   </action>
  </widget>

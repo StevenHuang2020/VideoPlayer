@@ -141,6 +141,9 @@
     <ClCompile Include="playlist_window.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="network_url_dlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="mainwindow.h">
@@ -194,6 +197,9 @@
     <QtMoc Include="playlist_window.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <QtMoc Include="network_url_dlg.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="debug\moc_predefs.h.cbt">
@@ -219,6 +225,9 @@
       <Filter>Form Files</Filter>
     </QtUic>
     <QtUic Include="playlist_window.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="network_url_dlg.ui">
       <Filter>Form Files</Filter>
     </QtUic>
   </ItemGroup>

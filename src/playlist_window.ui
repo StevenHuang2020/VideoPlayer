@@ -14,7 +14,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Play list</string>
+   <string>Playlist</string>
   </property>
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">

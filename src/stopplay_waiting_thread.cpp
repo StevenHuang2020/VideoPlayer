@@ -24,7 +24,7 @@ void StopWaitingThread::run()
 	emit stopPlay();
 
 	while (pMainWnd && pMainWnd->is_playing()) {
-		msleep(10);
+		msleep(2);
 	}
 
 	emit startPlay(m_file);
