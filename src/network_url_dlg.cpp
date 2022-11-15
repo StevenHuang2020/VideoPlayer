@@ -14,6 +14,8 @@
 * http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4
 * http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4
 * http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4
+* rtsp://rtsp.stream/pattern
+* rtsp://rtsp.stream/movie
 */
 
 NetworkUrlDlg::NetworkUrlDlg(QWidget* parent)

@@ -50,6 +50,8 @@ private:
 	void enable_play_buttons(bool enable = true);
 	void update_play_time(int64_t hours, int64_t mins, int64_t secs);
 	void set_progress_bar(double total_secs);
+	void set_focus_policy();
+	void keyPressEvent(QKeyEvent* event) override;
 
 private:
 	std::unique_ptr<Ui::play_control_window> ui;

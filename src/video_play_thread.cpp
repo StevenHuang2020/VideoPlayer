@@ -13,6 +13,9 @@
 
 extern int framedrop;
 
+const QRegularExpression VideoPlayThread::m_assFilter = QRegularExpression("{\\\\.*?}");
+const QRegularExpression VideoPlayThread::m_assNewLineReplacer = QRegularExpression("\\\\n|\\\\N");
+
 VideoPlayThread::VideoPlayThread(QObject* parent, VideoState* pState)
 	: QThread(parent)
 	, m_pState(pState)
@@ -335,6 +338,7 @@ void VideoPlayThread::video_audio_display(VideoState* s)
 #endif
 }
 
+// https://github.com/ripose-jp/Memento/blob/fc9cf992edce9b2d6cceacedd317c9e3fa37a8c4/src/util/subtitleparser.cpp
 
 void VideoPlayThread::video_image_display(VideoState* is)
 {
@@ -504,20 +508,9 @@ void VideoPlayThread::parse_subtitle_ass(const QString& text)
 {
 	QString str = text;
 
-	int j = 0;
-	int k = 0;
-	while ((j = str.indexOf("{", j)) != -1) {
-		//qDebug() << "Found '{' at index position" << j;
-		k = str.indexOf("}", j);
-		if (k != -1) {
-			//qDebug() << j << k;
-			str = str.replace(j, k - j + 1, "");
-			j = 0;
-			//qDebug() << str;
-		}
-		++j;
-	}
-	//qDebug() << str;
+	str.remove(m_assFilter);
+	str.replace(m_assNewLineReplacer, "\n");
+	str = str.trimmed();
 
 	emit subtitle_ready(str);
 }

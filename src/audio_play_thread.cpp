@@ -9,7 +9,7 @@
 #include "audio_play_thread.h"
 
 #if !NDEBUG
-#define DEBUG_PLAYFILTER	1
+#define DEBUG_PLAYFILTER	0
 #define WRITE_AUDIO_FILE	0
 #else
 #define DEBUG_PLAYFILTER	0

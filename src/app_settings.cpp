@@ -14,13 +14,15 @@ const AppSettings::Section AppSettings::m_sections[] = {
 	{ SECTION_ID_GENERAL, "General" },
 	{ SECTION_ID_INFO, "Info" },
 	{ SECTION_ID_RECENTFILES, "RecentFiles" },
-	{ SECTION_ID_PLAYLIST, "PlayList" },
+	{ SECTION_ID_SAVEDPLAYLISTFILES, "SavedPlaylistFiles"},
 };
 
 
 AppSettings::AppSettings(const QString& file)
 {
 	m_pSettings = std::make_unique<QSettings>(file, QSettings::IniFormat);
+	m_pSettings->setIniCodec("UTF-8");
+
 	print_settings();
 }
 
@@ -35,7 +37,7 @@ void AppSettings::print_settings() const
 			m_pSettings->beginGroup(group);
 			qDebug() << "group:" << group;
 			for (const QString& key : m_pSettings->childKeys()) {
-				QString str = QString("key:%1, valye:%2").arg(key).arg(m_pSettings->value(key).toString());
+				QString str = QString("key:%1, value:%2").arg(key).arg(m_pSettings->value(key).toString());
 				qDebug() << str;
 			}
 			m_pSettings->endGroup();
@@ -45,9 +47,8 @@ void AppSettings::print_settings() const
 
 void AppSettings::set_value(SectionID id, const QString& key, const QVariant& value)
 {
-	if (id > SECTION_ID_NONE && id < SECTION_ID_MAX) {
+	if (id > SECTION_ID_NONE && id < SECTION_ID_MAX)
 		set_value(QString(m_sections[id].str), key, value);
-	}
 }
 
 void AppSettings::set_value(const QString& group, const QString& key, const QVariant& value)
@@ -101,12 +102,12 @@ QVariant AppSettings::get_recentfiles(const QString& key) const
 	return get_value(SECTION_ID_RECENTFILES, key);
 }
 
-QVariant AppSettings::get_playlist(const QString& key) const
+QVariant AppSettings::get_savedplaylists(const QString& key) const
 {
-	return get_value(SECTION_ID_PLAYLIST, key);
+	return get_value(SECTION_ID_SAVEDPLAYLISTFILES, key);
 }
 
-void AppSettings::set_playlist(const QVariant& value, const QString& key)
+void AppSettings::set_savedplaylists(const QVariant& value, const QString& key)
 {
-	set_value(SECTION_ID_PLAYLIST, key, value);
+	set_value(SECTION_ID_SAVEDPLAYLISTFILES, key, value);
 }

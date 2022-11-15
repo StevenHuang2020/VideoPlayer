@@ -44,10 +44,33 @@ PlayControlWnd::PlayControlWnd(QWidget* parent)
 	connect(ui->slider_speed, &QSlider::valueChanged, (MainWindow*)parent, &MainWindow::set_play_speed);
 
 	clear_all();
+
+	set_focus_policy();
 }
 
 PlayControlWnd::~PlayControlWnd()
 {
+}
+
+void PlayControlWnd::set_focus_policy()
+{
+	/*
+	* Disable widgets in this window to accept foucs,
+	* so all key event will be transfered to the
+	* parent widget. The mainwindow will handle these keyevent
+	* to control the playing.
+	*/
+
+	//setFocusPolicy(Qt::NoFocus);	
+	ui->progress_slider->setFocusPolicy(Qt::NoFocus);
+	ui->slider_speed->setFocusPolicy(Qt::NoFocus);
+	ui->slider_vol->setFocusPolicy(Qt::NoFocus);
+
+	ui->btn_pre->setFocusPolicy(Qt::NoFocus);
+	ui->btn_play->setFocusPolicy(Qt::NoFocus);
+	ui->btn_next->setFocusPolicy(Qt::NoFocus);
+	ui->btn_stop->setFocusPolicy(Qt::NoFocus);
+	ui->check_mute->setFocusPolicy(Qt::NoFocus);
 }
 
 void PlayControlWnd::volume_muted(int mute)
@@ -287,4 +310,16 @@ void PlayControlWnd::enable_play_buttons(bool enable)
 	ui->btn_pre->setEnabled(enable);
 	ui->btn_play->setEnabled(enable);
 	ui->btn_stop->setEnabled(enable);
+}
+
+void PlayControlWnd::keyPressEvent(QKeyEvent* event)
+{
+	MainWindow* pParent = (MainWindow*)parent();
+	if (pParent) {
+		QApplication::sendEvent(pParent, event);
+		event->ignore();
+	}
+	else {
+		QWidget::keyPressEvent(event);
+	}
 }

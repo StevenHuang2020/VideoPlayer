@@ -52,9 +52,9 @@ public:
 	void stop_play();
 	void pause_play();
 	float volume_settings(bool set = true, float vol = 0);
-	AudioPlayThread* get_audio_play_thread() { return m_pAudioPlayThread.get(); }
-	VideoPlayThread* get_video_play_thread() { return m_pVideoPlayThread.get(); }
-	VideoStateData* get_video_state_data() { return m_pVideoState.get(); }
+	AudioPlayThread* get_audio_play_thread() const { return m_pAudioPlayThread.get(); }
+	VideoPlayThread* get_video_play_thread() const { return m_pVideoPlayThread.get(); }
+	VideoStateData* get_video_state_data() const { return m_pVideoState.get(); }
 	void play_mute(bool mute);
 	void play_seek();
 	void play_start_seek();
@@ -63,8 +63,8 @@ public:
 	void set_volume(int volume);
 	void set_play_speed();
 	void show_msg_dlg(const QString& message = "", const QString& windowTitle = "Warning", const QString& styleSheet = "");
-	bool is_playing();
-	QString get_playingfile();
+	bool is_playing() const;
+	QString get_playingfile() const;
 
 
 public slots:
@@ -82,7 +82,8 @@ public slots:
 	void update_play_time();
 	void play_started(bool ret = true);
 	void play_failed(const QString& file);
-	void save_playlist(const QStringList& files);
+	//void save_playlist(const QStringList& files);
+	void playlist_file_saved(const QString& file);
 
 signals:
 	void stop_audio_play_thread();
@@ -92,10 +93,12 @@ signals:
 	void wait_stop_audio_play_thread();
 	void wait_stop_video_play_thread();
 
+public:
+	void keyPressEvent(QKeyEvent* event) override;
+
 private:
 	void resizeEvent(QResizeEvent* event) override;
 	void moveEvent(QMoveEvent* event) override;
-	void keyPressEvent(QKeyEvent* event) override;
 	bool eventFilter(QObject* obj, QEvent* event) override;
 	void dropEvent(QDropEvent* event) override;
 	void dragEnterEvent(QDragEnterEvent* event) override;
@@ -122,6 +125,7 @@ private slots:
 	void on_actionLine_triggered();
 	void on_actionPlayList_triggered();
 	void on_actionOpenNetwoekUrl_triggered();
+	void on_actionOriginalSize_triggered();
 
 private:
 	bool start_play();
@@ -205,6 +209,16 @@ private:
 	void show_playlist(bool show = true);
 	void playlist_hiden();
 	void hide_cursor(bool bHide = true);
+	bool cursor_in_window(QWidget* pWnd);
+
+	void create_savedPlaylists_menu();
+	void remove_playlist_file(const QString& fileName);
+	void update_savedPlaylists_actions();
+	bool read_playlist(const QString& playlist_file, QStringList& files) const;
+
+public slots:
+	void clear_savedPlaylists();
+	void open_playlist();
 
 private:
 	std::unique_ptr<Ui::MainWindow> ui;
@@ -234,6 +248,7 @@ private:
 	enum {
 		MaxRecentFiles = 20,  // maximum recent play files
 		MaxSkinStlyes = 20,   // maximum sytyles
+		MaxPlaylist = 5,	  // maximum playlist numbers
 	};
 	std::unique_ptr<QAction> m_recentFileActs[MaxRecentFiles];
 	std::unique_ptr<QAction> m_recentClear;
@@ -243,5 +258,8 @@ private:
 
 	std::unique_ptr<QActionGroup> m_AVisualTypeActsGroup;
 	std::unique_ptr<QActionGroup> m_AVisualGrapicTypeActsGroup;
+
+	std::unique_ptr<QAction> m_savedPlaylists[MaxPlaylist];
+	std::unique_ptr<QAction> m_PlaylistsClear;
 };
 #endif // MAINWINDOW_H

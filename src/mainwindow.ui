@@ -86,11 +86,17 @@
       <string>Recent Files</string>
      </property>
     </widget>
+    <widget class="QMenu" name="menuSavedPlaylist">
+     <property name="title">
+      <string>Saved Playlist</string>
+     </property>
+    </widget>
     <addaction name="actionOpen"/>
     <addaction name="actionYoutube"/>
     <addaction name="actionOpenNetwoekUrl"/>
     <addaction name="separator"/>
     <addaction name="actionPlayList"/>
+    <addaction name="menuSavedPlaylist"/>
     <addaction name="separator"/>
     <addaction name="menuRecent_Files"/>
     <addaction name="separator"/>
@@ -107,6 +113,7 @@
     <addaction name="actionFullscreen"/>
     <addaction name="separator"/>
     <addaction name="actionAspect_Ratio"/>
+    <addaction name="actionOriginalSize"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -138,8 +145,8 @@
     <addaction name="actionColorReduce"/>
     <addaction name="actionGamma"/>
     <addaction name="actionContrastBright"/>
-    <addaction name="actionCanny"/>
     <addaction name="actionBlur"/>
+    <addaction name="actionCanny"/>
     <addaction name="actionSobel"/>
     <addaction name="actionLaplacian"/>
     <addaction name="actionScharr"/>
@@ -484,12 +491,17 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>PlayList</string>
+    <string>Playlist</string>
    </property>
   </action>
   <action name="actionOpenNetwoekUrl">
    <property name="text">
     <string>Open Network Url</string>
+   </property>
+  </action>
+  <action name="actionOriginalSize">
+   <property name="text">
+    <string>Original Size</string>
    </property>
   </action>
  </widget>

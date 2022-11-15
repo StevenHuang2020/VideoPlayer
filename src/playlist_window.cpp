@@ -97,6 +97,13 @@ bool PlayListWnd::del_data_file(const QString& file)
 	return false;
 }
 
+inline QString PlayListWnd::get_data_file(int id) const
+{
+	assert(id >= 0 && id < m_data.size());
+	std::string str = *std::next(m_data.begin(), id);
+	return QString::fromStdString(str);
+}
+
 void PlayListWnd::clear_data_files()
 {
 	m_data.clear();
@@ -111,7 +118,9 @@ void PlayListWnd::add_table_line(const PlayListLine& data)
 	int col = 0;
 	pTable->setItem(count, col++, new QTableWidgetItem(data.fileName));
 	pTable->setItem(count, col++, new QTableWidgetItem(data.duration));
-	pTable->setItem(count, col++, new QTableWidgetItem(data.file));
+
+	QString file = QDir::toNativeSeparators(data.file);
+	pTable->setItem(count, col++, new QTableWidgetItem(file));
 	pTable->setRowHeight(count, 16);
 }
 
@@ -131,7 +140,7 @@ void PlayListWnd::update_table_list()
 		}
 		else {
 			data.fileName = "Unknow";
-			data.duration = "00:00";
+			data.duration = "--:--";
 			qWarning() << "Not Handled!"; // not handled
 		}
 
@@ -143,7 +152,8 @@ void PlayListWnd::update_table_list()
 
 void PlayListWnd::cellSelected(int row, int col)
 {
-	QString file = get_cell_str(row);
+	//QString file = get_cell_str(row);
+	QString file = get_data_file(row);
 	qDebug() << "file clicked:" << "row:" << row << "col:" << col << "file:" << file;
 	emit play_file(file);
 }
@@ -151,18 +161,23 @@ void PlayListWnd::cellSelected(int row, int col)
 QString PlayListWnd::get_cursel_file() const
 {
 	QTableWidget* const pTable = get_table();
-	return get_cell_str(pTable->currentRow());
+	return get_data_file(pTable->currentRow());
 }
 
-QString PlayListWnd::get_cell_str(int row, int col) const
+QString PlayListWnd::get_row_file(int row) const
 {
-	QTableWidget* const pTable = get_table();
-	QTableWidgetItem* pItem = pTable->item(row, col); //column file path
-	if (pItem)
-		return pItem->text();
-
-	return QString("");
+	return get_data_file(row);
 }
+
+//QString PlayListWnd::get_cell_str(int row, int col) const
+//{
+//	QTableWidget* const pTable = get_table();
+//	QTableWidgetItem* pItem = pTable->item(row, col); //column file path
+//	if (pItem)
+//		return pItem->text();
+//
+//	return QString("");
+//}
 
 void PlayListWnd::add_files(const QStringList& files)
 {
@@ -172,8 +187,7 @@ void PlayListWnd::add_files(const QStringList& files)
 
 void PlayListWnd::add_file(const QString& file)
 {
-	if (is_media(file))
-	{
+	if (!file.isEmpty() && is_media(file)) {
 		if (add_data_file(file))
 			update_table_list();
 	}
@@ -199,9 +213,8 @@ void PlayListWnd::dropEvent(QDropEvent* event)
 	QList<QUrl> urlList = mimeData->urls();
 
 	QStringList files;
-	for (int i = 0; i < urlList.size(); i++) {
-		files.append(urlList.at(i).toLocalFile());
-	}
+	for (int i = 0; i < urlList.size(); i++)
+		files.append(urlList.at(i).toLocalFile().trimmed());
 
 	add_files(files);
 	save_playlist();
@@ -249,9 +262,8 @@ void PlayListWnd::set_sel_file(const QString& file)
 
 	pTable->selectRow(0); //default
 	for (int i = 0; i < pTable->rowCount(); i++) {
-		if (get_cell_str(i) == file) {
+		if (get_row_file(i) == file)
 			pTable->selectRow(i);
-		}
 	}
 }
 
@@ -279,16 +291,46 @@ void PlayListWnd::clearBtn_clicked()
 	save_playlist();
 }
 
-void PlayListWnd::saveBtn_clicked()
+bool PlayListWnd::saveBtn_clicked()
 {
-	save_playlist();
+	QStringList files;
+	get_files(files);
+	if (files.size() <= 0) {
+		qWarning() << "Nothing in playlist!";
+		return false;
+	}
+
+	static QString dir = QDir::currentPath();
+	QString fileName = QFileDialog::getSaveFileName(this, tr("Save Playlist File"), dir, tr("Playlist (*.pl)"));
+	if (fileName.isEmpty())
+		return false;
+
+	dir = QDir(fileName).absolutePath();
+
+	QFile file(fileName);
+	if (file.open(QIODevice::WriteOnly)) {
+		QTextStream stream(&file);
+		stream.setCodec("UTF-8");
+		stream << files.join(PLAYLIST_SEPERATE_CHAR) << endl;
+		stream.flush();
+
+		file.close();
+
+		emit playlist_file_saved(fileName);
+		return true;
+	}
+	return false;
 }
 
 void PlayListWnd::save_playlist()
 {
+#if 1
+	return;
+#else
 	QStringList files;
 	get_files(files);
 	emit save_playlist_signal(files);
+#endif
 }
 
 void PlayListWnd::update_files(const QStringList& files)
@@ -303,9 +345,8 @@ void PlayListWnd::displayMenu(const QPoint& pos)
 	if (pTable->rowCount() <= 0)
 		return;
 
-	if (m_tmpMenu) {
+	if (m_tmpMenu)
 		m_tmpMenu->exec(pTable->viewport()->mapToGlobal(pos));
-	}
 }
 
 void PlayListWnd::create_temp_menu()
@@ -313,19 +354,18 @@ void PlayListWnd::create_temp_menu()
 	m_tmpMenu = std::make_unique<QMenu>(this);
 	QAction* del_act = m_tmpMenu->addAction("Delete");
 	QAction* clear_act = m_tmpMenu->addAction("Clear");
-	//QAction* save_act = m_tmpMenu->addAction("Save");
+	QAction* save_act = m_tmpMenu->addAction("Save");
 
 	connect(del_act, &QAction::triggered, this, &PlayListWnd::deleteBtn_clicked);
 	connect(clear_act, &QAction::triggered, this, &PlayListWnd::clearBtn_clicked);
-	//connect(save_act, &QAction::triggered, this, &PlayListWnd::saveBtn_clicked);
+	connect(save_act, &QAction::triggered, this, &PlayListWnd::saveBtn_clicked);
 }
 
 void PlayListWnd::set_cur_palyingfile()
 {
 	MainWindow* pParent = (MainWindow*)parent();
-	if (pParent) {
+	if (pParent)
 		set_sel_file(pParent->get_playingfile());
-	}
 }
 
 bool PlayListWnd::is_local(const QString& file)
@@ -369,7 +409,7 @@ bool PlayListWnd::is_media(const QString& file) const
 	}
 	else {
 		qWarning() << "Not handled, MIME type:" << mimetype;
-	}
+}
 #endif
 	return false;
 }

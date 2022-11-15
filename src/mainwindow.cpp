@@ -1,4 +1,4 @@
-// ***********************************************************/
+﻿// ***********************************************************/
 // mainwindow.cpp
 //
 //      Copy Right @ Steven Huang. All rights reserved.
@@ -50,6 +50,7 @@ MainWindow::MainWindow(QWidget* parent)
 	create_audio_effect();
 	create_avisual_action_group();
 	create_playlist_wnd();
+	create_savedPlaylists_menu();
 
 	setWindowTitle(tr("Video Player"));
 	set_default_bkground();
@@ -433,6 +434,8 @@ void MainWindow::moveEvent(QMoveEvent* event)
 
 void MainWindow::keyPressEvent(QKeyEvent* event)
 {
+	qDebug() << "Mainwindow key event, event:" << event->text() << "key:" << event->key() << "key_str:" << QKeySequence(event->key()).toString();;
+
 	switch (event->key()) {
 	case Qt::Key_Space:		//pause/continue
 	case Qt::Key_Up:		//volume up
@@ -442,11 +445,25 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
 	case Qt::Key_M:			//mute
 	case Qt::Key_Comma:		//speed down
 	case Qt::Key_Period:	//speed up
-	case Qt::Key_A:			//aspect ratio
 		play_control_key((Qt::Key)event->key());
 		break;
 
-	case Qt::Key_F:		//full screen
+	case Qt::Key_A:			//aspect ratio
+		on_actionAspect_Ratio_triggered();
+		break;
+
+	case Qt::Key_O:			//keep orginal size
+		on_actionOriginalSize_triggered();
+		break;
+
+	case Qt::Key_L:			//keep orginal size
+	{
+		show_playlist();
+		ui->actionPlayList->setChecked(true);
+	}
+	break;
+
+	case Qt::Key_F:			//full screen
 	{
 		bool bFullscreen = label_fullscreen();
 		show_fullscreen(!bFullscreen);
@@ -466,7 +483,7 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
 		break;
 
 	default:
-		qDebug("key:%s(%d) pressed!\n", qUtf8Printable(event->text()), event->key());
+		qDebug("Not handled key event, key:%s(%d) pressed!\n", qUtf8Printable(event->text()), event->key());
 		QWidget::keyPressEvent(event);
 		break;
 	}
@@ -528,6 +545,18 @@ void MainWindow::check_hide_menubar(const QPoint& pt)
 
 void MainWindow::check_hide_play_control()
 {
+	PlayControlWnd* pPlayControl = get_play_control();
+	if (pPlayControl == nullptr)
+		return;
+
+	if (!is_playing())
+		return;
+
+	if (!isFullScreen() && cursor_in_window(pPlayControl)) {
+		qDebug() << "cursor is in PlayControlWnd";
+		return;
+	}
+
 	auto_hide_play_control();
 	hide_cursor();
 }
@@ -582,8 +611,9 @@ void MainWindow::on_actionYoutube_triggered()
 
 		YoutubeUrlDlg::YoutubeUrlData data = dialog.get_data();
 
-		if (data.url.isEmpty() ||
-			(!data.url.startsWith("https://www.youtube.com/", Qt::CaseInsensitive)))
+		if (data.url.isEmpty()
+			// || (!data.url.startsWith("https://www.youtube.com/", Qt::CaseInsensitive))
+			)
 		{
 			QString str = QString("Please input a valid youtube url. ");
 			show_msg_dlg(str);
@@ -680,17 +710,19 @@ void MainWindow::on_actionKeyboard_Usage_triggered()
 	QString indent = "		";
 	//str += "Keyboard" + indent + "Function\n";
 	//str += "----------------------------------------------------\n";
-	str += "Space" + indent + "Pause/Play\n";
-	str += "M" + indent + "Mute/Unmute\n";
-	str += "F" + indent + "Fulllscreen/Unfullscreen\n";
 	str += "A" + indent + "Video aspect ratio\n";
+	str += "F" + indent + "Fulllscreen/Unfullscreen\n";
+	str += "H" + indent + "Show help\n";
+	str += "L" + indent + "Show playlist\n";
+	str += "M" + indent + "Mute/Unmute\n";
+	str += "O" + indent + "Keep video original size\n";
+	str += "Space" + indent + "Pause/Play\n";
 	str += "Up" + indent + "Volume up\n";
 	str += "Down" + indent + "Volume down\n";
 	str += "Left" + indent + "Play back\n";
 	str += "Right" + indent + "Play forward\n";
 	str += "<" + indent + "Speed down\n";
 	str += ">" + indent + "Speed up\n";
-	str += "H" + indent + "Show help\n";
 	//str += "----------------------------------------------------";
 
 	show_msg_dlg(str, "Keyboard Play Control");
@@ -785,46 +817,65 @@ bool MainWindow::label_fullscreen()
 
 void MainWindow::keep_aspect_ratio(bool bWidth)
 {
-	if (m_pVideoState) {
-		AVCodecContext* pVideoCtx = m_pVideoState->get_contex(AVMEDIA_TYPE_VIDEO);
-		VideoLabel* pLabel = get_video_label();
-		if (pVideoCtx && pLabel) {
-			//QSize size = this->size();
-			QSize sizeLabel = pLabel->size();
-			QSize sz = size();
-			QRect screen_rt = QApplication::desktop()->screenGeometry();
+	if (m_pVideoState == nullptr)
+		return;
 
-			int new_height = 0;
-			int new_width = 0;
-			int h_change = 0, w_change = 0;
-			if (bWidth) {
-				new_height = sizeLabel.width() * pVideoCtx->height / pVideoCtx->width;
-				h_change = new_height - sizeLabel.height();
-				sz += QSize(0, h_change);
-			}
-			else {
-				new_width = sizeLabel.height() * pVideoCtx->width / pVideoCtx->height;
-				w_change = new_width - sizeLabel.width();
-				sz += QSize(w_change, 0);
-			}
+	AVCodecContext* pVideoCtx = m_pVideoState->get_contex(AVMEDIA_TYPE_VIDEO);
+	VideoLabel* pLabel = get_video_label();
+	if (pVideoCtx && pLabel) {
+		//QSize size = this->size();
+		QSize sizeLabel = pLabel->size();
+		QSize sz = size();
+		QRect screen_rt = QApplication::desktop()->screenGeometry();
 
-#if 1
-			// size greater than screen size
-			if (sz.width() > screen_rt.width()) {
-				w_change = screen_rt.width() - sz.width();
-				h_change = w_change * sizeLabel.height() / sizeLabel.width();
-				sz += QSize(w_change, h_change);
-			}
-
-			if (sz.height() > screen_rt.height()) {
-				h_change = screen_rt.height() - sz.height();
-				w_change = h_change * sizeLabel.width() / sizeLabel.height();
-				sz += QSize(w_change, h_change);
-			}
-#endif
-
-			resize_window(sz.width(), sz.height());
+		int new_height = 0;
+		int new_width = 0;
+		int h_change = 0, w_change = 0;
+		if (bWidth) {
+			new_height = sizeLabel.width() * pVideoCtx->height / pVideoCtx->width;
+			h_change = new_height - sizeLabel.height();
+			sz += QSize(0, h_change);
 		}
+		else {
+			new_width = sizeLabel.height() * pVideoCtx->width / pVideoCtx->height;
+			w_change = new_width - sizeLabel.width();
+			sz += QSize(w_change, 0);
+		}
+
+		// size greater than screen size
+		if (sz.width() > screen_rt.width()) {
+			w_change = screen_rt.width() - sz.width();
+			h_change = w_change * sizeLabel.height() / sizeLabel.width();
+			sz += QSize(w_change, h_change);
+		}
+
+		if (sz.height() > screen_rt.height()) {
+			h_change = screen_rt.height() - sz.height();
+			w_change = h_change * sizeLabel.width() / sizeLabel.height();
+			sz += QSize(w_change, h_change);
+		}
+
+		resize_window(sz.width(), sz.height());
+	}
+}
+
+void MainWindow::on_actionOriginalSize_triggered()
+{
+	if (m_pVideoState == nullptr)
+		return;
+
+	AVCodecContext* pVideoCtx = m_pVideoState->get_contex(AVMEDIA_TYPE_VIDEO);
+	VideoLabel* pLabel = get_video_label();
+	if (pVideoCtx && pLabel) {
+		QSize sizeLabel = pLabel->size();
+		QSize sz = size();
+
+		int h_change = 0, w_change = 0;
+		w_change = pVideoCtx->width - sizeLabel.width();
+		h_change = pVideoCtx->height - sizeLabel.height();
+
+		sz += QSize(w_change, h_change);
+		resize_window(sz.width(), sz.height());
 	}
 }
 
@@ -919,10 +970,8 @@ void MainWindow::update_paly_control_muted()
 		return;
 
 	VideoState* pState = m_pVideoState->get_state();
-	if (pState == nullptr)
-		return;
-
-	pPlayControl->volume_muted(pState->muted);
+	if (pState)
+		pPlayControl->volume_muted(pState->muted);
 }
 
 void MainWindow::update_paly_control_status()
@@ -935,10 +984,8 @@ void MainWindow::update_paly_control_status()
 		return;
 
 	VideoState* pState = m_pVideoState->get_state();
-	if (pState == nullptr)
-		return;
-
-	pPlayControl->update_btn_play(!!pState->paused);
+	if (pState)
+		pPlayControl->update_btn_play(!!pState->paused);
 }
 
 void MainWindow::update_play_time()
@@ -948,9 +995,7 @@ void MainWindow::update_play_time()
 		if (m_pVideoState) {
 			VideoState* pState = m_pVideoState->get_state();
 			if (pState) {
-				double audio_clock = pState->audio_clock;
-
-				pPlayControl->update_play_time(audio_clock);
+				pPlayControl->update_play_time(pState->audio_clock);
 			}
 		}
 	}
@@ -1032,10 +1077,8 @@ void MainWindow::play_mute(bool mute)
 	if (m_pVideoState)
 		pState = m_pVideoState->get_state();
 
-	if (pState == nullptr)
-		return;
-
-	toggle_mute(pState, mute);
+	if (pState)
+		toggle_mute(pState, mute);
 }
 
 void MainWindow::set_volume(int volume)
@@ -1076,10 +1119,8 @@ void MainWindow::set_play_speed()
 void MainWindow::play_speed_adjust(bool up)
 {
 	PlayControlWnd* pPlayControl = get_play_control();
-	if (pPlayControl == nullptr)
-		return;
-
-	pPlayControl->speed_adjust(up);
+	if (pPlayControl)
+		pPlayControl->speed_adjust(up);
 
 	set_play_speed();
 }
@@ -1115,28 +1156,10 @@ void MainWindow::hide_menubar(bool bHide)
 {
 	menuBar()->setVisible(!bHide);
 
-	//bool bVisible = menuBar()->isVisible();
-
-	QSize sz_menubar = menuBar()->size();
-	QSize sz_center = centralWidget()->size();
-
 	//qDebug("is full screen:%d, menu is visible:%d", isFullScreen(), bVisible);
 	if (isFullScreen()) {
 		QSize sz = centralWidget()->size();
-		//sz = size();
-		//QSize sz = geometry().size();
-		/*if (bVisible) {
-			sz -= QSize(0, sz_menubar.height());
-		}
-		else {
-			sz += QSize(0, sz_menubar.height());
-		}*/
-
-		//showFullScreen();
 		centralWidget()->resize(sz);
-		//centralWidget()->updateGeometry();
-		//resize(size());
-		//updateGeometry();
 	}
 
 	update_play_control();
@@ -1193,7 +1216,6 @@ void MainWindow::start_to_play(const QString& file)
 
 void MainWindow::wait_stop_play(const QString& file)
 {
-	//stop_play();
 	m_pStopplayWaitingThread = std::make_unique<StopWaitingThread>(this, file);
 	connect(m_pStopplayWaitingThread.get(), &StopWaitingThread::stopPlay, this, &MainWindow::stop_play);
 	connect(m_pStopplayWaitingThread.get(), &StopWaitingThread::startPlay, this, &MainWindow::start_to_play);
@@ -1207,7 +1229,7 @@ void MainWindow::play_failed(const QString& file)
 	show_msg_dlg(str);
 }
 
-bool MainWindow::is_playing()
+bool MainWindow::is_playing() const
 {
 	if (m_pVideoState || m_pPacketReadThread \
 		|| m_pDecodeVideoThread || m_pDecodeAudioThread \
@@ -1226,25 +1248,22 @@ bool MainWindow::is_playing()
 
 bool MainWindow::playing_has_video()
 {
-	if (m_pVideoState) {
-		return m_pVideoState->has_video();;
-	}
+	if (m_pVideoState)
+		return m_pVideoState->has_video();
 	return false;
 }
 
 bool MainWindow::playing_has_audio()
 {
-	if (m_pVideoState) {
+	if (m_pVideoState)
 		return m_pVideoState->has_audio();
-	}
 	return false;
 }
 
 bool MainWindow::playing_has_subtitle()
 {
-	if (m_pVideoState) {
+	if (m_pVideoState)
 		return m_pVideoState->has_subtitle();
-	}
 	return false;
 }
 
@@ -1405,7 +1424,6 @@ void MainWindow::stop_play()
 
 	delete_video_state();
 	set_paly_control_wnd(false);
-
 	clear_subtitle_str();
 }
 
@@ -1467,10 +1485,6 @@ void MainWindow::play_control_key(Qt::Key key)
 
 	case Qt::Key_Period:
 		play_speed_adjust(true);
-		break;
-
-	case Qt::Key_A:
-		keep_aspect_ratio();
 		break;
 
 	default:
@@ -1697,7 +1711,7 @@ void MainWindow::image_ready(const QImage& img)
 	QImage image = img.copy();
 
 	if (!m_subtitle.isEmpty()) { //subtitle
-		int height = 80;
+		int height = 90;
 		//QPen pen = QPen(Qt::white);
 		QFont font = QFont("Times", 15, QFont::Bold);
 		QRect rt(0, image.height() - height, image.width(), height);
@@ -2039,6 +2053,8 @@ void MainWindow::read_settings()
 			m_skin.set_custom_style(style);
 		}
 	}
+
+	update_savedPlaylists_actions();
 }
 
 float MainWindow::volume_settings(bool set, float vol)
@@ -2049,9 +2065,8 @@ float MainWindow::volume_settings(bool set, float vol)
 	else {
 		float value = 0.8f;
 		QVariant values = m_settings.get_general("volume");
-		if (values.isValid()) {
+		if (values.isValid())
 			value = values.toFloat();
-		}
 		return value;
 	}
 	return 0;
@@ -2110,6 +2125,7 @@ void MainWindow::enable_menus(bool enable)
 void MainWindow::enable_v_menus(bool enable)
 {
 	ui->actionAspect_Ratio->setEnabled(enable);
+	ui->actionOriginalSize->setEnabled(enable);
 
 	for (auto& pAction : ui->menuCV->actions()) {
 		if (pAction)
@@ -2126,9 +2142,8 @@ int MainWindow::get_youtube_optionid() const
 {
 	int option = 0;
 	QVariant values = m_settings.get_general("youtube_option");
-	if (values.isValid()) {
+	if (values.isValid())
 		option = values.toInt();
-	}
 	return option;
 }
 
@@ -2175,8 +2190,12 @@ void MainWindow::create_playlist_wnd()
 {
 	m_playListWnd = std::make_unique<PlayListWnd>(this);
 	connect(m_playListWnd.get(), &PlayListWnd::play_file, this, &MainWindow::start_to_play);
-	connect(m_playListWnd.get(), &PlayListWnd::save_playlist_signal, this, &MainWindow::save_playlist);
+	// connect(m_playListWnd.get(), &PlayListWnd::save_playlist_signal, this, &MainWindow::save_playlist);
 	connect(m_playListWnd.get(), &PlayListWnd::hiden, this, &MainWindow::playlist_hiden);
+	connect(m_playListWnd.get(), &PlayListWnd::playlist_file_saved, this, &MainWindow::playlist_file_saved);
+
+	/*QStringList files = m_settings.get_playlist().toStringList();
+	m_playListWnd->update_files(files);*/
 }
 
 void MainWindow::on_actionPlayList_triggered()
@@ -2190,9 +2209,8 @@ void MainWindow::show_playlist(bool show)
 		return;
 
 	if (show) {
-		QStringList files = m_settings.get_playlist().toStringList();
-		m_playListWnd->update_files(files);
 		m_playListWnd->show();
+		m_playListWnd->set_cur_palyingfile();
 	}
 	else {
 		m_playListWnd->hide();
@@ -2204,10 +2222,10 @@ void MainWindow::playlist_hiden()
 	ui->actionPlayList->setChecked(false);
 }
 
-void MainWindow::save_playlist(const QStringList& files)
-{
-	m_settings.set_playlist(files);
-}
+//void MainWindow::save_playlist(const QStringList& files)
+//{
+//	m_settings.set_playlist(files);
+//}
 
 void MainWindow::add_to_playlist(const QString& file)
 {
@@ -2217,7 +2235,7 @@ void MainWindow::add_to_playlist(const QString& file)
 	}
 }
 
-QString MainWindow::get_playingfile()
+QString MainWindow::get_playingfile() const
 {
 	if (is_playing())
 		return m_videoFile;
@@ -2250,4 +2268,133 @@ void MainWindow::hide_cursor(bool bHide)
 	else {
 		QGuiApplication::restoreOverrideCursor();
 	}
+}
+
+bool MainWindow::cursor_in_window(QWidget* pWnd)
+{
+	if (pWnd == nullptr)
+		return false;
+
+	QRect rt = pWnd->rect();
+	QPoint pt = pWnd->mapFromGlobal(QCursor::pos());
+	return rt.contains(pt);
+}
+
+void MainWindow::create_savedPlaylists_menu()
+{
+	for (int i = 0; i < MaxPlaylist; ++i) {
+		m_savedPlaylists[i] = std::make_unique<QAction>(this);
+		m_savedPlaylists[i]->setVisible(false);
+		connect(m_savedPlaylists[i].get(), SIGNAL(triggered()), this, SLOT(open_playlist()));
+	}
+
+	m_PlaylistsClear = std::make_unique<QAction>(this);
+	m_PlaylistsClear->setText(QApplication::translate("MainWindow", "Clear", nullptr));
+	connect(m_PlaylistsClear.get(), SIGNAL(triggered()), this, SLOT(clear_savedPlaylists()));
+
+	QMenu* pMenu = ui->menuSavedPlaylist;
+	//pMenu->addSeparator();
+	for (int i = 0; i < MaxPlaylist; ++i)
+		pMenu->addAction(m_savedPlaylists[i].get());
+	pMenu->addSeparator();
+	pMenu->addAction(m_PlaylistsClear.get());
+
+	update_savedPlaylists_actions();
+}
+
+void MainWindow::remove_playlist_file(const QString& fileName)
+{
+	QStringList files = m_settings.get_savedplaylists().toStringList();
+	files.removeAll(fileName);
+	m_settings.set_savedplaylists(files);
+
+	update_savedPlaylists_actions();
+}
+
+void MainWindow::update_savedPlaylists_actions()
+{
+	QStringList files = m_settings.get_savedplaylists().toStringList();
+
+	int num = qMin(files.size(), (int)MaxPlaylist);
+
+	QMenu* pMenu = ui->menuSavedPlaylist;
+	pMenu->setEnabled(num > 0);
+
+	for (int i = 0; i < num; ++i) {
+		QString text = tr("%1 %2").arg(i + 1).arg(stripped_name(files[i]));
+		m_savedPlaylists[i]->setText(QApplication::translate("MainWindow", text.toStdString().c_str(), nullptr));
+		m_savedPlaylists[i]->setData(files[i]);
+		m_savedPlaylists[i]->setVisible(true);
+	}
+	for (int j = num; j < MaxPlaylist; ++j)
+		m_savedPlaylists[j]->setVisible(false);
+}
+
+void MainWindow::clear_savedPlaylists()
+{
+	QStringList files = m_settings.get_savedplaylists().toStringList();
+
+	for (const QString& i : files) {
+		QFile file(i);
+		file.remove();
+	}
+
+	files.clear();
+	m_settings.set_savedplaylists(files);
+
+	update_savedPlaylists_actions();
+}
+
+void MainWindow::open_playlist()
+{
+	if (m_playListWnd == nullptr)
+		return;
+
+	QAction* action = qobject_cast<QAction*>(sender());
+	if (action) {
+		QString file = action->data().toString();
+
+		QStringList files;
+		bool ret = read_playlist(file, files);
+		if (ret) {
+			m_playListWnd->update_files(files);
+		}
+		else {
+			remove_playlist_file(file);
+		}
+	}
+}
+
+void MainWindow::playlist_file_saved(const QString& file)
+{
+	QStringList files = m_settings.get_savedplaylists().toStringList();
+	files.removeAll(file);
+	files.prepend(file);
+
+	if (files.size() > MaxPlaylist) {
+		QString str = QString("You can only save %1 playlist files!").arg(MaxPlaylist);
+		show_msg_dlg(str);
+	}
+
+	while (files.size() > MaxPlaylist)
+		files.removeLast();
+
+	m_settings.set_savedplaylists(files);
+	update_savedPlaylists_actions();
+}
+
+bool MainWindow::read_playlist(const QString& playlist_file, QStringList& files) const
+{
+	QFile file(playlist_file);
+	if (file.open(QIODevice::ReadOnly)) {
+		QTextStream stream(&file);
+		stream.setCodec("UTF-8");
+
+		QString str = stream.readAll();
+		files = str.split(PLAYLIST_SEPERATE_CHAR);
+		files.removeAll(QString(""));
+		file.close();
+		return true;
+	}
+	return false;
 }
