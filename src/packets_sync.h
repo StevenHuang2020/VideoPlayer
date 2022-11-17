@@ -350,7 +350,7 @@ int get_video_frame(VideoState* is, AVFrame* frame);
 int decoder_init(Decoder* d, AVCodecContext* avctx, PacketQueue* queue, QWaitCondition* empty_queue_cond);
 int decoder_decode_frame(Decoder* d, AVFrame* frame, AVSubtitle* sub);
 void decoder_destroy(Decoder* d);
-int decoder_start(Decoder* d, void* thread, const char* thread_name, void* arg);
+int decoder_start(Decoder* d, void* thread, const char* thread_name);
 void decoder_abort(Decoder* d, FrameQueue* fq);
 void get_file_info(const char* filename, int64_t& duration);
 void get_duration_time(const int64_t duration_us, int64_t& hours, int64_t& mins, int64_t& secs, int64_t& us);
@@ -375,8 +375,11 @@ void update_volume(VideoState* is, int sign, double step);
 void step_to_next_frame(VideoState* is);
 double compute_target_delay(double delay, VideoState* is);
 double vp_duration(VideoState* is, Frame* vp, Frame* nextvp);
-void update_video_pts(VideoState* is, double pts, int64_t pos, int serial);
+void update_video_pts(VideoState* is, double pts, int serial);
+
+#if PRINT_PACKETQUEUE_INFO
 void print_state_info(VideoState* is);
+#endif
 
 /****************************************/
 int is_realtime(AVFormatContext* s);
@@ -395,7 +398,7 @@ int configure_filtergraph(AVFilterGraph* graph, const char* filtergraph,
 
 //int audio_open(void* opaque, int64_t wanted_channel_layout, int wanted_nb_channels, int wanted_sample_rate, struct AudioParams* audio_hw_params);
 
-void set_video_playspeed(VideoState* is, double value);
+void set_video_playspeed(VideoState* is);
 int configure_video_filters(AVFilterGraph* graph, VideoState* is, const char* vfilters, AVFrame* frame);
 #endif
 

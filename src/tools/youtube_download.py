@@ -40,7 +40,8 @@ def startDownload(video, downPath, prefix):
             os.makedirs(downPath)
 
     print('Sart to download:', video, 'Size:', gFilesize)
-    video.download(downPath, filename_prefix=prefix)
+    if gFilesize > 0:
+        video.download(downPath, filename_prefix=prefix)
 
 
 def downYouTube(url, downPath=None):
@@ -66,7 +67,7 @@ def downYouTube(url, downPath=None):
         print('No file found!')
         return
 
-    print(f'Find {length} media items from this url.')
+    print(f'Find {length} media items from your url.')
     print('Please enter the ID or IDs you want to download(0 1 10...):')
 
     for id in input().split():
@@ -102,18 +103,20 @@ def validateTitle(title):
 
 
 def main():
-    print('Number of parameter:', len(sys.argv))
+    len_params = len(sys.argv)
+    print('Number of parameter:', len_params)
     print('Parameters:', str(sys.argv))
 
-    len_params = len(sys.argv)
     save_path = "."  # download dst path
     url = ""
 
-    if len_params > 1:
-        url = sys.argv[1]
+    if len_params < 2:
+        print("Cmd error, please refer to the usage case listed in the Python file!")
+        return
 
+    url = sys.argv[1]
     if len_params > 2:
-        dstPath = sys.argv[2]
+        save_path = sys.argv[2]
 
     downYouTube(url, save_path)
 

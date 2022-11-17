@@ -39,7 +39,7 @@ private:
 	void video_refresh(VideoState* is, double* remaining_time);
 	void video_image_display(VideoState* is);
 	void video_display(VideoState* is);
-	void video_audio_display(VideoState* s);
+	// void video_audio_display(VideoState* s);
 	void final_resample_param();
 	inline int compute_mod(int a, int b) { return a < 0 ? (a % b + b) : (a % b); }
 	void parse_subtitle_ass(const QString& text);

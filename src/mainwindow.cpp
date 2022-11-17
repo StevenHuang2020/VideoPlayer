@@ -26,14 +26,31 @@
 MainWindow::MainWindow(QWidget* parent)
 	: QMainWindow(parent)
 	, ui(std::make_unique<Ui::MainWindow>())
-	, m_videoFile("")
-	, m_pVideoState(nullptr)
+	, m_pPacketReadThread(nullptr)
 	, m_pDecodeVideoThread(nullptr)
 	, m_pDecodeAudioThread(nullptr)
+	, m_pDecodeSubtitleThread(nullptr)
 	, m_pAudioPlayThread(nullptr)
 	, m_pVideoPlayThread(nullptr)
-	, m_pPacketReadThread(nullptr)
-	, m_pDecodeSubtitleThread(nullptr)
+	, m_pVideoState(nullptr)
+	, m_pBeforePlayThread(nullptr)
+	, m_pYoutubeUrlThread(nullptr)
+	, m_pStopplayWaitingThread(nullptr)
+	, m_videoFile("")
+	, m_subtitle("")
+	, m_video_label(nullptr)
+	, m_play_control_wnd(nullptr)
+	, m_audio_effect_wnd(nullptr)
+	, m_playListWnd(nullptr)
+	, m_recentFileActs{ 0 }
+	, m_recentClear(nullptr)
+	, m_styleActsGroup(nullptr)
+	, m_styleActions{ 0 }
+	, m_CvActsGroup(nullptr)
+	, m_AVisualTypeActsGroup(nullptr)
+	, m_AVisualGrapicTypeActsGroup(nullptr)
+	, m_savedPlaylists{ 0 }
+	, m_PlaylistsClear(nullptr)
 {
 	ui->setupUi(this);
 
@@ -505,6 +522,7 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* event)
 		}
 
 		hide_cursor(false);
+		setCursor(Qt::ArrowCursor);
 #endif
 	}
 	return QMainWindow::eventFilter(obj, event);
@@ -545,15 +563,11 @@ void MainWindow::check_hide_menubar(const QPoint& pt)
 
 void MainWindow::check_hide_play_control()
 {
-	PlayControlWnd* pPlayControl = get_play_control();
-	if (pPlayControl == nullptr)
-		return;
-
 	if (!is_playing())
 		return;
 
-	if (!isFullScreen() && cursor_in_window(pPlayControl)) {
-		qDebug() << "cursor is in PlayControlWnd";
+	if (!isFullScreen() && cursor_in_window(get_play_control())) {
+		qDebug() << "cursor is in PlayControl window, don't hide PlayControl window.";
 		return;
 	}
 
@@ -612,7 +626,7 @@ void MainWindow::on_actionYoutube_triggered()
 		YoutubeUrlDlg::YoutubeUrlData data = dialog.get_data();
 
 		if (data.url.isEmpty()
-			// || (!data.url.startsWith("https://www.youtube.com/", Qt::CaseInsensitive))
+			|| (!data.url.startsWith("https://www.youtube.com/", Qt::CaseInsensitive))
 			)
 		{
 			QString str = QString("Please input a valid youtube url. ");
@@ -621,9 +635,8 @@ void MainWindow::on_actionYoutube_triggered()
 		}
 
 		int pos = data.url.indexOf("&"); //remove url parameters, all chars after '&'
-		if (pos != -1) {
+		if (pos != -1)
 			data.url.truncate(pos);
-		}
 
 		start_youtube_url_thread(data);
 
@@ -871,8 +884,21 @@ void MainWindow::on_actionOriginalSize_triggered()
 		QSize sz = size();
 
 		int h_change = 0, w_change = 0;
-		w_change = pVideoCtx->width - sizeLabel.width();
-		h_change = pVideoCtx->height - sizeLabel.height();
+		int new_width = pVideoCtx->width;
+		int new_height = pVideoCtx->height;
+
+		if (new_width < minimumWidth()) {
+			new_height = minimumWidth() * new_height / new_width;
+			new_width = minimumWidth();
+		}
+
+		if (new_height < minimumHeight()) {
+			new_width = minimumHeight() * new_width / new_height;
+			new_height = minimumHeight();
+		}
+
+		w_change = new_width - sizeLabel.width();
+		h_change = new_height - sizeLabel.height();
 
 		sz += QSize(w_change, h_change);
 		resize_window(sz.width(), sz.height());
@@ -1544,12 +1570,15 @@ bool MainWindow::create_decode_video_thread()
 
 			AVCodecContext* avctx = m_pVideoState->get_contex(AVMEDIA_TYPE_VIDEO);
 			assert(avctx);
-			int ret = -1;
-			if ((ret = decoder_init(&pState->viddec, avctx, &pState->videoq, pState->continue_read_thread)) < 0) {
+
+			int ret = decoder_init(&pState->viddec, avctx, &pState->videoq, pState->continue_read_thread);
+			if (ret < 0) {
 				qWarning("decode video thread decoder_init failed.");
 				return false;
 			}
-			if ((ret = decoder_start(&pState->viddec, m_pDecodeVideoThread.get(), "video_decoder_thread", pState)) < 0) {
+
+			ret = decoder_start(&pState->viddec, m_pDecodeVideoThread.get(), "video_decoder_thread");
+			if (ret < 0) {
 				qWarning("decode video thread decoder_start failed.");
 				return false;
 			}
@@ -1572,13 +1601,14 @@ bool MainWindow::create_decode_audio_thread()
 			connect(m_pDecodeAudioThread.get(), &AudioDecodeThread::finished, this, &MainWindow::decode_audio_stopped);
 
 			AVCodecContext* avctx = m_pVideoState->get_contex(AVMEDIA_TYPE_AUDIO);
-			int ret = -1;
-			if ((ret = decoder_init(&pState->auddec, avctx, &pState->audioq, pState->continue_read_thread)) < 0) {
+			int ret = decoder_init(&pState->auddec, avctx, &pState->audioq, pState->continue_read_thread);
+			if (ret < 0) {
 				qWarning("decode audio thread decoder_init failed.");
 				return false;
 			}
 
-			if ((ret = decoder_start(&pState->auddec, m_pDecodeAudioThread.get(), "audio_decoder_thread", pState)) < 0) {
+			ret = decoder_start(&pState->auddec, m_pDecodeAudioThread.get(), "audio_decoder_thread");
+			if (ret < 0) {
 				qWarning("decode audio thread decoder_init failed.");
 				return false;
 			}
@@ -1600,13 +1630,14 @@ bool MainWindow::create_decode_subtitle_thread() //decode subtitle thread
 			connect(m_pDecodeSubtitleThread.get(), &SubtitleDecodeThread::finished, this, &MainWindow::decode_subtitle_stopped);
 
 			AVCodecContext* avctx = m_pVideoState->get_contex(AVMEDIA_TYPE_SUBTITLE);
-			int ret = -1;
-			if ((ret = decoder_init(&pState->subdec, avctx, &pState->subtitleq, pState->continue_read_thread)) < 0) {
+			int ret = decoder_init(&pState->subdec, avctx, &pState->subtitleq, pState->continue_read_thread);
+			if (ret < 0) {
 				qWarning("decode subtitle thread decoder_init failed.");
 				return false;
 			}
 
-			if ((ret = decoder_start(&pState->subdec, m_pDecodeSubtitleThread.get(), "subtitle_decoder_thread", pState)) < 0) {
+			ret = decoder_start(&pState->subdec, m_pDecodeSubtitleThread.get(), "subtitle_decoder_thread");
+			if (ret < 0) {
 				qWarning("decode subtitle thread decoder_init failed.");
 				return false;
 			}
@@ -1687,11 +1718,11 @@ bool MainWindow::create_audio_play_thread()
 			if (!ret) {
 				qWarning("audio play init resample param failed.");
 				return false;
-			}
+		}
 #endif
 			return true;
-		}
 	}
+}
 	return false;
 }
 
@@ -1952,7 +1983,7 @@ void MainWindow::audio_play_stopped()
 void MainWindow::video_play_stopped()
 {
 	m_pVideoPlayThread.reset();
-	qDebug("************* Aideo play stopped.");
+	qDebug("************* Audio play stopped.");
 
 	set_default_bkground();
 	update_menus();
@@ -2053,8 +2084,6 @@ void MainWindow::read_settings()
 			m_skin.set_custom_style(style);
 		}
 	}
-
-	update_savedPlaylists_actions();
 }
 
 float MainWindow::volume_settings(bool set, float vol)
@@ -2222,17 +2251,10 @@ void MainWindow::playlist_hiden()
 	ui->actionPlayList->setChecked(false);
 }
 
-//void MainWindow::save_playlist(const QStringList& files)
-//{
-//	m_settings.set_playlist(files);
-//}
-
 void MainWindow::add_to_playlist(const QString& file)
 {
-	if (m_playListWnd) {
+	if (m_playListWnd)
 		m_playListWnd->add_file(file);
-		m_playListWnd->save_playlist();
-	}
 }
 
 QString MainWindow::get_playingfile() const
@@ -2293,7 +2315,6 @@ void MainWindow::create_savedPlaylists_menu()
 	connect(m_PlaylistsClear.get(), SIGNAL(triggered()), this, SLOT(clear_savedPlaylists()));
 
 	QMenu* pMenu = ui->menuSavedPlaylist;
-	//pMenu->addSeparator();
 	for (int i = 0; i < MaxPlaylist; ++i)
 		pMenu->addAction(m_savedPlaylists[i].get());
 	pMenu->addSeparator();
@@ -2351,17 +2372,20 @@ void MainWindow::open_playlist()
 		return;
 
 	QAction* action = qobject_cast<QAction*>(sender());
-	if (action) {
-		QString file = action->data().toString();
+	if (action == nullptr)
+		return;
 
-		QStringList files;
-		bool ret = read_playlist(file, files);
-		if (ret) {
-			m_playListWnd->update_files(files);
-		}
-		else {
-			remove_playlist_file(file);
-		}
+	QString file = action->data().toString();
+
+	QStringList files;
+	bool ret = read_playlist(file, files);
+	if (ret) {
+		m_playListWnd->update_files(files);
+		show_playlist();
+		ui->actionPlayList->setChecked(true);
+	}
+	else {
+		remove_playlist_file(file);
 	}
 }
 

@@ -82,7 +82,6 @@ public slots:
 	void update_play_time();
 	void play_started(bool ret = true);
 	void play_failed(const QString& file);
-	//void save_playlist(const QStringList& files);
 	void playlist_file_saved(const QString& file);
 
 signals:

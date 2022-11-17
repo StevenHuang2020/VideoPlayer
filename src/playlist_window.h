@@ -38,7 +38,6 @@ public:
 	void add_files(const QStringList& files);
 	void get_files(QStringList& files) const;
 	void update_files(const QStringList& files);
-	void save_playlist();
 	void set_cur_palyingfile();
 
 signals:
@@ -79,7 +78,6 @@ private:
 	static QString mimeType(const QString& filePath);
 	static bool is_local(const QString& file);
 	bool is_media(const QString& file) const;
-
 
 private:
 	std::unique_ptr<Ui::PlayList> ui;

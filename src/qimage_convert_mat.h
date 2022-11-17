@@ -7,6 +7,6 @@
 
 
 void qimage_to_mat(const QImage& image, cv::OutputArray& out);
-void mat_to_qimage(const cv::InputArray& image, QImage& out);
+void mat_to_qimage(cv::InputArray& image, QImage& out);
 QString print_mat(const char* name, const cv::Mat& M);
 #endif

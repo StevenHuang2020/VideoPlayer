@@ -101,7 +101,7 @@ QString dump_format(AVFormatContext* ic, int index, const char* url, int is_outp
 		is_output ? "to" : "from", url);
 	str += tmp;
 
-	str += dump_metadata(nullptr, ic->metadata, indent);
+	str += dump_metadata(ic->metadata, indent);
 
 	if (!is_output) {
 		snprintf(tmp, sizeof(tmp), "%sDuration: ", indent);
@@ -156,7 +156,7 @@ QString dump_format(AVFormatContext* ic, int index, const char* url, int is_outp
 			ch->end * av_q2d(ch->time_base));
 		str += tmp;
 
-		str += dump_metadata(nullptr, ch->metadata, "      ");
+		str += dump_metadata(ch->metadata, "      ");
 	}
 
 	if (ic->nb_programs) {
@@ -167,7 +167,7 @@ QString dump_format(AVFormatContext* ic, int index, const char* url, int is_outp
 			snprintf(tmp, sizeof(tmp), "  Program %d %s\n", program->id, name ? name->value : "");
 			str += tmp;
 
-			str += dump_metadata(nullptr, program->metadata, "    ");
+			str += dump_metadata(program->metadata, "    ");
 
 			for (k = 0; k < program->nb_stream_indexes; k++) {
 				str += dump_stream_format(ic, program->stream_index[k], index, is_output);
@@ -192,7 +192,7 @@ fail:
 	return QString("");
 }
 
-QString dump_metadata(void* ctx, const AVDictionary* m, const char* indent)
+QString dump_metadata(const AVDictionary* m, const char* indent)
 {
 	QString str = "";
 	char tmp[BUFF_MAXLEN];
@@ -220,7 +220,7 @@ QString dump_metadata(void* ctx, const AVDictionary* m, const char* indent)
 
 					p += len;
 					if (*p == 0xd) str += " ";
-					if (*p == 0xa) str += "\n%s  %-16s: ", indent, "";
+					if (*p == 0xa) str += "\n%s  %-16s: ";
 					if (*p) p++;
 				}
 				str += "\n";
@@ -353,8 +353,8 @@ QString dump_stream_format(const AVFormatContext* ic, int i, int index, int is_o
 		str += " (still image)";
 	str += "\n";
 
-	str += dump_metadata(nullptr, st->metadata, "    ");
-	str += dump_sidedata(nullptr, st, "    ");
+	str += dump_metadata(st->metadata, "    ");
+	str += dump_sidedata(st, "    ");
 	return str;
 
 fail:
@@ -382,7 +382,7 @@ QString print_fps(double d, const char* postfix)
 	return QString(tmp);
 }
 
-QString dump_sidedata(void* ctx, const AVStream* st, const char* indent)
+QString dump_sidedata(const AVStream* st, const char* indent)
 {
 	QString str = "";
 	char tmp[BUFF_MAXLEN];

@@ -15,7 +15,7 @@
 #define VERSION_MICRO  9
 
 
-#define VERSION_DOT(a, b, c)   a ##.## b ##.## c
+#define VERSION_DOT(a, b, c)   a.b.c
 
 #define PLAYER_VERSION_NUMBER   VERSION_DOT(VERSION_MAJOR, \
                                     VERSION_MINOR, \

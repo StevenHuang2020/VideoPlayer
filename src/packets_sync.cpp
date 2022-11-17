@@ -388,7 +388,7 @@ int decoder_init(Decoder* d, AVCodecContext* avctx, PacketQueue* queue, QWaitCon
 	return 0;
 }
 
-int decoder_start(Decoder* d, void* thread, const char* thread_name, void* arg)
+int decoder_start(Decoder* d, void* thread, const char* thread_name)
 {
 	packet_queue_start(d->queue);
 	d->decoder_tid = thread;
@@ -511,10 +511,11 @@ int decoder_decode_frame(Decoder* d, AVFrame* frame, AVSubtitle* sub) {
 void get_file_info(const char* filename, int64_t& duration)
 {
 	AVFormatContext* pFormatCtx = avformat_alloc_context();
-	int ret = avformat_open_input(&pFormatCtx, filename, NULL, NULL);
-	if (pFormatCtx->duration < 0)
-		avformat_find_stream_info(pFormatCtx, NULL);
-	duration = pFormatCtx->duration;
+	if (avformat_open_input(&pFormatCtx, filename, NULL, NULL) == 0) {
+		if (pFormatCtx->duration < 0)
+			avformat_find_stream_info(pFormatCtx, NULL);
+		duration = pFormatCtx->duration;
+	}
 	// etc
 	avformat_close_input(&pFormatCtx);
 	avformat_free_context(pFormatCtx);
@@ -645,8 +646,8 @@ double get_master_clock(VideoState* is)
 
 void check_external_clock_speed(VideoState* is)
 {
-	if (is->video_stream >= 0 && is->videoq.nb_packets <= EXTERNAL_CLOCK_MIN_FRAMES ||
-		is->audio_stream >= 0 && is->audioq.nb_packets <= EXTERNAL_CLOCK_MIN_FRAMES) {
+	if ((is->video_stream >= 0 && is->videoq.nb_packets <= EXTERNAL_CLOCK_MIN_FRAMES) ||
+		(is->audio_stream >= 0 && is->audioq.nb_packets <= EXTERNAL_CLOCK_MIN_FRAMES)) {
 		set_clock_speed(&is->extclk, FFMAX(EXTERNAL_CLOCK_SPEED_MIN, is->extclk.speed - EXTERNAL_CLOCK_SPEED_STEP));
 	}
 	else if ((is->video_stream < 0 || is->videoq.nb_packets > EXTERNAL_CLOCK_MAX_FRAMES) &&
@@ -767,15 +768,15 @@ double vp_duration(VideoState* is, Frame* vp, Frame* nextvp) {
 	return 0.0;
 }
 
-void update_video_pts(VideoState* is, double pts, int64_t pos, int serial) {
+void update_video_pts(VideoState* is, double pts, int serial) {
 	/* update current video pts */
 	set_clock(&is->vidclk, pts, serial);
 	sync_clock_to_slave(&is->extclk, &is->vidclk);
 }
 
+#if PRINT_PACKETQUEUE_INFO
 void print_state_info(VideoState* is)
 {
-#if PRINT_PACKETQUEUE_INFO
 	if (is) {
 		PacketQueue* pPacket = &is->videoq;
 		qDebug("[VideoState] V PacketQueue[%p](nb_packets:%d,size:%d,dur:%lld, abort:%d, serial:%d)",
@@ -796,8 +797,8 @@ void print_state_info(VideoState* is)
 		qDebug("[VideoState]Clock(v:%p,a:%p,s:%p)",
 			&is->vidclk, &is->audclk, &is->extclk);*/
 	}
-#endif
 }
+#endif
 
 #if USE_AVFILTER_AUDIO
 void set_audio_playspeed(VideoState* is, double value)
@@ -836,14 +837,14 @@ void set_audio_playspeed(VideoState* is, double value)
 	qDebug("changing audio filters to :%s", is->afilters);
 
 #if USE_AVFILTER_VIDEO
-	set_video_playspeed(is, value);
+	set_video_playspeed(is);
 #endif
 
 	is->audio_clock_old = is->audio_clock;
 	is->req_afilter_reconfigure = 1;
 }
 
-void set_video_playspeed(VideoState* is, double value)
+void set_video_playspeed(VideoState* is)
 {
 	double speed = is->audio_speed;
 
@@ -926,9 +927,9 @@ int configure_audio_filters(VideoState* is, const char* afilters, int force_outp
 	int sample_rates[2] = { 0, -1 };
 	//int64_t channel_layouts[2] = { 0, -1 };
 	//AVChannelLayout channel_layouts[2] = {};
-	int channels[2] = { 0, -1 };
+	//int channels[2] = { 0, -1 };
 	AVFilterContext* filt_asrc = nullptr, * filt_asink = nullptr;
-	char aresample_swr_opts[512] = "";
+	//char aresample_swr_opts[512] = "";
 	// const AVDictionaryEntry* e = nullptr;
 	char asrc_args[256];
 	int ret;
@@ -949,7 +950,7 @@ int configure_audio_filters(VideoState* is, const char* afilters, int force_outp
 	av_bprint_init(&bp, 0, AV_BPRINT_SIZE_AUTOMATIC);
 	av_channel_layout_describe_bprint(&is->audio_filter_src.channel_layout, &bp);
 
-	ret = snprintf(asrc_args, sizeof(asrc_args),
+	snprintf(asrc_args, sizeof(asrc_args),
 		"sample_rate=%d:sample_fmt=%s:time_base=%d/%d:channel_layout=%s",
 		is->audio_filter_src.freq, av_get_sample_fmt_name(is->audio_filter_src.fmt),
 		1, is->audio_filter_src.freq, bp.str);
@@ -1004,7 +1005,7 @@ end:
 int configure_video_filters(AVFilterGraph* graph, VideoState* is, const char* vfilters, AVFrame* frame)
 {
 	enum AVPixelFormat pix_fmts[1]; //FF_ARRAY_ELEMS(sdl_texture_format_map)
-	char sws_flags_str[512] = "";
+	//char sws_flags_str[512] = "";
 	char buffersrc_args[256];
 	int ret;
 	AVFilterContext* filt_src = nullptr, * filt_out = nullptr, * last_filter = nullptr;
@@ -1100,7 +1101,7 @@ int configure_video_filters(AVFilterGraph* graph, VideoState* is, const char* vf
 			snprintf(rotate_buf, sizeof(rotate_buf), "%f*PI/180", theta);
 			INSERT_FILT("rotate", rotate_buf);
 		}
-}
+	}
 #endif
 
 	if ((ret = configure_filtergraph(graph, vfilters, filt_src, last_filter)) < 0)

@@ -24,8 +24,8 @@ AudioPlayThread::AudioPlayThread(QObject* parent, VideoState* pState)
 	: QThread(parent)
 	, m_pOutput(nullptr)
 	, m_pState(pState)
-	, m_bExitThread(false)
 	, m_audioResample({})
+	, m_bExitThread(false)
 	, m_bSendToVisual(false)
 {
 	//print_device();
@@ -187,7 +187,6 @@ void AudioPlayThread::run()
 int AudioPlayThread::audio_decode_frame(VideoState* is)
 {
 	int data_size;
-	double audio_clock0;
 	Frame* af;
 
 	do {
@@ -255,7 +254,6 @@ int AudioPlayThread::audio_decode_frame(VideoState* is)
 
 	av_free((void*)buffer_audio);
 
-	audio_clock0 = is->audio_clock;
 	/* update the audio clock with the pts */
 	if (!isnan(af->pts)) {
 		//is->audio_clock = af->pts + (double)af->frame->nb_samples / af->frame->sample_rate;
@@ -296,7 +294,7 @@ int AudioPlayThread::audio_decode_frame(VideoState* is)
 #endif
 
 	return data_size;
-}
+	}
 
 bool AudioPlayThread::init_resample_param(AVCodecContext* pAudio, AVSampleFormat sample_fmt, VideoState* is)
 {

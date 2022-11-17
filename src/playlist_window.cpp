@@ -152,7 +152,6 @@ void PlayListWnd::update_table_list()
 
 void PlayListWnd::cellSelected(int row, int col)
 {
-	//QString file = get_cell_str(row);
 	QString file = get_data_file(row);
 	qDebug() << "file clicked:" << "row:" << row << "col:" << col << "file:" << file;
 	emit play_file(file);
@@ -217,7 +216,6 @@ void PlayListWnd::dropEvent(QDropEvent* event)
 		files.append(urlList.at(i).toLocalFile().trimmed());
 
 	add_files(files);
-	save_playlist();
 }
 
 QString PlayListWnd::get_file_name(const QString& path)
@@ -280,15 +278,12 @@ void PlayListWnd::deleteBtn_clicked()
 		del_data_file(sel);
 		update_table_list();
 	}
-
-	save_playlist();
 }
 
 void PlayListWnd::clearBtn_clicked()
 {
 	clear_data_files();
 	update_table_list();
-	save_playlist();
 }
 
 bool PlayListWnd::saveBtn_clicked()
@@ -320,17 +315,6 @@ bool PlayListWnd::saveBtn_clicked()
 		return true;
 	}
 	return false;
-}
-
-void PlayListWnd::save_playlist()
-{
-#if 1
-	return;
-#else
-	QStringList files;
-	get_files(files);
-	emit save_playlist_signal(files);
-#endif
 }
 
 void PlayListWnd::update_files(const QStringList& files)
@@ -409,7 +393,7 @@ bool PlayListWnd::is_media(const QString& file) const
 	}
 	else {
 		qWarning() << "Not handled, MIME type:" << mimetype;
-}
+	}
 #endif
 	return false;
 }

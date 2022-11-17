@@ -117,7 +117,8 @@ void VideoDecodeThread::run()
 #else
 			tmp_frame = frame;
 			if (frame->format == AV_PIX_FMT_DXVA2_VLD) {
-				if ((ret = av_hwframe_transfer_data(sw_frame, frame, 0)) < 0) {
+				ret = av_hwframe_transfer_data(sw_frame, frame, 0);
+				if (ret < 0) {
 					av_log(nullptr, AV_LOG_WARNING, "Error transferring the data to system memory\n");
 					goto the_end;
 				}

@@ -42,13 +42,13 @@ int ReadThread::loop_read()
 	assert(is);
 	//assert(pFormatCtx);
 	if (is == nullptr)
-		return -1;
+		return ret;
 
 	pkt = av_packet_alloc();
 	if (!pkt) {
 		av_log(nullptr, AV_LOG_FATAL, "Could not allocate packet.\n");
 		ret = AVERROR(ENOMEM);
-		return -1;
+		return ret;
 	}
 
 	is->read_thread_exit = 0;
@@ -99,7 +99,8 @@ int ReadThread::loop_read()
 
 		if (is->queue_attachments_req) {
 			if (is->video_st && is->video_st->disposition & AV_DISPOSITION_ATTACHED_PIC) {
-				if ((ret = av_packet_ref(pkt, &is->video_st->attached_pic)) < 0)
+				ret = av_packet_ref(pkt, &is->video_st->attached_pic);
+				if (ret < 0)
 					break;
 				packet_queue_put(&is->videoq, pkt);
 				packet_queue_put_nullpacket(&is->videoq, pkt, is->video_stream);

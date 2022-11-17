@@ -46,7 +46,7 @@ void AudioDecodeThread::run()
 
 #if USE_AVFILTER_AUDIO
 			// dec_channel_layout = get_valid_channel_layout(frame->channel_layout, frame->ch_layout.nb_channels);
-			dec_channel_layout =  frame->ch_layout; //frame->channel_layout; //
+			dec_channel_layout = frame->ch_layout; //frame->channel_layout; //
 
 			reconfigure =
 				cmp_audio_fmts(is->audio_filter_src.fmt, is->audio_filter_src.channels,
@@ -73,12 +73,14 @@ void AudioDecodeThread::run()
 				is->audio_filter_src.freq = frame->sample_rate;
 				last_serial = is->auddec.pkt_serial;
 
-				if ((ret = configure_audio_filters(is, is->afilters, 1)) < 0)
+				ret = configure_audio_filters(is, is->afilters, 1);
+				if (ret < 0)
 					goto the_end;
 				is->req_afilter_reconfigure = 0;
 			}
 
-			if ((ret = av_buffersrc_add_frame(is->in_audio_filter, frame)) < 0)
+			ret = av_buffersrc_add_frame(is->in_audio_filter, frame);
+			if (ret < 0)
 				goto the_end;
 
 			//while ((ret = av_buffersink_get_frame_flags(is->out_audio_filter, frame, 0)) >= 0) {

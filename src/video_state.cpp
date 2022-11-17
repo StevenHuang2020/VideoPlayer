@@ -17,10 +17,11 @@ static AVBufferRef* hw_device_ctx = nullptr;
 static enum AVPixelFormat hw_pix_fmt;
 
 VideoStateData::VideoStateData(QThread* pThread, bool use_hardware, bool loop_play)
-	: m_pState(nullptr), m_pReadThreadId(pThread), m_bUseHardware(use_hardware)
-	, m_bLoopPlay(loop_play), m_bHasVideo(false), m_bHasAudio(false)
-	, m_bHasSubtitle(false), m_avctxVideo(nullptr), m_avctxAudio(nullptr)
-	, m_avctxSubtitle(nullptr), m_bHardwareSuccess(false)
+	: m_pState(nullptr), m_pReadThreadId(pThread)
+	, m_bHasVideo(false), m_bHasAudio(false), m_bHasSubtitle(false)
+	, m_avctxVideo(nullptr), m_avctxAudio(nullptr)
+	, m_avctxSubtitle(nullptr), m_bUseHardware(use_hardware)
+	, m_bHardwareSuccess(false), m_bLoopPlay(loop_play)
 {
 	//m_hw_device_ctx = nullptr;
 }
@@ -180,8 +181,6 @@ int VideoStateData::open_media(VideoState* is)
 			nullptr, 0);
 
 	/* open the streams */
-	ret = -1;
-
 	if (st_index[AVMEDIA_TYPE_VIDEO] >= 0) {
 		stream_component_open(is, st_index[AVMEDIA_TYPE_VIDEO]);
 	}
@@ -330,7 +329,7 @@ static enum AVPixelFormat get_hw_format(AVCodecContext* ctx, const enum AVPixelF
 			return *p;
 	}
 
-	fprintf(stderr, "Failed to get HW surface format.\n");
+	fprintf(stderr, "Failed to get HW surface format, codec_id=%d\n", (int)ctx->codec_id);
 	return AV_PIX_FMT_NONE;
 }
 

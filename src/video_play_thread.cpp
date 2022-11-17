@@ -19,9 +19,9 @@ const QRegularExpression VideoPlayThread::m_assNewLineReplacer = QRegularExpress
 VideoPlayThread::VideoPlayThread(QObject* parent, VideoState* pState)
 	: QThread(parent)
 	, m_pState(pState)
+	, m_Resample({})
 	, m_bExitThread(false)
 {
-	memset(&m_Resample, 0, sizeof(Video_Resample));
 }
 
 VideoPlayThread::~VideoPlayThread()
@@ -110,7 +110,7 @@ void VideoPlayThread::video_refresh(VideoState* is, double* remaining_time)
 
 			is->pictq.mutex->lock();
 			if (!isnan(vp->pts))
-				update_video_pts(is, vp->pts, vp->pos, vp->serial);
+				update_video_pts(is, vp->pts, vp->serial);
 			is->pictq.mutex->unlock();
 
 			if (frame_queue_nb_remaining(&is->pictq) > 1) {
@@ -180,16 +180,16 @@ void VideoPlayThread::video_refresh(VideoState* is, double* remaining_time)
 void VideoPlayThread::video_display(VideoState* is)
 {
 	if (is->audio_st && false) {
-		video_audio_display(is);
+		// video_audio_display(is);
 	}
 	else if (is->video_st) {
 		video_image_display(is);
 	}
 }
 
+#if 0
 void VideoPlayThread::video_audio_display(VideoState* s)
 {
-#if 0
 	int64_t audio_callback_time = 0;
 	int i, i_start, x, y1, y, ys, delay, n, nb_display_channels;
 	int ch, channels, h, h2;
@@ -335,10 +335,8 @@ void VideoPlayThread::video_audio_display(VideoState* s)
 			s->xpos++;
 	}
 #endif
-#endif
 }
-
-// https://github.com/ripose-jp/Memento/blob/fc9cf992edce9b2d6cceacedd317c9e3fa37a8c4/src/util/subtitleparser.cpp
+#endif
 
 void VideoPlayThread::video_image_display(VideoState* is)
 {

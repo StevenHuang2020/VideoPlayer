@@ -3,6 +3,7 @@ src/.vs
 src/debug/
 src/release/
 src/ffmpeg/doc/
+*.bak
 
 #tem files
 *.log
