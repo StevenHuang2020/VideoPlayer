@@ -26,11 +26,6 @@ PlayListWnd::PlayListWnd(QWidget* parent)
 	setWindowFlags(flags);
 	setWindowModality(Qt::NonModal);
 
-	int width = 480;
-	int height = 500;
-	setMinimumWidth(width);
-	setMinimumHeight(height);
-
 	setAcceptDrops(true);
 
 	create_temp_menu();
@@ -139,9 +134,9 @@ void PlayListWnd::update_table_list()
 			data.duration = get_file_duration(data.file);
 		}
 		else {
-			data.fileName = "Unknow";
+			data.fileName = "Unknow"; // not handled
 			data.duration = "--:--";
-			qWarning() << "Not Handled!"; // not handled
+			// qWarning() << "Not Handled!"; 
 		}
 
 		add_table_line(data);
@@ -186,13 +181,18 @@ void PlayListWnd::add_files(const QStringList& files)
 
 void PlayListWnd::add_file(const QString& file)
 {
-	if (!file.isEmpty() && is_media(file)) {
-		if (add_data_file(file))
-			update_table_list();
+	if (file.isEmpty()) {
+		qWarning() << "File is empty!\n";
+		return;
 	}
-	else {
+
+	if (!is_media(file)) {
 		qWarning() << "This is not media file, file:" << file;
+		return;
 	}
+
+	add_data_file(file);
+	update_table_list();
 }
 
 void PlayListWnd::closeEvent(QCloseEvent* event)

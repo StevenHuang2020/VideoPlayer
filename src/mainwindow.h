@@ -52,9 +52,9 @@ public:
 	void stop_play();
 	void pause_play();
 	float volume_settings(bool set = true, float vol = 0);
-	AudioPlayThread* get_audio_play_thread() const { return m_pAudioPlayThread.get(); }
-	VideoPlayThread* get_video_play_thread() const { return m_pVideoPlayThread.get(); }
-	VideoStateData* get_video_state_data() const { return m_pVideoState.get(); }
+	inline AudioPlayThread* get_audio_play_thread() const { return m_pAudioPlayThread.get(); }
+	inline VideoPlayThread* get_video_play_thread() const { return m_pVideoPlayThread.get(); }
+	inline VideoStateData* get_video_state_data() const { return m_pVideoState.get(); }
 	void play_mute(bool mute);
 	void play_seek();
 	void play_start_seek();
@@ -83,6 +83,7 @@ public slots:
 	void play_started(bool ret = true);
 	void play_failed(const QString& file);
 	void playlist_file_saved(const QString& file);
+	void set_threads();
 
 signals:
 	void stop_audio_play_thread();
@@ -92,10 +93,8 @@ signals:
 	void wait_stop_audio_play_thread();
 	void wait_stop_video_play_thread();
 
-public:
-	void keyPressEvent(QKeyEvent* event) override;
-
 private:
+	void keyPressEvent(QKeyEvent* event) override;
 	void resizeEvent(QResizeEvent* event) override;
 	void moveEvent(QMoveEvent* event) override;
 	bool eventFilter(QObject* obj, QEvent* event) override;
@@ -132,7 +131,7 @@ private:
 	bool playing_has_audio();
 	bool playing_has_subtitle();
 	void update_image(const QImage&);
-	void print_decodeContext(const AVCodecContext* pVideo, bool bVideo = true);
+	void print_decodeContext(const AVCodecContext* pVideo, bool bVideo = true) const;
 	void about_media_info();
 	void image_cv(QImage&);
 	void resize_window(int width = 800, int height = 480);
@@ -179,7 +178,7 @@ private:
 	void show_audio_effect(bool bShow = true);
 	void play_control_key(Qt::Key key);
 	void set_default_bkground();
-	bool create_video_state(const char* filename, QThread* pThread = nullptr);
+	bool create_video_state(const char* filename);
 	void delete_video_state();
 	bool create_read_thread(); //read packet thread
 	bool create_decode_video_thread(); //decode thread

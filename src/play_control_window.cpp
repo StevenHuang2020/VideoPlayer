@@ -296,11 +296,11 @@ void PlayControlWnd::update_btn_play(bool bPause)
 {
 	if (bPause) {
 		ui->btn_play->setText("Play");
-		qDebug("set play");
+		// qDebug("set play");
 	}
 	else {
 		ui->btn_play->setText("Pause");
-		qDebug("set pause");
+		// qDebug("set pause");
 	}
 }
 

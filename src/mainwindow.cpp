@@ -18,9 +18,9 @@
 
 
 #if NDEBUG
-#define AUTO_HIDE_PLAYCONTROL 1		//release version
+#define AUTO_HIDE_PLAYCONTROL	1		//release version
 #else
-#define AUTO_HIDE_PLAYCONTROL 1
+#define AUTO_HIDE_PLAYCONTROL	1		
 #endif
 
 MainWindow::MainWindow(QWidget* parent)
@@ -123,6 +123,8 @@ void MainWindow::show_audio_effect(bool bShow)
 
 	QPoint pt = frameGeometry().center() - m_audio_effect_wnd->rect().center();
 	m_audio_effect_wnd->move(pt);
+
+	m_audio_effect_wnd->paint_clear();
 
 	if (bShow) {
 		m_audio_effect_wnd->show();
@@ -790,6 +792,9 @@ void MainWindow::resize_window(int width, int height)
 		return;
 	}
 
+	width = width < minimumWidth() ? minimumWidth() : width;
+	height = height < minimumHeight() ? minimumHeight() : height;
+
 	resize(width, height);
 
 	if (width != screen_rec.width() ||
@@ -858,13 +863,15 @@ void MainWindow::keep_aspect_ratio(bool bWidth)
 		// size greater than screen size
 		if (sz.width() > screen_rt.width()) {
 			w_change = screen_rt.width() - sz.width();
-			h_change = w_change * sizeLabel.height() / sizeLabel.width();
+			//h_change = w_change * sizeLabel.height() / sizeLabel.width();
+			h_change = w_change * pVideoCtx->height / pVideoCtx->width;
 			sz += QSize(w_change, h_change);
 		}
 
 		if (sz.height() > screen_rt.height()) {
 			h_change = screen_rt.height() - sz.height();
-			w_change = h_change * sizeLabel.width() / sizeLabel.height();
+			//w_change = h_change * sizeLabel.width() / sizeLabel.height();
+			w_change = h_change * pVideoCtx->width / pVideoCtx->height;
 			sz += QSize(w_change, h_change);
 		}
 
@@ -882,6 +889,8 @@ void MainWindow::on_actionOriginalSize_triggered()
 	if (pVideoCtx && pLabel) {
 		QSize sizeLabel = pLabel->size();
 		QSize sz = size();
+
+		QRect screen_rt = QApplication::desktop()->screenGeometry();
 
 		int h_change = 0, w_change = 0;
 		int new_width = pVideoCtx->width;
@@ -1206,6 +1215,24 @@ void MainWindow::play_started(bool ret)
 	}
 
 	all_thread_start();
+	set_threads();
+}
+
+void MainWindow::set_threads()
+{
+	if (m_pVideoState) {
+		VideoState* pState = m_pVideoState->get_state();
+
+		Threads threads;
+		threads.read_tid = m_pPacketReadThread.get();
+		threads.video_decode_tid = m_pDecodeVideoThread.get();
+		threads.audio_decode_tid = m_pDecodeAudioThread.get();
+		threads.video_play_tid = m_pVideoPlayThread.get();
+		threads.audio_play_tid = m_pAudioPlayThread.get();
+		threads.subtitle_decode_tid = m_pDecodeSubtitleThread.get();
+
+		m_pVideoState->threads_setting(pState, threads);
+	}
 }
 
 void MainWindow::start_to_play(const QString& file)
@@ -1247,6 +1274,7 @@ void MainWindow::wait_stop_play(const QString& file)
 	connect(m_pStopplayWaitingThread.get(), &StopWaitingThread::startPlay, this, &MainWindow::start_to_play);
 
 	m_pStopplayWaitingThread->start();
+	qDebug("++++++++++ stopplay waiting thread started.");
 }
 
 void MainWindow::play_failed(const QString& file)
@@ -1295,8 +1323,10 @@ bool MainWindow::playing_has_subtitle()
 
 bool MainWindow::start_play()
 {
-	//QElapsedTimer timer;
-	//timer.start();
+#if !NDEBUG
+	QElapsedTimer timer;
+	timer.start();
+#endif
 
 	bool ret = false;
 
@@ -1312,7 +1342,9 @@ bool MainWindow::start_play()
 		return ret;
 	}
 
-	//qDebug("---------------------------------%d milliseconds", timer.elapsed());
+#if !NDEBUG
+	qDebug("---------------------------------%d milliseconds", timer.elapsed());
+#endif
 
 	// create read thread (video state need read-thread id)
 	ret = create_read_thread();
@@ -1321,10 +1353,11 @@ bool MainWindow::start_play()
 		return ret;
 	}
 
-	//qDebug("---------------------------------%d milliseconds", timer.elapsed());
+#if !NDEBUG
+	qDebug("---------------------------------%d milliseconds", timer.elapsed());
+#endif
 
-	assert(m_pPacketReadThread);
-	ret = create_video_state(filename, m_pPacketReadThread.get());
+	ret = create_video_state(filename); //time-consuming for open of network url
 	if (!ret) {
 		qWarning("video state create failed.\n");
 
@@ -1332,7 +1365,9 @@ bool MainWindow::start_play()
 		return ret;
 	}
 
-	//qDebug("---------------------------------%d milliseconds", timer.elapsed());
+#if !NDEBUG
+	qDebug("---------------------------------%d milliseconds", timer.elapsed());
+#endif
 
 	assert(m_pVideoState);
 	if (m_pVideoState == nullptr) {
@@ -1360,7 +1395,9 @@ bool MainWindow::start_play()
 		}
 	}
 
-	//qDebug("---------------------------------%d milliseconds", timer.elapsed());
+#if !NDEBUG
+	qDebug("---------------------------------%d milliseconds", timer.elapsed());
+#endif
 
 	if (bAudio) {
 		ret = create_decode_audio_thread();
@@ -1369,7 +1406,9 @@ bool MainWindow::start_play()
 			return ret;
 		}
 
-		//qDebug("---------------------------------%d milliseconds", timer.elapsed());
+#if !NDEBUG
+		qDebug("---------------------------------%d milliseconds", timer.elapsed());
+#endif
 
 		ret = create_audio_play_thread();
 		if (!ret) {
@@ -1378,7 +1417,9 @@ bool MainWindow::start_play()
 		}
 	}
 
-	//qDebug("---------------------------------%d milliseconds", timer.elapsed());
+#if !NDEBUG
+	qDebug("---------------------------------%d milliseconds", timer.elapsed());
+#endif
 
 	if (bSubtitle) {
 		ret = create_decode_subtitle_thread();
@@ -1389,14 +1430,19 @@ bool MainWindow::start_play()
 	}
 
 	if (bAudio) {
-		start_play_thread(); //start a thread for time-consuming(audio device init) task
+		// start a thread for time-consuming(audio device init) task
+		// play_started would be called after thread
+		start_play_thread();
 	}
 	else {
 		// if no audio stream but video stream, start all thread
 		play_started();
 	}
 
-	//qDebug("---------------------------------%d milliseconds", timer.elapsed());
+#if !NDEBUG
+	qDebug("---------------------------------%d milliseconds", timer.elapsed());
+#endif
+
 	return true;
 }
 
@@ -1417,17 +1463,17 @@ void MainWindow::all_thread_start()
 
 	if (m_pDecodeVideoThread) {
 		m_pDecodeVideoThread->start();
-		qDebug("++++++++++ Decode video thread started.");
+		qDebug("++++++++++ Video decode thread started.");
 	}
 
 	if (m_pDecodeAudioThread) {
 		m_pDecodeAudioThread->start(QThread::Priority::HighPriority);
-		qDebug("++++++++++ Decode audio thread started.");
+		qDebug("++++++++++ Audio decode thread started.");
 	}
 
 	if (m_pDecodeSubtitleThread) {
 		m_pDecodeSubtitleThread->start();
-		qDebug("++++++++++ Decode subtitle thread started.");
+		qDebug("++++++++++ Subtitle decode thread started.");
 	}
 
 	if (m_pVideoPlayThread) {
@@ -1445,8 +1491,14 @@ void MainWindow::stop_play()
 {
 	// emit stop_read_packet_thread(); //stop read thread
 	// emit stop_decode_thread();		//stop v/a decode thread
-	emit stop_audio_play_thread();	//stop audio play thread
+	// emit stop_audio_play_thread();	//stop audio play thread
 	// emit stop_video_play_thread();	//stop video play thread
+
+	/*
+	* playing thread exited by emit signals,
+	* read thread and decode threads exit
+	* at VideoStateData::stream_close
+	*/
 
 	delete_video_state();
 	set_paly_control_wnd(false);
@@ -1519,13 +1571,13 @@ void MainWindow::play_control_key(Qt::Key key)
 	}
 }
 
-bool MainWindow::create_video_state(const char* filename, QThread* pThread)
+bool MainWindow::create_video_state(const char* filename)
 {
 	bool use_hardware = ui->actionHardware_decode->isChecked();
 	bool loop = ui->actionLoop_Play->isChecked();
 	assert(m_pVideoState == nullptr);
 	if (m_pVideoState == nullptr) {
-		m_pVideoState = std::make_unique<VideoStateData>(pThread, use_hardware, loop);
+		m_pVideoState = std::make_unique<VideoStateData>(use_hardware, loop);
 		int ret = m_pVideoState->create_video_state(filename);
 		m_pVideoState->print_state();
 		if (ret < 0) {
@@ -1659,7 +1711,7 @@ bool MainWindow::create_video_play_thread() //video play thread
 			connect(m_pVideoPlayThread.get(), &VideoPlayThread::finished, this, &MainWindow::video_play_stopped);
 			connect(m_pVideoPlayThread.get(), &VideoPlayThread::frame_ready, this, &MainWindow::image_ready);
 			connect(m_pVideoPlayThread.get(), &VideoPlayThread::subtitle_ready, this, &MainWindow::subtitle_ready);
-			//connect(this, &MainWindow::stop_video_play_thread, m_pVideoPlayThread.get(), &VideoPlayThread::stop_thread);
+			connect(this, &MainWindow::stop_video_play_thread, m_pVideoPlayThread.get(), &VideoPlayThread::stop_thread);
 
 			AVCodecContext* pVideo = m_pVideoState->get_contex(AVMEDIA_TYPE_VIDEO);
 			bool bHardware = m_pVideoState->is_hardware_decode();
@@ -1718,11 +1770,11 @@ bool MainWindow::create_audio_play_thread()
 			if (!ret) {
 				qWarning("audio play init resample param failed.");
 				return false;
-		}
+			}
 #endif
 			return true;
+		}
 	}
-}
 	return false;
 }
 
@@ -1732,8 +1784,9 @@ bool MainWindow::start_play_thread()
 
 	m_pBeforePlayThread = std::make_unique<StartPlayThread>(this);
 	// connect(m_pBeforePlayThread.get(), &StartPlayThread::finished, m_pBeforePlayThread.get(), &QObject::deleteLater);
-	connect(m_pBeforePlayThread.get(), &StartPlayThread::init_audio, this, &MainWindow::play_started);
+	connect(m_pBeforePlayThread.get(), &StartPlayThread::audio_device_init, this, &MainWindow::play_started);
 	m_pBeforePlayThread->start();
+	qDebug("++++++++++ start play thread(audio device initial) started.");
 	return true;
 }
 
@@ -1914,7 +1967,7 @@ void MainWindow::subtitle_ready(const QString& text)
 void MainWindow::set_subtitle(const QString& str)
 {
 	m_subtitle = str;
-	qDebug("receive subtitle: %s", qUtf8Printable(m_subtitle));
+	qDebug() << "subtitle received:" << m_subtitle;
 }
 
 void MainWindow::clear_subtitle_str()
@@ -1934,12 +1987,6 @@ void MainWindow::read_packet_stopped()
 	if (m_pPacketReadThread != nullptr) {
 		m_pPacketReadThread.reset();
 		qDebug("************* Read  packets thread stopped.");
-	}
-
-	if (m_pVideoState) {
-		VideoState* pState = m_pVideoState->get_state();
-		if (pState)
-			pState->read_thread_exit = 1;
 	}
 
 	stop_play();
@@ -1969,13 +2016,11 @@ void MainWindow::decode_subtitle_stopped()
 void MainWindow::audio_play_stopped()
 {
 	m_pAudioPlayThread.reset();
-	qDebug("************* Audio play stopped.");
+	qDebug("************* Audio play thread stopped.");
 
 	set_default_bkground();
 
 	show_audio_effect(false);
-	if (m_audio_effect_wnd)
-		m_audio_effect_wnd->paint_clear();
 
 	update_menus();
 }
@@ -1983,7 +2028,7 @@ void MainWindow::audio_play_stopped()
 void MainWindow::video_play_stopped()
 {
 	m_pVideoPlayThread.reset();
-	qDebug("************* Audio play stopped.");
+	qDebug("************* Video play thread stopped.");
 
 	set_default_bkground();
 	update_menus();
@@ -1994,7 +2039,7 @@ void MainWindow::displayStatusMessage(const QString& message)
 	statusBar()->showMessage(message, 5000);  // A 5 second timeout
 }
 
-void MainWindow::print_decodeContext(const AVCodecContext* pDecodeCtx, bool bVideo)
+void MainWindow::print_decodeContext(const AVCodecContext* pDecodeCtx, bool bVideo) const
 {
 	assert(pDecodeCtx);
 	if (bVideo) {
@@ -2210,8 +2255,8 @@ bool MainWindow::start_youtube_url_thread(const YoutubeUrlDlg::YoutubeUrlData& d
 	m_pYoutubeUrlThread = std::make_unique<YoutubeUrlThread>(data, this);
 	connect(m_pYoutubeUrlThread.get(), &YoutubeUrlThread::resultReady, this, &MainWindow::start_to_play);
 	connect(m_pYoutubeUrlThread.get(), &YoutubeUrlThread::resultFailed, this, &MainWindow::play_failed);
-
 	m_pYoutubeUrlThread->start();
+	qDebug("++++++++++ youtube url parsing thread started.");
 	return true;
 }
 

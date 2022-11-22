@@ -10,7 +10,7 @@ public:
 	explicit StartPlayThread(QObject* parent = Q_NULLPTR);
 	~StartPlayThread();
 signals:
-	void init_audio(bool ret);
+	void audio_device_init(bool ret);
 
 protected:
 	void run() override;

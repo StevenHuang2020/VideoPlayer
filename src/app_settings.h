@@ -40,7 +40,7 @@ private:
 	void set_value(const QString& group, const QString& key, const QVariant& value);
 	QVariant get_value(const QString& group, const QString& key) const;
 	QVariant get_value(SectionID id, const QString& key) const;
-
+	inline static QString group_key(const QString& group, const QString& key);
 private:
 	std::unique_ptr <QSettings> m_pSettings;
 	static const Section m_sections[];

@@ -16,14 +16,13 @@ int64_t start_time = AV_NOPTS_VALUE;
 static AVBufferRef* hw_device_ctx = nullptr;
 static enum AVPixelFormat hw_pix_fmt;
 
-VideoStateData::VideoStateData(QThread* pThread, bool use_hardware, bool loop_play)
-	: m_pState(nullptr), m_pReadThreadId(pThread)
+VideoStateData::VideoStateData(bool use_hardware, bool loop_play)
+	: m_pState(nullptr)
 	, m_bHasVideo(false), m_bHasAudio(false), m_bHasSubtitle(false)
 	, m_avctxVideo(nullptr), m_avctxAudio(nullptr)
 	, m_avctxSubtitle(nullptr), m_bUseHardware(use_hardware)
 	, m_bHardwareSuccess(false), m_bLoopPlay(loop_play)
 {
-	//m_hw_device_ctx = nullptr;
 }
 
 VideoStateData::~VideoStateData()
@@ -261,8 +260,8 @@ VideoState* VideoStateData::stream_open(const char* filename, const AVInputForma
 	is->audio_volume = startup_volume;
 	is->muted = 0;
 	is->av_sync_type = av_sync_type;
-	is->read_tid = m_pReadThreadId;
-	is->read_thread_exit = -1;
+	//is->read_tid = m_pReadThreadId;
+	//is->read_thread_exit = -1;
 	is->loop = int(m_bLoopPlay);
 #if USE_AVFILTER_AUDIO
 	is->audio_speed = 1.0;
@@ -273,17 +272,99 @@ fail:
 	return nullptr;
 }
 
+void VideoStateData::threads_setting(VideoState* is, const Threads& threads)
+{
+	if (is == nullptr)
+		return;
+
+	assert(is->threads.read_tid == nullptr);
+	assert(is->threads.video_decode_tid == nullptr);
+	assert(is->threads.audio_decode_tid == nullptr);
+	assert(is->threads.video_play_tid == nullptr);
+	assert(is->threads.audio_play_tid == nullptr);
+	assert(is->threads.subtitle_decode_tid == nullptr);
+
+	is->threads = threads;
+}
+
+void VideoStateData::playing_threads_exit_wait(VideoState* is)
+{
+	if (is == nullptr)
+		return;
+
+	if (is->threads.read_tid) {
+		av_log(nullptr, AV_LOG_INFO, "read thread wait before!\n");
+		is->threads.read_tid->wait();
+		av_log(nullptr, AV_LOG_INFO, "read thread wait after!\n");
+		is->threads.read_tid = nullptr;
+	}
+
+	/*if (is->threads.video_play_tid) {
+		av_log(nullptr, AV_LOG_INFO, "video play thread wait before!\n");
+		is->threads.video_play_tid->wait();
+		av_log(nullptr, AV_LOG_INFO, "video play thread wait after!\n");
+		is->threads.video_play_tid = nullptr;
+	}
+
+	if (is->threads.audio_play_tid) {
+		av_log(nullptr, AV_LOG_INFO, "audio play thread wait before!\n");
+		is->threads.audio_play_tid->wait();
+		av_log(nullptr, AV_LOG_INFO, "audio play thread wait after!\n");
+		is->threads.audio_play_tid = nullptr;
+	}*/
+}
+
+void VideoStateData::threads_exit_wait(VideoState* is)
+{
+	if (is == nullptr)
+		return;
+
+	if (is->threads.read_tid) {
+		is->threads.read_tid->wait();
+		is->threads.read_tid = nullptr;
+	}
+
+	if (is->threads.video_play_tid) {
+		is->threads.video_play_tid->wait();
+		is->threads.video_play_tid = nullptr;
+	}
+
+	if (is->threads.audio_play_tid) {
+		is->threads.audio_play_tid->wait();
+		is->threads.audio_play_tid = nullptr;
+	}
+
+	if (is->threads.video_decode_tid) {
+		is->threads.video_decode_tid->wait();
+		is->threads.video_decode_tid = nullptr;
+	}
+
+	if (is->threads.audio_decode_tid) {
+		is->threads.audio_decode_tid->wait();
+		is->threads.audio_decode_tid = nullptr;
+	}
+
+	if (is->threads.subtitle_decode_tid) {
+		is->threads.subtitle_decode_tid->wait();
+		is->threads.subtitle_decode_tid = nullptr;
+	}
+}
+
 void VideoStateData::stream_close(VideoState* is)
 {
 	assert(is);
-	/* XXX: use a special url_shutdown call to abort parse cleanly */
+
 	is->abort_request = 1;
 
-	if (is->read_thread_exit == 0)
-	{
-		// SDL_WaitThread(is->read_tid, nullptr);
-		((QThread*)(is->read_tid))->wait();
-	}
+	playing_threads_exit_wait(is);
+
+	//if (is->read_thread_exit == 0)
+	//{
+	//	// SDL_WaitThread(is->read_tid, nullptr);
+	//	((QThread*)(is->read_tid))->wait();
+	//	/*if (m_pReadThreadId)
+	//		m_pReadThreadId->wait();*/
+	//}
 
 	/* close each stream */
 	if (is->audio_stream >= 0)
@@ -292,6 +373,8 @@ void VideoStateData::stream_close(VideoState* is)
 		stream_component_close(is, is->video_stream);
 	if (is->subtitle_stream >= 0)
 		stream_component_close(is, is->subtitle_stream);
+
+	threads_exit_wait(is); //read and decode threads exit here.
 
 	avformat_close_input(&is->ic);
 

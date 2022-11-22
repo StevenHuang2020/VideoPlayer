@@ -37,8 +37,7 @@ void AppSettings::print_settings() const
 			m_pSettings->beginGroup(group);
 			qDebug() << "group:" << group;
 			for (const QString& key : m_pSettings->childKeys()) {
-				QString str = QString("key:%1, value:%2").arg(key).arg(m_pSettings->value(key).toString());
-				qDebug() << str;
+				qDebug() << QString("key:%1, value:%2").arg(key).arg(m_pSettings->value(key).toString());
 			}
 			m_pSettings->endGroup();
 		}
@@ -51,12 +50,6 @@ void AppSettings::set_value(SectionID id, const QString& key, const QVariant& va
 		set_value(QString(m_sections[id].str), key, value);
 }
 
-void AppSettings::set_value(const QString& group, const QString& key, const QVariant& value)
-{
-	QString key_str = group + "/" + key;
-	m_pSettings->setValue(key_str, value);
-}
-
 QVariant AppSettings::get_value(SectionID id, const QString& key) const
 {
 	if (id > SECTION_ID_NONE && id < SECTION_ID_MAX) {
@@ -66,10 +59,19 @@ QVariant AppSettings::get_value(SectionID id, const QString& key) const
 	return QVariant(QVariant::Invalid);
 }
 
+inline QString AppSettings::group_key(const QString& group, const QString& key)
+{
+	return group + "/" + key;
+}
+
+void AppSettings::set_value(const QString& group, const QString& key, const QVariant& value)
+{
+	m_pSettings->setValue(group_key(group, key), value);
+}
+
 QVariant AppSettings::get_value(const QString& group, const QString& key) const
 {
-	QString key_str = group + "/" + key;
-	return m_pSettings->value(key_str);
+	return m_pSettings->value(group_key(group, key));
 }
 
 void AppSettings::set_general(const QString& key, const QVariant& value)

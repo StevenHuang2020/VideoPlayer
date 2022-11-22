@@ -38,6 +38,9 @@ void AudioDecodeThread::run()
 		return;
 
 	do {
+		if (is->abort_request)
+			break;
+
 		if ((got_frame = decoder_decode_frame(&is->auddec, frame, nullptr)) < 0)
 			goto the_end;
 

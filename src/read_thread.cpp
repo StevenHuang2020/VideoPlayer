@@ -51,7 +51,7 @@ int ReadThread::loop_read()
 		return ret;
 	}
 
-	is->read_thread_exit = 0;
+	// is->read_thread_exit = 0;
 
 	for (;;)
 	{
@@ -186,9 +186,9 @@ void ReadThread::run()
 {
 	int ret = loop_read();
 	if (ret < 0) {
-		qDebug("-------- Read  packets thread exit, with error=%d\n", ret);
+		qDebug("-------- Read packets thread exit, with error=%d\n", ret);
 	}
 	else {
-		qDebug("-------- Read  packets thread exit.");
+		qDebug("-------- Read packets thread exit.");
 	}
 }

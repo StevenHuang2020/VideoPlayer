@@ -34,6 +34,9 @@
   <property name="windowTitle">
    <string>About</string>
   </property>
+  <property name="locale">
+   <locale language="English" country="NewZealand"/>
+  </property>
   <property name="modal">
    <bool>true</bool>
   </property>

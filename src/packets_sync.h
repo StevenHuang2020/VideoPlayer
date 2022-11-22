@@ -174,6 +174,15 @@ typedef struct Decoder {
 	char* decoder_name;
 } Decoder;
 
+typedef struct Threads {
+	QThread* read_tid;
+	QThread* video_decode_tid;
+	QThread* audio_decode_tid;
+	QThread* video_play_tid;
+	QThread* audio_play_tid;
+	QThread* subtitle_decode_tid;
+}Threads;
+
 typedef struct VideoState {
 	const AVInputFormat* iformat;
 	int abort_request;
@@ -297,12 +306,11 @@ typedef struct VideoState {
 
 	int last_video_stream, last_audio_stream, last_subtitle_stream;
 
-	// SDL_Thread* read_tid;
-	// SDL_cond* continue_read_thread;
-
 	QWaitCondition* continue_read_thread;
-	int read_thread_exit;
-	void* read_tid; //read thread pointer
+	// int read_thread_exit;
+	// void* read_tid; //read thread pointer
+
+	Threads threads; //all thread would access VideoState
 } VideoState;
 
 

@@ -57,7 +57,7 @@ void VideoPlayThread::run()
 			video_refresh(is, &remaining_time);
 	}
 
-	qDebug("--------video play thread exit.");
+	qDebug("-------- Video play thread exit.");
 }
 
 void VideoPlayThread::video_refresh(VideoState* is, double* remaining_time)

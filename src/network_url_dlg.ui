@@ -31,6 +31,9 @@
   <property name="windowTitle">
    <string>Open Network Media</string>
   </property>
+  <property name="locale">
+   <locale language="English" country="NewZealand"/>
+  </property>
   <widget class="QWidget" name="gridLayoutWidget">
    <property name="geometry">
     <rect>

@@ -35,7 +35,7 @@ AudioPlayThread::AudioPlayThread(QObject* parent, VideoState* pState)
 
 AudioPlayThread::~AudioPlayThread()
 {
-	stop_thread();
+	//stop_thread();
 	stop_device();
 	final_resample_param();
 }
@@ -174,10 +174,12 @@ void AudioPlayThread::run()
 
 		if (!isnan(is->audio_clock)) {
 			AVCodecContext* pAudioCodex = is->auddec.avctx;
-			int bytes_per_sec = av_samples_get_buffer_size(nullptr, pAudioCodex->ch_layout.nb_channels, pAudioCodex->sample_rate, AV_SAMPLE_FMT_S16, 1);
-			int64_t audio_callback_time = av_gettime_relative();
-			set_clock_at(&is->audclk, is->audio_clock - (double)(audio_size) / bytes_per_sec, is->audio_clock_serial, audio_callback_time / 1000000.0);
-			sync_clock_to_slave(&is->extclk, &is->audclk);
+			if (pAudioCodex) {
+				int bytes_per_sec = av_samples_get_buffer_size(nullptr, pAudioCodex->ch_layout.nb_channels, pAudioCodex->sample_rate, AV_SAMPLE_FMT_S16, 1);
+				int64_t audio_callback_time = av_gettime_relative();
+				set_clock_at(&is->audclk, is->audio_clock - (double)(audio_size) / bytes_per_sec, is->audio_clock_serial, audio_callback_time / 1000000.0);
+				sync_clock_to_slave(&is->extclk, &is->audclk);
+			}
 		}
 	}
 
@@ -199,6 +201,9 @@ int AudioPlayThread::audio_decode_frame(VideoState* is)
 				av_usleep(1000);
 				//return -1;
 			}
+
+			if (is->abort_request)
+				break;
 		}
 
 		if (!(af = frame_queue_peek_readable(&is->sampq)))
@@ -286,15 +291,15 @@ int AudioPlayThread::audio_decode_frame(VideoState* is)
 #if (!NDEBUG && PRINT_PACKETQUEUE_AUDIO_INFO)
 	{
 		static double last_clock;
-		qDebug("audio: delay=%0.3f clock=%0.3f clock0=%0.3f\n",
+		qDebug("audio: delay=%0.3f clock=%0.3f\n",
 			is->audio_clock - last_clock,
-			is->audio_clock, audio_clock0);
+			is->audio_clock);
 		last_clock = is->audio_clock;
 	}
 #endif
 
 	return data_size;
-	}
+}
 
 bool AudioPlayThread::init_resample_param(AVCodecContext* pAudio, AVSampleFormat sample_fmt, VideoState* is)
 {

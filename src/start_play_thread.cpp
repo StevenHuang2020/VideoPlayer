@@ -53,11 +53,11 @@ void StartPlayThread::run()
 				}
 			}
 		}
-	}	
+	}
 
-	emit init_audio(ret);
+	emit audio_device_init(ret);
 #if !NDEBUG
 	qDebug("Start play operation took %d milliseconds", timer.elapsed());
 #endif
-	qDebug("-------- start play thread exit,ret=%d.", ret);
+	qDebug("-------- start play thread(audio device initial) exit,ret=%d.", ret);
 }

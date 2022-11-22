@@ -47,6 +47,10 @@ void VideoDecodeThread::run()
 		return;
 
 	for (;;) {
+
+		if (is->abort_request)
+			break;
+
 		ret = get_video_frame(is, frame); //decode audio/video/subtitle
 		if (ret < 0)
 			goto the_end;

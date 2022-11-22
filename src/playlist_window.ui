@@ -9,12 +9,21 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>347</width>
-    <height>270</height>
+    <width>480</width>
+    <height>500</height>
    </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>480</width>
+    <height>500</height>
+   </size>
   </property>
   <property name="windowTitle">
    <string>Playlist</string>
+  </property>
+  <property name="locale">
+   <locale language="English" country="NewZealand"/>
   </property>
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">

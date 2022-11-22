@@ -10,7 +10,7 @@
 
 class VideoStateData {
 public:
-	explicit VideoStateData(QThread* pThread, bool use_hardware = false, bool loop_play = false);
+	explicit VideoStateData(bool use_hardware = false, bool loop_play = false);
 	virtual ~VideoStateData();
 
 public:
@@ -23,6 +23,7 @@ public:
 	void delete_video_state();
 	VideoState* get_state() const;
 	void print_state() const;
+	void threads_setting(VideoState* is, const Threads& threads);
 
 private:
 	VideoState* stream_open(const char* filename, const AVInputFormat* iformat = NULL);
@@ -35,9 +36,11 @@ private:
 	bool open_hardware(AVCodecContext* avctx, const AVCodec* codec, const char* device = "dxva2");
 	void close_hardware();
 
+	void playing_threads_exit_wait(VideoState* is);
+	void threads_exit_wait(VideoState* is);
+
 private:
 	VideoState* m_pState;
-	QThread* m_pReadThreadId;
 
 	bool m_bHasVideo;
 	bool m_bHasAudio;

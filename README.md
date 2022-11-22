@@ -39,6 +39,8 @@ cmake --build . --config Release
 ```
 
 ##### History
+
+- v2.0.10，updated thread exit control, fixed crash bug;
 - v2.0.9，added netowrk url; bug fixed;
 - v2.0.8, clickable progressbar; play speed bug fixed; added play list;
 - v2.0.7, audio visualization; youtube url open options; menu updates;
