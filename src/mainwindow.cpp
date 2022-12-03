@@ -781,6 +781,11 @@ void MainWindow::on_actionLine_triggered()
 	popup_audio_effect();
 }
 
+void MainWindow::on_actionPie_triggered()
+{
+	popup_audio_effect();
+}
+
 void MainWindow::resize_window(int width, int height)
 {
 	QPoint pt = this->pos();
@@ -2231,6 +2236,7 @@ void MainWindow::create_avisual_action_group()
 	m_AVisualGrapicTypeActsGroup = std::make_unique<QActionGroup>(this);
 	m_AVisualGrapicTypeActsGroup->addAction(ui->actionLine);
 	m_AVisualGrapicTypeActsGroup->addAction(ui->actionBar);
+	m_AVisualGrapicTypeActsGroup->addAction(ui->actionPie);
 
 	m_AVisualTypeActsGroup = std::make_unique<QActionGroup>(this);
 	m_AVisualTypeActsGroup->addAction(ui->actionSampling);
@@ -2240,8 +2246,12 @@ void MainWindow::create_avisual_action_group()
 BarHelper::VisualFormat MainWindow::get_avisual_format() const
 {
 	BarHelper::VisualFormat fmt = { BarHelper::e_GtLine, BarHelper::e_VtSampleing };
-	if (ui->actionBar->isChecked())
+	if (ui->actionBar->isChecked()) {
 		fmt.gType = BarHelper::e_GtBar;
+	}
+	else if (ui->actionPie->isChecked()) {
+		fmt.gType = BarHelper::e_GtPie;
+	}
 
 	if (ui->actionFrequency->isChecked())
 		fmt.vType = BarHelper::e_VtFrequency;

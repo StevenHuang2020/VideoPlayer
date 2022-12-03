@@ -51,12 +51,13 @@ int ReadThread::loop_read()
 		return ret;
 	}
 
-	// is->read_thread_exit = 0;
+	is->read_thread_exit = 0;
 
 	for (;;)
 	{
 		if (is->abort_request)
 			break;
+
 		if (is->paused != is->last_paused) {
 			is->last_paused = is->paused;
 			if (is->paused)
@@ -132,12 +133,12 @@ int ReadThread::loop_read()
 				if (is->subtitle_stream >= 0)
 					packet_queue_put_nullpacket(&is->subtitleq, pkt, is->subtitle_stream);
 
-				if (is->loop) { //loop
+				if (is->loop) {
 					stream_seek(is, 0, 0, 0);
 				}
 				else {
 					is->eof = 1;
-					break; //add steven for auto exit read thread
+					break; //added for auto exit read thread
 				}
 			}
 			if (is->ic->pb && is->ic->pb->error) {
@@ -178,6 +179,7 @@ int ReadThread::loop_read()
 		//print_state_info(is);
 	}
 
+	is->read_thread_exit = -1;
 	av_packet_free(&pkt);
 	return 0;
 }

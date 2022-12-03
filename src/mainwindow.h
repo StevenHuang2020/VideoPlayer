@@ -121,6 +121,7 @@ private slots:
 	void on_actionFrequency_triggered();
 	void on_actionBar_triggered();
 	void on_actionLine_triggered();
+	void on_actionPie_triggered();
 	void on_actionPlayList_triggered();
 	void on_actionOpenNetwoekUrl_triggered();
 	void on_actionOriginalSize_triggered();

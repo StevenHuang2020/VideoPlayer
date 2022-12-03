@@ -165,6 +165,7 @@
      </property>
      <addaction name="actionBar"/>
      <addaction name="actionLine"/>
+     <addaction name="actionPie"/>
      <addaction name="separator"/>
      <addaction name="actionSampling"/>
      <addaction name="actionFrequency"/>
@@ -502,6 +503,14 @@
   <action name="actionOriginalSize">
    <property name="text">
     <string>Original Size</string>
+   </property>
+  </action>
+  <action name="actionPie">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Pie</string>
    </property>
   </action>
  </widget>

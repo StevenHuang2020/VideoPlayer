@@ -13,7 +13,7 @@
 #include "packets_sync.h"
 
 
-#define BUFFER_LEN 5000 //1024
+#define BUFFER_LEN 8192 //1024
 
 typedef struct AudioData {
 	uint16_t len;

@@ -48,8 +48,8 @@ void VideoDecodeThread::run()
 
 	for (;;) {
 
-		if (is->abort_request)
-			break;
+		/*if (is->abort_request)
+			break;*/
 
 		ret = get_video_frame(is, frame); //decode audio/video/subtitle
 		if (ret < 0)

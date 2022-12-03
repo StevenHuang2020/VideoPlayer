@@ -247,7 +247,9 @@ int AudioPlayThread::audio_decode_frame(VideoState* is)
 
 	if (m_bSendToVisual) {
 		AudioData data;
-		assert(data_size < BUFFER_LEN);
+		if (data_size > BUFFER_LEN) {
+			qDebug() << "audio frame is too long,data_size:" << data_size << ", buffer_len:" << BUFFER_LEN << "\n";
+		}
 
 		int len = std::min(data_size, BUFFER_LEN);
 		memcpy(data.buffer, buffer_audio, len);

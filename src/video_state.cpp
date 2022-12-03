@@ -12,8 +12,6 @@
 
 int infinite_buffer = -1;
 int64_t start_time = AV_NOPTS_VALUE;
-
-static AVBufferRef* hw_device_ctx = nullptr;
 static enum AVPixelFormat hw_pix_fmt;
 
 VideoStateData::VideoStateData(bool use_hardware, bool loop_play)
@@ -21,7 +19,7 @@ VideoStateData::VideoStateData(bool use_hardware, bool loop_play)
 	, m_bHasVideo(false), m_bHasAudio(false), m_bHasSubtitle(false)
 	, m_avctxVideo(nullptr), m_avctxAudio(nullptr)
 	, m_avctxSubtitle(nullptr), m_bUseHardware(use_hardware)
-	, m_bHardwareSuccess(false), m_bLoopPlay(loop_play)
+	, m_bHardwareSuccess(false), m_hw_device_ctx(nullptr), m_bLoopPlay(loop_play)
 {
 }
 
@@ -261,8 +259,11 @@ VideoState* VideoStateData::stream_open(const char* filename, const AVInputForma
 	is->muted = 0;
 	is->av_sync_type = av_sync_type;
 	//is->read_tid = m_pReadThreadId;
-	//is->read_thread_exit = -1;
+	is->read_thread_exit = -1;
 	is->loop = int(m_bLoopPlay);
+
+	is->threads = { nullptr };
+
 #if USE_AVFILTER_AUDIO
 	is->audio_speed = 1.0;
 #endif
@@ -287,8 +288,11 @@ void VideoStateData::threads_setting(VideoState* is, const Threads& threads)
 	is->threads = threads;
 }
 
-void VideoStateData::playing_threads_exit_wait(VideoState* is)
+void VideoStateData::read_thread_exit_wait(VideoState* is)
 {
+	if (is->read_thread_exit != 0)
+		return;
+
 	if (is == nullptr)
 		return;
 
@@ -298,31 +302,12 @@ void VideoStateData::playing_threads_exit_wait(VideoState* is)
 		av_log(nullptr, AV_LOG_INFO, "read thread wait after!\n");
 		is->threads.read_tid = nullptr;
 	}
-
-	/*if (is->threads.video_play_tid) {
-		av_log(nullptr, AV_LOG_INFO, "video play thread wait before!\n");
-		is->threads.video_play_tid->wait();
-		av_log(nullptr, AV_LOG_INFO, "video play thread wait after!\n");
-		is->threads.video_play_tid = nullptr;
-	}
-
-	if (is->threads.audio_play_tid) {
-		av_log(nullptr, AV_LOG_INFO, "audio play thread wait before!\n");
-		is->threads.audio_play_tid->wait();
-		av_log(nullptr, AV_LOG_INFO, "audio play thread wait after!\n");
-		is->threads.audio_play_tid = nullptr;
-	}*/
 }
 
 void VideoStateData::threads_exit_wait(VideoState* is)
 {
 	if (is == nullptr)
 		return;
-
-	if (is->threads.read_tid) {
-		is->threads.read_tid->wait();
-		is->threads.read_tid = nullptr;
-	}
 
 	if (is->threads.video_play_tid) {
 		is->threads.video_play_tid->wait();
@@ -356,12 +341,12 @@ void VideoStateData::stream_close(VideoState* is)
 
 	is->abort_request = 1;
 
-	playing_threads_exit_wait(is);
+	read_thread_exit_wait(is);
 
 	//if (is->read_thread_exit == 0)
 	//{
 	//	// SDL_WaitThread(is->read_tid, nullptr);
-	//	((QThread*)(is->read_tid))->wait();
+	//	//((QThread*)(is->read_tid))->wait();
 	//	/*if (m_pReadThreadId)
 	//		m_pReadThreadId->wait();*/
 	//}
@@ -402,6 +387,7 @@ void VideoStateData::stream_close(VideoState* is)
 		SDL_DestroyTexture(is->vid_texture);
 	if (is->sub_texture)
 		SDL_DestroyTexture(is->sub_texture);*/
+
 	av_free(is);
 }
 
@@ -416,16 +402,30 @@ static enum AVPixelFormat get_hw_format(AVCodecContext* ctx, const enum AVPixelF
 	return AV_PIX_FMT_NONE;
 }
 
-static int hw_decoder_init(AVCodecContext* ctx, const enum AVHWDeviceType type)
+//static int hw_decoder_init(AVCodecContext* ctx, const enum AVHWDeviceType type)
+//{
+//	int err = 0;
+//
+//	if ((err = av_hwdevice_ctx_create(&hw_device_ctx, type, nullptr, nullptr, 0)) < 0) {
+//		fprintf(stderr, "Failed to create specified HW device.\n");
+//		return err;
+//	}
+//
+//	ctx->hw_device_ctx = av_buffer_ref(hw_device_ctx);
+//
+//	return err;
+//}
+
+int VideoStateData::hw_decoder_init(AVCodecContext* ctx, const enum AVHWDeviceType type)
 {
 	int err = 0;
 
-	if ((err = av_hwdevice_ctx_create(&hw_device_ctx, type, nullptr, nullptr, 0)) < 0) {
+	if ((err = av_hwdevice_ctx_create(&m_hw_device_ctx, type, nullptr, nullptr, 0)) < 0) {
 		fprintf(stderr, "Failed to create specified HW device.\n");
 		return err;
 	}
 
-	ctx->hw_device_ctx = av_buffer_ref(hw_device_ctx);
+	ctx->hw_device_ctx = av_buffer_ref(m_hw_device_ctx);
 
 	return err;
 }
@@ -445,7 +445,7 @@ bool VideoStateData::open_hardware(AVCodecContext* avctx, const AVCodec* codec, 
 
 void VideoStateData::close_hardware()
 {
-	av_buffer_unref(&hw_device_ctx);
+	av_buffer_unref(&m_hw_device_ctx);
 }
 
 int VideoStateData::stream_component_open(VideoState* is, int stream_index)

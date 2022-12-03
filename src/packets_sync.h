@@ -307,7 +307,7 @@ typedef struct VideoState {
 	int last_video_stream, last_audio_stream, last_subtitle_stream;
 
 	QWaitCondition* continue_read_thread;
-	// int read_thread_exit;
+	int read_thread_exit;
 	// void* read_tid; //read thread pointer
 
 	Threads threads; //all thread would access VideoState

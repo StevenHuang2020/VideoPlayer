@@ -35,8 +35,8 @@ private:
 	enum AVPixelFormat get_hwdevice_decoder(const AVCodec* decoder, enum AVHWDeviceType type) const;
 	bool open_hardware(AVCodecContext* avctx, const AVCodec* codec, const char* device = "dxva2");
 	void close_hardware();
-
-	void playing_threads_exit_wait(VideoState* is);
+	int hw_decoder_init(AVCodecContext* ctx, const enum AVHWDeviceType type);
+	void read_thread_exit_wait(VideoState* is);
 	void threads_exit_wait(VideoState* is);
 
 private:
@@ -53,7 +53,7 @@ private:
 	/**hardware decode**/
 	bool m_bUseHardware;
 	bool m_bHardwareSuccess;
-	//AVBufferRef* m_hw_device_ctx;
+	AVBufferRef* m_hw_device_ctx;
 	//enum AVPixelFormat m_hw_pix_fmt;
 	bool m_bLoopPlay;
 };
