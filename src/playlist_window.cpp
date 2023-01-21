@@ -224,7 +224,7 @@ QString PlayListWnd::get_file_name(const QString& path)
 	return fileInfo.baseName();
 }
 
-QString PlayListWnd::get_file_duration(const QString& file)
+QString PlayListWnd::get_file_duration(const QString& file) const
 {
 	int64_t duration = 0;
 	get_file_info(file.toStdString().c_str(), duration);

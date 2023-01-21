@@ -83,10 +83,9 @@ void YoutubeUrlDlg::set_options_index(int id)
 	ui->comboBox->setCurrentIndex(id);
 }
 
-YoutubeUrlDlg::YoutubeUrlData YoutubeUrlDlg::get_data() const
+bool YoutubeUrlDlg::get_data(YoutubeUrlData& data) const
 {
-	YoutubeUrlData data;
 	data.url = get_url();
 	data.option = get_options();
-	return data;
+	return true;
 }

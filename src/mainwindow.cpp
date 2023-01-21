@@ -85,11 +85,16 @@ MainWindow::MainWindow(QWidget* parent)
 	connect(&m_timer, &QTimer::timeout, this, &MainWindow::check_hide_play_control);
 #endif
 
-	connect(ui->actionAbout_QT, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
-
 	resize_window();
 	read_settings();
 	update_menus();
+
+	connect(ui->actionAbout_QT, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
+	connect(ui->actionSampling, &QAction::triggered, this, &MainWindow::popup_audio_effect);
+	connect(ui->actionFrequency, &QAction::triggered, this, &MainWindow::popup_audio_effect);
+	connect(ui->actionLine, &QAction::triggered, this, &MainWindow::popup_audio_effect);
+	connect(ui->actionBar, &QAction::triggered, this, &MainWindow::popup_audio_effect);
+	connect(ui->actionPie, &QAction::triggered, this, &MainWindow::popup_audio_effect);
 }
 
 MainWindow::~MainWindow()
@@ -475,7 +480,7 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
 		on_actionOriginalSize_triggered();
 		break;
 
-	case Qt::Key_L:			//keep orginal size
+	case Qt::Key_L:			//show play list wnd
 	{
 		show_playlist();
 		ui->actionPlayList->setChecked(true);
@@ -625,11 +630,11 @@ void MainWindow::on_actionYoutube_triggered()
 	int result = dialog.exec();
 	if (result == QDialog::Accepted) {
 
-		YoutubeUrlDlg::YoutubeUrlData data = dialog.get_data();
+		YoutubeUrlDlg::YoutubeUrlData data;
+		dialog.get_data(data);
 
 		if (data.url.isEmpty()
-			|| (!data.url.startsWith("https://www.youtube.com/", Qt::CaseInsensitive))
-			)
+			|| (!data.url.startsWith("https://www.youtube.com/", Qt::CaseInsensitive)))
 		{
 			QString str = QString("Please input a valid youtube url. ");
 			show_msg_dlg(str);
@@ -753,37 +758,12 @@ void MainWindow::set_audio_effect_format(const BarHelper::VisualFormat& fmt)
 void MainWindow::popup_audio_effect()
 {
 	if (is_playing()) {
-
-		BarHelper::VisualFormat fmt = get_avisual_format();
+		BarHelper::VisualFormat fmt;
+		get_avisual_format(fmt);
 		set_audio_effect_format(fmt);
 		show_audio_effect();
 		start_send_data();
 	}
-}
-
-void MainWindow::on_actionSampling_triggered()
-{
-	popup_audio_effect();
-}
-
-void MainWindow::on_actionFrequency_triggered()
-{
-	popup_audio_effect();
-}
-
-void MainWindow::on_actionBar_triggered()
-{
-	popup_audio_effect();
-}
-
-void MainWindow::on_actionLine_triggered()
-{
-	popup_audio_effect();
-}
-
-void MainWindow::on_actionPie_triggered()
-{
-	popup_audio_effect();
 }
 
 void MainWindow::resize_window(int width, int height)
@@ -1335,7 +1315,7 @@ bool MainWindow::start_play()
 
 	bool ret = false;
 
-	QString msg = QString("Start to play file: %1").arg(m_videoFile);
+	QString msg = QString("Start to play file: %1").arg(QDir::toNativeSeparators(m_videoFile));
 	qInfo("");
 	qInfo("%s", qPrintable(msg)); //qUtf8Printable(msg)
 	displayStatusMessage(msg);
@@ -2041,7 +2021,8 @@ void MainWindow::video_play_stopped()
 
 void MainWindow::displayStatusMessage(const QString& message)
 {
-	statusBar()->showMessage(message, 5000);  // A 5 second timeout
+	int timeout = 0; //5000: 5 second timeout
+	statusBar()->showMessage(message, timeout);
 }
 
 void MainWindow::print_decodeContext(const AVCodecContext* pDecodeCtx, bool bVideo) const
@@ -2243,9 +2224,9 @@ void MainWindow::create_avisual_action_group()
 	m_AVisualTypeActsGroup->addAction(ui->actionFrequency);
 }
 
-BarHelper::VisualFormat MainWindow::get_avisual_format() const
+bool MainWindow::get_avisual_format(BarHelper::VisualFormat& fmt) const
 {
-	BarHelper::VisualFormat fmt = { BarHelper::e_GtLine, BarHelper::e_VtSampleing };
+	fmt = { BarHelper::e_GtLine, BarHelper::e_VtSampleing };
 	if (ui->actionBar->isChecked()) {
 		fmt.gType = BarHelper::e_GtBar;
 	}
@@ -2256,7 +2237,7 @@ BarHelper::VisualFormat MainWindow::get_avisual_format() const
 	if (ui->actionFrequency->isChecked())
 		fmt.vType = BarHelper::e_VtFrequency;
 
-	return fmt;
+	return true;
 }
 
 bool MainWindow::start_youtube_url_thread(const YoutubeUrlDlg::YoutubeUrlData& data)

@@ -7,12 +7,11 @@
 // ***********************************************************/
 // 
 
-#ifndef __VERSION_H__
-#define __VERSION_H__
+#pragma once
 
 #define VERSION_MAJOR  2
-#define VERSION_MINOR  0
-#define VERSION_MICRO  10
+#define VERSION_MINOR  1
+#define VERSION_MICRO  0
 
 
 #define VERSION_DOT(a, b, c)   a.b.c
@@ -26,5 +25,3 @@
 #define STR(x) STR_HELPER(x)
 
 #define PLAYER_VERSION STR(PLAYER_VERSION_NUMBER)
-
-#endif /* end of __VERSION_H__ */

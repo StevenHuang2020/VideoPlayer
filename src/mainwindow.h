@@ -1,6 +1,4 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
-
+#pragma once
 #include <QMainWindow>
 #include <QMessageBox>
 #include <QMouseEvent>
@@ -38,6 +36,11 @@
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
+
+#define MaxRecentFiles  20  // maximum recent play files
+#define MaxSkinStlyes	20  // maximum sytyles
+#define MaxPlaylist		5	// maximum playlist numbers
+
 
 class MainWindow : public QMainWindow
 {
@@ -117,11 +120,6 @@ private slots:
 	void on_actionLoop_Play_triggered();
 	void on_actionMedia_Info_triggered();
 	void on_actionKeyboard_Usage_triggered();
-	void on_actionSampling_triggered();
-	void on_actionFrequency_triggered();
-	void on_actionBar_triggered();
-	void on_actionLine_triggered();
-	void on_actionPie_triggered();
 	void on_actionPlayList_triggered();
 	void on_actionOpenNetwoekUrl_triggered();
 	void on_actionOriginalSize_triggered();
@@ -198,7 +196,7 @@ private:
 	int get_youtube_optionid() const;
 	void set_youtube_optionid(int id);
 	void create_avisual_action_group(); //audio visual
-	BarHelper::VisualFormat get_avisual_format() const;
+	bool get_avisual_format(BarHelper::VisualFormat& fmt) const;
 	void popup_audio_effect();
 	void set_audio_effect_format(const BarHelper::VisualFormat& fmt);
 	bool start_youtube_url_thread(const YoutubeUrlDlg::YoutubeUrlData& data);
@@ -243,12 +241,8 @@ private:
 	std::unique_ptr<PlayControlWnd> m_play_control_wnd;
 	std::unique_ptr<AudioEffectGL> m_audio_effect_wnd;
 	std::unique_ptr<PlayListWnd> m_playListWnd;
-private:
-	enum {
-		MaxRecentFiles = 20,  // maximum recent play files
-		MaxSkinStlyes = 20,   // maximum sytyles
-		MaxPlaylist = 5,	  // maximum playlist numbers
-	};
+
+private:	
 	std::unique_ptr<QAction> m_recentFileActs[MaxRecentFiles];
 	std::unique_ptr<QAction> m_recentClear;
 	std::unique_ptr<QActionGroup> m_styleActsGroup; //style menus group
@@ -261,4 +255,3 @@ private:
 	std::unique_ptr<QAction> m_savedPlaylists[MaxPlaylist];
 	std::unique_ptr<QAction> m_PlaylistsClear;
 };
-#endif // MAINWINDOW_H

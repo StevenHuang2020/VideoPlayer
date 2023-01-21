@@ -1,6 +1,4 @@
-#ifndef __LOG_H__
-#define __LOG_H__
-
+#pragma once
 #include <QtDebug>
 #include <QFile>
 #include <QTextStream>
@@ -9,7 +7,6 @@
 #include <memory>
 
 void logOutput(const QtMsgType type, const QMessageLogContext& context, const QString& msg);
-
 
 class Logger {
 public:
@@ -26,5 +23,3 @@ private:
 private:
 	std::unique_ptr<QFile> m_logfile;
 };
-
-#endif /* end __LOG_H__ */

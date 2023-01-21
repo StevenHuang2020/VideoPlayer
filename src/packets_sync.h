@@ -3,8 +3,7 @@
  * @author Steven Huang
  */
 
-#ifndef __PACKETS_SYNC_H__
-#define __PACKETS_SYNC_H__
+#pragma once
 #include <QThread>
 #include <QMutex>
 #include <QWaitCondition>
@@ -409,6 +408,3 @@ int configure_filtergraph(AVFilterGraph* graph, const char* filtergraph,
 void set_video_playspeed(VideoState* is);
 int configure_video_filters(AVFilterGraph* graph, VideoState* is, const char* vfilters, AVFrame* frame);
 #endif
-
-
-#endif /* end of __PACKETS_SYNC_H__ */

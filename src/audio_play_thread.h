@@ -1,5 +1,4 @@
-#ifndef __H_AUDIO_PLAY_H__
-#define __H_AUDIO_PLAY_H__
+#pragma once
 #include <QThread>
 #include <QAudioOutput>
 #include <QAudioDeviceInfo>
@@ -79,4 +78,3 @@ private:
 	bool m_bExitThread;
 	bool m_bSendToVisual;
 };
-#endif /* end of __H_AUDIO_PLAY_H__ */

@@ -23,7 +23,7 @@ public:
 
 public:
 	void set_options_index(int id);
-	YoutubeUrlData get_data() const;
+	bool get_data(YoutubeUrlData& data) const;
 	int get_options_index() const;
 
 private:

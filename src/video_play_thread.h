@@ -1,5 +1,4 @@
-﻿#ifndef _H_VIDEO_PLAY_THREAD_H__
-#define _H_VIDEO_PLAY_THREAD_H__
+﻿#pragma once
 #include <QThread>
 #include <QDebug>
 #include <QImage>
@@ -52,4 +51,3 @@ private:
 	const static QRegularExpression m_assFilter;
 	const static QRegularExpression m_assNewLineReplacer;
 };
-#endif

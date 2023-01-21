@@ -73,7 +73,7 @@ private:
 	inline QString get_data_file(int id) const;
 	void clear_data_files();
 	void set_sel_file(const QString& file);
-	QString get_file_duration(const QString& file);
+	QString get_file_duration(const QString& file) const;
 	void create_temp_menu();
 	static QString mimeType(const QString& filePath);
 	static bool is_local(const QString& file);
