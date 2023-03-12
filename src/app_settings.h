@@ -2,6 +2,7 @@
 
 #include<QSettings>
 #include<QDebug>
+#include<QDir>
 #include<memory>
 
 class AppSettings {

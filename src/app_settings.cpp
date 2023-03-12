@@ -29,7 +29,7 @@ AppSettings::AppSettings(const QString& file)
 void AppSettings::print_settings() const
 {
 	if (m_pSettings) {
-		qDebug() << "videoplayer configure file:" << m_pSettings->fileName();
+		qDebug() << "videoplayer configure file:" << QDir::toNativeSeparators(m_pSettings->fileName());
 		qDebug() << "organizationName:" << m_pSettings->organizationName();
 		qDebug() << "applicationName:" << m_pSettings->applicationName();
 

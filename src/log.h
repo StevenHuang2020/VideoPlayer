@@ -1,10 +1,11 @@
 #pragma once
-#include <QtDebug>
-#include <QFile>
-#include <QTextStream>
-#include <QFileInfo>
-#include <QTime>
-#include <memory>
+#include<QtDebug>
+#include<QFile>
+#include<QTextStream>
+#include<QFileInfo>
+#include<QTime>
+#include<QTextCodec>
+#include<memory>
 
 void logOutput(const QtMsgType type, const QMessageLogContext& context, const QString& msg);
 
@@ -22,4 +23,5 @@ private:
 	virtual ~Logger();
 private:
 	std::unique_ptr<QFile> m_logfile;
+	std::unique_ptr<QTextStream> m_ts;
 };

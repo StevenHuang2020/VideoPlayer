@@ -1317,7 +1317,8 @@ bool MainWindow::start_play()
 
 	QString msg = QString("Start to play file: %1").arg(QDir::toNativeSeparators(m_videoFile));
 	qInfo("");
-	qInfo("%s", qPrintable(msg)); //qUtf8Printable(msg)
+	qInfo("%s", qUtf8Printable(msg)); //qPrintable(msg)
+	//qInfo("%s", msg);
 	displayStatusMessage(msg);
 
 	std::string str = m_videoFile.toStdString();

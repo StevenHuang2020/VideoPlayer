@@ -85,19 +85,27 @@ void logOutput(const QtMsgType type, const QMessageLogContext& context, const QS
 
 
 Logger::Logger(const QString& file) :
-	m_logfile(nullptr)
+	m_logfile(nullptr),
+	m_ts(nullptr)
 {
 	m_logfile = std::make_unique<QFile>(file);
-	m_logfile->open(QIODevice::WriteOnly | QIODevice::Append);
+	if (m_logfile) {
+		if (m_logfile->open(QIODevice::WriteOnly | QIODevice::Append)) {
+
+			m_ts = std::make_unique<QTextStream>(m_logfile.get());
+			m_ts->setCodec(QTextCodec::codecForName("UTF8"));
+		}
+	}
 }
 
 Logger::~Logger()
 {
-	m_logfile->close();
+	if (m_logfile)
+		m_logfile->close();
 }
 
 void Logger::log(const QString& str)
 {
-	QTextStream ts(m_logfile.get());
-	ts << str << endl;
+	if (m_ts)
+		(*m_ts) << str << endl;
 }
