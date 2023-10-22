@@ -28,9 +28,9 @@ void PlayerSkin::set_system_style(const QString& style)
     qApp->setPalette(QApplication::style()->standardPalette());
 }
 
-void PlayerSkin::set_custom_style(const QString& filename)
+void PlayerSkin::set_custom_style(const QString& name)
 {
-    QString file = appendPath(m_qss_path, filename + ".qss");
+    QString file = appendPath(m_qss_path, name + ".qss");
     QFile qss(file);
 
     if (QFileInfo::exists(file))

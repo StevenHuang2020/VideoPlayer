@@ -2374,7 +2374,7 @@ bool MainWindow::get_avisual_format(BarHelper::VisualFormat& fmt) const
     {
         fmt.gType = BarHelper::e_GtLine;
     }
-    if (ui->actionBar->isChecked())
+    else if (ui->actionBar->isChecked())
     {
         fmt.gType = BarHelper::e_GtBar;
     }
@@ -2383,9 +2383,14 @@ bool MainWindow::get_avisual_format(BarHelper::VisualFormat& fmt) const
         fmt.gType = BarHelper::e_GtPie;
     }
 
-    fmt.vType = BarHelper::e_VtSampleing;
-    if (ui->actionFrequency->isChecked())
+    if (ui->actionSampling->isChecked())
+    {
+        fmt.vType = BarHelper::e_VtSampleing;
+    }
+    else if (ui->actionFrequency->isChecked())
+    {
         fmt.vType = BarHelper::e_VtFrequency;
+    }
 
     return true;
 }
@@ -2394,10 +2399,8 @@ bool MainWindow::start_youtube_url_thread(const YoutubeUrlDlg::YoutubeUrlData& d
 {
     m_pYoutubeUrlThread.reset();
     m_pYoutubeUrlThread = std::make_unique<YoutubeUrlThread>(data, this);
-    connect(m_pYoutubeUrlThread.get(), &YoutubeUrlThread::resultReady, this,
-            &MainWindow::start_to_play);
-    connect(m_pYoutubeUrlThread.get(), &YoutubeUrlThread::resultFailed, this,
-            &MainWindow::play_failed);
+    connect(m_pYoutubeUrlThread.get(), &YoutubeUrlThread::resultReady, this, &MainWindow::start_to_play);
+    connect(m_pYoutubeUrlThread.get(), &YoutubeUrlThread::resultFailed, this, &MainWindow::play_failed);
     m_pYoutubeUrlThread->start();
     qDebug("++++++++++ youtube url parsing thread started.");
     return true;
@@ -2406,14 +2409,11 @@ bool MainWindow::start_youtube_url_thread(const YoutubeUrlDlg::YoutubeUrlData& d
 void MainWindow::create_playlist_wnd()
 {
     m_playListWnd = std::make_unique<PlayListWnd>(this);
-    connect(m_playListWnd.get(), &PlayListWnd::play_file, this,
-            &MainWindow::start_to_play);
+    connect(m_playListWnd.get(), &PlayListWnd::play_file, this, &MainWindow::start_to_play);
     // connect(m_playListWnd.get(), &PlayListWnd::save_playlist_signal, this,
     // &MainWindow::save_playlist);
-    connect(m_playListWnd.get(), &PlayListWnd::hiden, this,
-            &MainWindow::playlist_hiden);
-    connect(m_playListWnd.get(), &PlayListWnd::playlist_file_saved, this,
-            &MainWindow::playlist_file_saved);
+    connect(m_playListWnd.get(), &PlayListWnd::hiden, this, &MainWindow::playlist_hiden);
+    connect(m_playListWnd.get(), &PlayListWnd::playlist_file_saved, this, &MainWindow::playlist_file_saved);
 
     /*QStringList files = m_settings.get_playlist().toStringList();
   m_playListWnd->update_files(files);*/

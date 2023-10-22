@@ -33,30 +33,26 @@ YoutubeUrlDlg::YoutubeUrlDlg(QWidget* parent)
     init_options();
 }
 
-YoutubeUrlDlg::~YoutubeUrlDlg() {}
+YoutubeUrlDlg::~YoutubeUrlDlg()
+{
+}
 
 void YoutubeUrlDlg::init_options()
 {
     QComboBox* pCombox = ui->comboBox;
     pCombox->addItems(m_options);
-
     set_options_index(0);
 }
 
 QString YoutubeUrlDlg::get_options() const
 {
-#if 1
     return ui->comboBox->currentText();
-#else
-    int id = get_options_index();
-    if (id >= 0 && id < m_options.size())
-        return m_options[id];
-
-    return QString("");
-#endif
 }
 
-QString YoutubeUrlDlg::get_url() const { return ui->lineEdit->text(); }
+QString YoutubeUrlDlg::get_url() const
+{
+    return ui->lineEdit->text();
+}
 
 int YoutubeUrlDlg::get_options_index() const
 {
@@ -75,5 +71,6 @@ bool YoutubeUrlDlg::get_data(YoutubeUrlData& data) const
 {
     data.url = get_url();
     data.option = get_options();
+    data.opt_index = get_options_index();
     return true;
 }

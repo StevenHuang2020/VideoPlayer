@@ -2,6 +2,8 @@
 
 #include <QDebug>
 #include <QThread>
+#include <QDir>
+#include <QProcess>
 #include "youtube_url_dlg.h"
 
 class YoutubeUrlThread : public QThread
@@ -17,7 +19,12 @@ signals:
 
 protected:
     void run() override;
+    void youtube_dl_exe(); // using youtube_dl.exe
+    void youtube_python(); // using python *.py
+    bool python_install_pytube();
+    bool excute_process(const QString& exec, const QStringList& params, QString& output);
 
 private:
     YoutubeUrlDlg::YoutubeUrlData m_data;
+    static bool m_bInstalledpyTube;
 };

@@ -210,7 +210,7 @@ void BarHelper::data_sample_old(std::vector<int>& v, const uint32_t num)
 
         /*for (int j = 1; j < numItems; j++) {
             value += v[i * numItems + j];
-    }*/
+        }*/
     }
 
     v.erase(v.begin() + num, v.end());

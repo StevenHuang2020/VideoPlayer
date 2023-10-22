@@ -23,6 +23,8 @@ public:
     {
         QString url;
         QString option;
+        int opt_index;
+        YoutubeUrlData() : url(""), option(""), opt_index(0) {}
     } YoutubeUrlData;
 
 public:

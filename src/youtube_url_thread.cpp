@@ -6,10 +6,10 @@
 // youtube url parsing thread
 // ***********************************************************/
 
-#include <QDir>
-#include <QProcess>
 #include "youtube_url_thread.h"
 #include "common.h"
+
+bool YoutubeUrlThread::m_bInstalledpyTube = false;
 
 YoutubeUrlThread::YoutubeUrlThread(const YoutubeUrlDlg::YoutubeUrlData& data, QObject* parent)
     : QThread(parent), m_data(data)
@@ -20,24 +20,13 @@ YoutubeUrlThread::~YoutubeUrlThread()
 {
 }
 
-void YoutubeUrlThread::run()
+bool YoutubeUrlThread::excute_process(const QString& exec, const QStringList& params, QString& output)
 {
     bool success = false;
-    QString output = "";
+    output = "";
     QProcess process;
-    QString home = QDir::currentPath();
-    QString exec = appendPath(home, "tools/youtube-dl.exe");
 
-    QStringList params;
     QProcess::ExitStatus status = QProcess::ExitStatus::CrashExit;
-
-    if (!QFile::exists(exec))
-        goto the_end;
-
-    if (m_data.url.isEmpty())
-        goto the_end;
-
-    params << "-f" << m_data.option << "-g" << m_data.url;
     process.start(exec, params);
 
     qDebug() << "Exe: " << exec << "params:" << params;
@@ -48,21 +37,89 @@ void YoutubeUrlThread::run()
     {
         output = QString(process.readAllStandardOutput());
         qDebug() << "output:" << output;
+        success = true;
+    }
 
-        if (!output.isEmpty())
+    return success;
+}
+
+void YoutubeUrlThread::youtube_dl_exe()
+{
+    QString output = "";
+    QString exec = appendPath(QDir::currentPath(), "tools/youtube-dl.exe");
+
+    QStringList params;
+    if (!QFile::exists(exec))
+        return;
+
+    if (m_data.url.isEmpty())
+        return;
+
+    params << "-f" << m_data.option << "-g" << m_data.url;
+    if (excute_process(exec, params, output) && !output.isEmpty())
+    {
+        emit resultReady(output);
+        return;
+    }
+
+    qWarning() << "Parsing url failed, url:" << m_data.url << "options:" << m_data.option;
+    emit resultFailed(m_data.url);
+}
+
+void YoutubeUrlThread::run()
+{
+    //youtube_dl_exe();
+    youtube_python();
+}
+
+void YoutubeUrlThread::youtube_python()
+{
+    if (!m_bInstalledpyTube)
+        python_install_pytube();
+
+    QString output = "";
+    QString exec = "python";
+    QString script = appendPath(QDir::currentPath(), "tools/get_yt_url.py");
+
+    QStringList params;
+    if (m_data.url.isEmpty())
+        return;
+
+    params << script << m_data.url << QString::number(m_data.opt_index);
+
+    if (excute_process(exec, params, output) && !output.isEmpty())
+    {
+        int index = output.indexOf("https://");
+        if (index > 0)
         {
-            success = true;
+            output.remove(0, index);
             emit resultReady(output);
+            return;
         }
     }
 
-the_end:
-    if (!success)
+    qWarning() << "Parsing url failed, url:" << m_data.url << "options:" << m_data.option;
+    emit resultFailed(m_data.url);
+}
+
+bool YoutubeUrlThread::python_install_pytube()
+{
+    QString output = "";
+    QString exec = "pip";
+
+    QStringList params;
+
+    params << "install"
+           << "pytube"
+           << "-q"
+           << "-U";
+
+    if (!excute_process(exec, params, output))
     {
-        qWarning() << "Parsing url failed, url:" << m_data.url << "options:" << m_data.option;
-        emit resultFailed(m_data.url);
+        qWarning() << "pip install pytube failed!";
+        return false;
     }
 
-    qDebug("-------- youtube url parsing thread exit.");
-    return;
+    m_bInstalledpyTube = true;
+    return true;
 }
