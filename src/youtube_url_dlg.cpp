@@ -5,87 +5,75 @@
 //
 // Youtube Url open dialog
 // ***********************************************************/
+
 #include <QMessageBox>
 #include "youtube_url_dlg.h"
 #include "ui_youtube_url_dlg.h"
 
-
 /* https://github.com/ytdl-org/youtube-dl  FORMAT SELECTION */
 const QStringList YoutubeUrlDlg::m_options = {
-	"best",
-	"worst",
-	"bestvideo",
-	"worstvideo",
-	"bestaudio",
-	"worstaudio"
-};
+    "best", "worst", "bestvideo", "worstvideo", "bestaudio", "worstaudio"};
 
 YoutubeUrlDlg::YoutubeUrlDlg(QWidget* parent)
-	: QDialog(parent)
-	, ui(std::make_unique<Ui::YoutubeUrlDlg>())
+    : QDialog(parent), ui(std::make_unique<Ui::YoutubeUrlDlg>())
 {
-	ui->setupUi(this);
-	setLayout(ui->gridLayout);
+    ui->setupUi(this);
+    setLayout(ui->gridLayout);
 
-	Qt::WindowFlags flags = windowFlags();
-	flags |= Qt::WindowStaysOnTopHint;
-	flags &= (~Qt::WindowMinMaxButtonsHint);
-	flags &= (~Qt::WindowContextHelpButtonHint);
+    Qt::WindowFlags flags = windowFlags();
+    flags |= Qt::WindowStaysOnTopHint;
+    flags &= (~Qt::WindowMinMaxButtonsHint);
+    flags &= (~Qt::WindowContextHelpButtonHint);
 
-	setWindowFlags(flags);
+    setWindowFlags(flags);
 
-	QObject::connect(ui->btn_Ok, SIGNAL(clicked()), this, SLOT(accept()));
-	QObject::connect(ui->btn_Cancel, SIGNAL(clicked()), this, SLOT(reject()));
+    QObject::connect(ui->btn_Ok, SIGNAL(clicked()), this, SLOT(accept()));
+    QObject::connect(ui->btn_Cancel, SIGNAL(clicked()), this, SLOT(reject()));
 
-	init_options();
+    init_options();
 }
 
-YoutubeUrlDlg::~YoutubeUrlDlg()
-{
-}
+YoutubeUrlDlg::~YoutubeUrlDlg() {}
 
 void YoutubeUrlDlg::init_options()
 {
-	QComboBox* pCombox = ui->comboBox;
-	pCombox->addItems(m_options);
+    QComboBox* pCombox = ui->comboBox;
+    pCombox->addItems(m_options);
 
-	set_options_index(0);
+    set_options_index(0);
 }
 
 QString YoutubeUrlDlg::get_options() const
 {
 #if 1
-	return ui->comboBox->currentText();
+    return ui->comboBox->currentText();
 #else
-	int id = get_options_index();
-	if (id >= 0 && id < m_options.size())
-		return m_options[id];
+    int id = get_options_index();
+    if (id >= 0 && id < m_options.size())
+        return m_options[id];
 
-	return QString("");
+    return QString("");
 #endif
 }
 
-QString YoutubeUrlDlg::get_url() const
-{
-	return ui->lineEdit->text();
-}
+QString YoutubeUrlDlg::get_url() const { return ui->lineEdit->text(); }
 
 int YoutubeUrlDlg::get_options_index() const
 {
-	return ui->comboBox->currentIndex();
+    return ui->comboBox->currentIndex();
 }
 
 void YoutubeUrlDlg::set_options_index(int id)
 {
-	if (id < 0 || id >= m_options.size())
-		id = 0;
+    if (id < 0 || id >= m_options.size())
+        id = 0;
 
-	ui->comboBox->setCurrentIndex(id);
+    ui->comboBox->setCurrentIndex(id);
 }
 
 bool YoutubeUrlDlg::get_data(YoutubeUrlData& data) const
 {
-	data.url = get_url();
-	data.option = get_options();
-	return true;
+    data.url = get_url();
+    data.option = get_options();
+    return true;
 }

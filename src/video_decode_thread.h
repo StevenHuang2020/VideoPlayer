@@ -1,18 +1,19 @@
 #pragma once
+
 #include <QThread>
 #include "packets_sync.h"
 
-
 class VideoDecodeThread : public QThread
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	explicit VideoDecodeThread(QObject* parent = nullptr, VideoState* pState = nullptr);
-	~VideoDecodeThread();
+    explicit VideoDecodeThread(QObject* parent = nullptr, VideoState* pState = nullptr);
+    ~VideoDecodeThread();
 
 protected:
-	void run() override;
+    void run() override;
+
 private:
-	VideoState* m_pState;
+    VideoState* m_pState;
 };

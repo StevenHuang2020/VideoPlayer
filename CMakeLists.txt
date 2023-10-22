@@ -3,6 +3,14 @@
 #   Author: Steven Huang
 #   Date: 21/May/22
 #   Location: AKL, NZ
+#   Usage of this CMakeLists.txt
+#
+#   cd CMakeLists.txt folder
+#   mkdir build
+#   cd build
+#   cmake .. -G "Visual Studio 16 2019" -T host=x64 -A x64
+#   cmake --build .       //build debug
+#   cmake --build . --config Release      //build release
 #-------------------------------------------------------------------------------
 
 
@@ -18,7 +26,7 @@ set(QT_MINIMUM_VERSION 5.9)
 #-------------------------------------------------------------------------------
 
 # .h files
-list(APPEND HEADER_FILES
+set(HEADER_FILES
     src/mainwindow.h
     src/about.h
     src/audio_play_thread.h
@@ -39,10 +47,11 @@ list(APPEND HEADER_FILES
     src/stopplay_waiting_thread.h
     src/playlist_window.h
     src/network_url_dlg.h
+    src/common.h
 )
 
 # .cpp files
-list(APPEND SOURCE_FILES
+set(SOURCE_FILES
     src/main.cpp
     src/about.cpp
     src/app_settings.cpp
@@ -72,6 +81,7 @@ list(APPEND SOURCE_FILES
     src/stopplay_waiting_thread.cpp
     src/playlist_window.cpp
     src/network_url_dlg.cpp
+    src/common.cpp
 )
 
 
@@ -142,7 +152,7 @@ find_package(Threads REQUIRED)
 #   RESOURCES
 #-------------------------------------------------------------------------------
 
-list(APPEND QT_RESOURCES
+set(QT_RESOURCES
     src/qmake_qmake_qm_files.qrc
 )
 
@@ -198,7 +208,7 @@ source_group("Translation Files" REGULAR_EXPRESSION ".*[.]ts")
 #   ADDITIONAL LIBRARIES
 #-------------------------------------------------------------------------------
 
-list(APPEND LIBRARIES
+set(LIBRARIES
     Qt5::Core
     Qt5::Gui
     Qt5::Widgets
@@ -221,7 +231,7 @@ list(REMOVE_DUPLICATES LIBRARIES)
 #-------------------------------------------------------------------------------
 #   ADDITIONAL INCLUDES
 #-------------------------------------------------------------------------------
-list(APPEND INCLUDE_DIRS
+set(INCLUDE_DIRS
     "src/ffmpeg/include"
     "src/opencv/build/include"
     "src/Visual Leak Detector/include"
@@ -231,7 +241,7 @@ list(APPEND INCLUDE_DIRS
 #-------------------------------------------------------------------------------
 #   ADDITIONAL LINK DIRS
 #-------------------------------------------------------------------------------
-list(APPEND LINK_DIRS
+set(LINK_DIRS
     "src/opencv/build/x64/vc15/lib"
     "src/ffmpeg/lib"
 )
@@ -265,6 +275,8 @@ if(WIN32)
     add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
         COMMAND ${WINDEPLOYQT_EXECUTABLE} $<TARGET_FILE_DIR:${TARGET_NAME}>)
 endif()
+
+set_property(TARGET ${TARGET_NAME} APPEND PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/build/debug")
 
 # copy run time files to target directort
 if(WIN32)

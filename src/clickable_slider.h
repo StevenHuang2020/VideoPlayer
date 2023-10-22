@@ -1,16 +1,18 @@
 #pragma once
-#include<QSlider>
-#include<QMouseEvent>
 
+#include <QMouseEvent>
+#include <QSlider>
 
-class ClickableSlider : public QSlider {
-	Q_OBJECT
+class ClickableSlider : public QSlider
+{
+    Q_OBJECT
 
 public:
-	explicit ClickableSlider(QWidget* parent = nullptr);
-	virtual ~ClickableSlider() {};
+    explicit ClickableSlider(QWidget* parent = nullptr);
+    virtual ~ClickableSlider(){};
 signals:
-	void onClick(int value);
+    void onClick(int value);
+
 protected:
-	void mousePressEvent(QMouseEvent* event) override;
+    void mousePressEvent(QMouseEvent* event) override;
 };

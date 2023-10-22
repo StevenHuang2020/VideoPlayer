@@ -18,6 +18,8 @@ public:
 	typedef struct VisualFormat {
 		GraphicType gType;
 		VisualType vType;
+
+		VisualFormat() : gType(e_GtBar), vType(e_VtSampleing) {}
 	}VisualFormat;
 
 public:

@@ -4,6 +4,7 @@ src/debug/
 src/release/
 src/ffmpeg/doc/
 *.bak
+./build/
 
 #tem files
 *.log

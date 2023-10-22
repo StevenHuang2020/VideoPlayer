@@ -1,20 +1,22 @@
 #pragma once
-#include<QThread>
-#include<QDebug>
 
+#include <QDebug>
+#include <QThread>
 
 class StopWaitingThread : public QThread
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	explicit StopWaitingThread(QObject* parent = Q_NULLPTR, const QString& file = "");
-	~StopWaitingThread();
+    explicit StopWaitingThread(QObject* parent = Q_NULLPTR, const QString& file = "");
+    ~StopWaitingThread();
 signals:
-	void stopPlay();
-	void startPlay(const QString& file);
+    void stopPlay();
+    void startPlay(const QString& file);
+
 protected:
-	void run() override;
+    void run() override;
+
 private:
-	QString m_file;
+    QString m_file;
 };
