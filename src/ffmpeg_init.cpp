@@ -199,11 +199,13 @@ QString dump_format(AVFormatContext* ic, int index, const char* url, int is_outp
         }
     }
 
+    str += "\n";
     for (unsigned int i = 0; i < ic->nb_streams; i++)
     {
         if (!printed[i])
         {
             str += dump_stream_format(ic, i, index, is_output);
+            str += "\n";
         }
     }
 
@@ -288,15 +290,15 @@ QString dump_stream_format(const AVFormatContext* ic, int i, int index, int is_o
     // Fields which are missing from AVCodecParameters need to be taken from the
     // AVCodecContext
     /*
-  avctx->properties = st_avctx->properties;
-  avctx->codec = st_avctx->codec;
-  avctx->qmin = st_avctx->qmin;
-  avctx->qmax = st_avctx->qmax;
-  avctx->coded_width = st_avctx->coded_width;
-  avctx->coded_height = st_avctx->coded_height;
+      avctx->properties = st_avctx->properties;
+      avctx->codec = st_avctx->codec;
+      avctx->qmin = st_avctx->qmin;
+      avctx->qmax = st_avctx->qmax;
+      avctx->coded_width = st_avctx->coded_width;
+      avctx->coded_height = st_avctx->coded_height;
 
-  if (separator)
-          av_opt_set(avctx, "dump_separator", separator, 0);*/
+      if (separator)
+              av_opt_set(avctx, "dump_separator", separator, 0);*/
     avcodec_string(buf, sizeof(buf), avctx, is_output);
     avcodec_free_context(&avctx);
 

@@ -32,8 +32,7 @@ BarHelper::BarHelper()
     m_textFont.setPixelSize(50);
 }
 
-void BarHelper::draw_data_bar(QPainter* painter, std::vector<int>& data, int n,
-                              int w, int h, int h_inter)
+void BarHelper::draw_data_bar(QPainter* painter, std::vector<int>& data, int n, int w, int h, int h_inter)
 {
     assert(data.size() == n);
 
@@ -46,8 +45,7 @@ void BarHelper::draw_data_bar(QPainter* painter, std::vector<int>& data, int n,
     }
 }
 
-void BarHelper::draw_data_line(QPainter* painter, std::vector<int>& data, int n,
-                               int w, int h, int h_inter)
+void BarHelper::draw_data_line(QPainter* painter, std::vector<int>& data, int n, int w, int h, int h_inter)
 {
     painter->setPen(m_pen);
 
@@ -65,8 +63,7 @@ void BarHelper::draw_data_line(QPainter* painter, std::vector<int>& data, int n,
     }
 }
 
-void BarHelper::draw_data_arc(QPainter* painter, std::vector<int>& data, int n,
-                              int w, int h)
+void BarHelper::draw_data_arc(QPainter* painter, std::vector<int>& data, int n, int w, int h)
 {
     assert(data.size() == n);
     const qreal s_radius = 50.0;
@@ -85,8 +82,7 @@ void BarHelper::draw_data_arc(QPainter* painter, std::vector<int>& data, int n,
     }
 }
 
-void BarHelper::draw_data_polygon(QPainter* painter, std::vector<int>& data,
-                                  int n, int w, int h, int r_offset)
+void BarHelper::draw_data_polygon(QPainter* painter, std::vector<int>& data, int n, int w, int h, int r_offset)
 {
     assert(data.size() == n);
 
@@ -117,8 +113,7 @@ void BarHelper::draw_data_polygon(QPainter* painter, std::vector<int>& data,
     }
 }
 
-void BarHelper::draw_data_style(QPainter* painter, const QRect& rt,
-                                const AudioData& data)
+void BarHelper::draw_data_style(QPainter* painter, const QRect& rt, const AudioData& data)
 {
     int width = rt.width();
     int height = rt.height();
@@ -163,8 +158,7 @@ void BarHelper::draw_data_style(QPainter* painter, const QRect& rt,
     }
 }
 
-void BarHelper::paint(QPainter* painter, QPaintEvent* event,
-                      const AudioData& data)
+void BarHelper::paint(QPainter* painter, QPaintEvent* event, const AudioData& data)
 {
     QRect rt = event->rect();
     painter->fillRect(rt, m_background);
@@ -176,8 +170,7 @@ void BarHelper::paint(QPainter* painter, QPaintEvent* event,
     painter->restore();
 }
 
-void BarHelper::get_data(const AudioData& data, std::vector<int>& v,
-                         bool left) const
+void BarHelper::get_data(const AudioData& data, std::vector<int>& v, bool left) const
 {
     v.clear();
 

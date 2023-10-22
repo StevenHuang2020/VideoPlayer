@@ -2370,6 +2370,10 @@ void MainWindow::create_avisual_action_group()
 
 bool MainWindow::get_avisual_format(BarHelper::VisualFormat& fmt) const
 {
+    if (ui->actionLine->isChecked())
+    {
+        fmt.gType = BarHelper::e_GtLine;
+    }
     if (ui->actionBar->isChecked())
     {
         fmt.gType = BarHelper::e_GtBar;
@@ -2379,6 +2383,7 @@ bool MainWindow::get_avisual_format(BarHelper::VisualFormat& fmt) const
         fmt.gType = BarHelper::e_GtPie;
     }
 
+    fmt.vType = BarHelper::e_VtSampleing;
     if (ui->actionFrequency->isChecked())
         fmt.vType = BarHelper::e_VtFrequency;
 
