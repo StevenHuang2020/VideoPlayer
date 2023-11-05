@@ -369,7 +369,7 @@ void MainWindow::show_msg_dlg(const QString& message, const QString& windowTitle
 
     msgBox.show();
     msgBox.move(frameGeometry().center() - msgBox.rect().center());
-    msgBox.setWindowFlags(msgBox.windowFlags() | Qt::Dialog | Qt::WindowStaysOnTopHint);
+    msgBox.setWindowFlags(msgBox.windowFlags() | Qt::Dialog /*| Qt::WindowStaysOnTopHint*/);
     msgBox.setModal(true);
     msgBox.exec();
 }
@@ -526,10 +526,13 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* event)
         check_hide_menubar(mouseEvent->pos());
 
 #if AUTO_HIDE_PLAYCONTROL
-        if ((!ui->actionHide_Play_Ctronl->isChecked()) && (!label_fullscreen()))
+        if (!(ui->actionHide_Play_Ctronl->isChecked() || label_fullscreen()))
         {
-            m_timer.start();
-            auto_hide_play_control(false);
+            if (cursor_in_window(get_play_control()))
+            {
+                m_timer.start();
+                auto_hide_play_control(false);
+            }
         }
 
         hide_cursor(false);
@@ -1897,7 +1900,7 @@ void MainWindow::image_ready(const QImage& img)
     update_image(image);
 }
 
-void MainWindow::image_cv(QImage& image)
+void MainWindow::image_cv_geo(QImage& image)
 {
     if (ui->actionGrayscale->isChecked())
     {
@@ -1940,7 +1943,10 @@ void MainWindow::image_cv(QImage& image)
         // QTransform trans(matrix);
         transform_image(image, trans);
     }
+}
 
+void MainWindow::image_cv(QImage& image)
+{
     cv::Mat matImg;
     qimage_to_mat(image, matImg);
 
@@ -1956,13 +1962,13 @@ void MainWindow::image_cv(QImage& image)
         // mat_to_qimage(reverse_img(matImg), image);	//6
 
         /*
-    int divideWith = 20;
-    uchar table[256];
-    gen_color_table(table, sizeof(table), divideWith);
-    Mat table_mat = cv::Mat(1, 256, CV_8UC1, table);
-    Mat res = scane_img_LUT(matImg, table_mat);
-    mat_to_qimage(res, image);	//10
-    */
+        int divideWith = 20;
+        uchar table[256];
+        gen_color_table(table, sizeof(table), divideWith);
+        Mat table_mat = cv::Mat(1, 256, CV_8UC1, table);
+        Mat res = scane_img_LUT(matImg, table_mat);
+        mat_to_qimage(res, image);	//10
+        */
 
         // mat_to_qimage(lighter_img(matImg, 1.2), image);	//20
         // mat_to_qimage(exposure_img(matImg), image);	//15
@@ -1981,35 +1987,29 @@ void MainWindow::image_cv(QImage& image)
     {
         mat_to_qimage(rotate_img(matImg), image);
     }
-
-    if (ui->actionRepeat->isChecked())
+    else if (ui->actionRepeat->isChecked())
     {
         mat_to_qimage(repeat_img(matImg, 3, 3), image);
     }
-
-    if (ui->actionEqualizeHist->isChecked())
+    else if (ui->actionEqualizeHist->isChecked())
     {
         equalized_hist_img(matImg);
         mat_to_qimage(matImg, image);
     }
-
-    if (ui->actionThreshold->isChecked())
+    else if (ui->actionThreshold->isChecked())
     {
         mat_to_qimage(threshold_img(matImg), image);
     }
-
-    if (ui->actionThreshold_Adaptive->isChecked())
+    else if (ui->actionThreshold_Adaptive->isChecked())
     {
         mat_to_qimage(thresholdAdaptive_img(matImg), image);
     }
-
-    if (ui->actionReverse->isChecked())
+    else if (ui->actionReverse->isChecked())
     {
         reverse_img(matImg);
         mat_to_qimage(matImg, image);
     }
-
-    if (ui->actionColorReduce->isChecked())
+    else if (ui->actionColorReduce->isChecked())
     {
         int divideWith = 20;
         uchar table[256];
@@ -2018,48 +2018,42 @@ void MainWindow::image_cv(QImage& image)
         scane_img_LUT(matImg, table_mat);
         mat_to_qimage(matImg, image); // 10
     }
-
-    if (ui->actionGamma->isChecked())
+    else if (ui->actionGamma->isChecked())
     {
         gamma_img(matImg, 1.2f);
         mat_to_qimage(matImg, image);
     }
-
-    if (ui->actionContrastBright->isChecked())
+    else if (ui->actionContrastBright->isChecked())
     {
         contrast_bright_img(matImg, 1.2, 30);
         mat_to_qimage(matImg, image);
     }
-
-    if (ui->actionCanny->isChecked())
+    else if (ui->actionCanny->isChecked())
     {
         mat_to_qimage(canny_img(matImg), image);
     }
-
-    if (ui->actionBlur->isChecked())
+    else if (ui->actionBlur->isChecked())
     {
         mat_to_qimage(blur_img(matImg), image);
     }
-
-    if (ui->actionSobel->isChecked())
+    else if (ui->actionSobel->isChecked())
     {
         mat_to_qimage(sobel_img_XY(matImg), image);
     }
-
-    if (ui->actionLaplacian->isChecked())
+    else if (ui->actionLaplacian->isChecked())
     {
         mat_to_qimage(laplacian_img(matImg), image);
     }
-
-    if (ui->actionScharr->isChecked())
+    else if (ui->actionScharr->isChecked())
     {
         mat_to_qimage(scharr_img_XY(matImg), image);
     }
-
-    if (ui->actionPrewitt->isChecked())
+    else if (ui->actionPrewitt->isChecked())
     {
         mat_to_qimage(prewitt_img_XY(matImg), image);
     }
+
+    image_cv_geo(image);
 }
 
 void MainWindow::subtitle_ready(const QString& text)
@@ -2152,23 +2146,18 @@ void MainWindow::print_decodeContext(const AVCodecContext* pDecodeCtx, bool bVid
     {
         qInfo("***************Video decode context*****************");
         qInfo("codec_name: %s", pDecodeCtx->codec->name);
-        qInfo("codec_type: %d, codec_id: %d, codec_tag: %d", pDecodeCtx->codec_type,
-              pDecodeCtx->codec_id, pDecodeCtx->codec_tag);
-        qInfo("width: %d, height: %d, codec_tag: %d", pDecodeCtx->width,
-              pDecodeCtx->height);
+        qInfo("codec_type: %d, codec_id: %d, codec_tag: %d", pDecodeCtx->codec_type, pDecodeCtx->codec_id, pDecodeCtx->codec_tag);
+        qInfo("width: %d, height: %d, codec_tag: %d", pDecodeCtx->width, pDecodeCtx->height);
         qInfo("***************Video decode context end*****************\n");
     }
     else
     {
         qInfo("***************Audio decode context*****************");
         qInfo("codec_name: %s", pDecodeCtx->codec->name);
-        qInfo("codec_type: %d, codec_id: %d, codec_tag: %d", pDecodeCtx->codec_type,
-              pDecodeCtx->codec_id, pDecodeCtx->codec_tag);
-        qInfo("sample_rate: %d, channels: %d, sample_fmt: %d", pDecodeCtx->sample_rate,
-              pDecodeCtx->ch_layout.nb_channels, pDecodeCtx->sample_fmt);
-        qInfo("frame_size: %d, frame_number: %d, block_align: %d",
-              pDecodeCtx->frame_size, pDecodeCtx->frame_number,
-              pDecodeCtx->block_align);
+        qInfo("codec_type: %d, codec_id: %d, codec_tag: %d", pDecodeCtx->codec_type, pDecodeCtx->codec_id, pDecodeCtx->codec_tag);
+        qInfo("sample_rate: %d, channels: %d, sample_fmt: %d", pDecodeCtx->sample_rate, pDecodeCtx->ch_layout.nb_channels,
+              pDecodeCtx->sample_fmt);
+        qInfo("frame_size: %d, frame_number: %d, block_align: %d", pDecodeCtx->frame_size, pDecodeCtx->frame_num, pDecodeCtx->block_align);
         qInfo("***************Audio decode context end*****************\n");
     }
 }
@@ -2458,7 +2447,7 @@ QString MainWindow::get_playingfile() const
     return QString("");
 }
 
-void MainWindow::on_actionOpenNetwoekUrl_triggered()
+void MainWindow::on_actionOpenNetworkUrl_triggered()
 {
     NetworkUrlDlg dialog(this);
 

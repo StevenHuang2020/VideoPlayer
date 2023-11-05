@@ -121,7 +121,7 @@ private slots:
     void on_actionMedia_Info_triggered();
     void on_actionKeyboard_Usage_triggered();
     void on_actionPlayList_triggered();
-    void on_actionOpenNetwoekUrl_triggered();
+    void on_actionOpenNetworkUrl_triggered();
     void on_actionOriginalSize_triggered();
 
 private:
@@ -133,6 +133,7 @@ private:
     void print_decodeContext(const AVCodecContext* pVideo, bool bVideo = true) const;
     void about_media_info();
     void image_cv(QImage&);
+    void image_cv_geo(QImage&);
     void resize_window(int width = 800, int height = 480);
     void center_window(QRect screen_rec);
     void show_fullscreen(bool bFullscreen = true);
@@ -249,10 +250,8 @@ private:
     std::unique_ptr<QActionGroup> m_styleActsGroup; // style menus group
     std::unique_ptr<QAction> m_styleActions[MaxSkinStlyes];
     std::unique_ptr<QActionGroup> m_CvActsGroup; // cv menus group
-
     std::unique_ptr<QActionGroup> m_AVisualTypeActsGroup;
     std::unique_ptr<QActionGroup> m_AVisualGrapicTypeActsGroup;
-
     std::unique_ptr<QAction> m_savedPlaylists[MaxPlaylist];
     std::unique_ptr<QAction> m_PlaylistsClear;
 };

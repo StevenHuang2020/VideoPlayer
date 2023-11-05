@@ -430,15 +430,18 @@ QString dump_sidedata(const AVStream* st, const char* indent)
     QString str = "";
     char tmp[BUFF_MAXLEN];
 
-    if (st->nb_side_data)
+    if (!st->codecpar)
+        return str;
+
+    if (st->codecpar->nb_coded_side_data)
     {
         snprintf(tmp, sizeof(tmp), "%sSide data:\n", indent);
         str += tmp;
     }
 
-    for (int i = 0; i < st->nb_side_data; i++)
+    for (int i = 0; i < st->codecpar->nb_coded_side_data; i++)
     {
-        const AVPacketSideData* sd = &st->side_data[i];
+        const AVPacketSideData* sd = &st->codecpar->coded_side_data[i];
         snprintf(tmp, sizeof(tmp), "%s  ", indent);
         str += tmp;
 

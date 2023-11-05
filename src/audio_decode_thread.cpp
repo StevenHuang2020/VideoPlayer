@@ -95,8 +95,7 @@ void AudioDecodeThread::run()
 
             // while ((ret = av_buffersink_get_frame_flags(is->out_audio_filter,
             // frame, 0)) >= 0) {
-            while ((ret = av_buffersink_get_frame(is->out_audio_filter, frame)) >=
-                   0)
+            while ((ret = av_buffersink_get_frame(is->out_audio_filter, frame)) >= 0)
             {
                 tb = av_buffersink_get_time_base(is->out_audio_filter);
 #endif
@@ -104,9 +103,8 @@ void AudioDecodeThread::run()
                 if (!(af = frame_queue_peek_writable(&is->sampq)))
                     goto the_end;
 
-                af->pts =
-                    (frame->pts == AV_NOPTS_VALUE) ? NAN : frame->pts * av_q2d(tb);
-                af->pos = frame->pkt_pos;
+                af->pts = (frame->pts == AV_NOPTS_VALUE) ? NAN : frame->pts * av_q2d(tb);
+                af->pos = AV_CODEC_FLAG_COPY_OPAQUE; //frame->pkt_pos;
                 af->serial = is->auddec.pkt_serial;
                 af->duration = av_q2d({frame->nb_samples, frame->sample_rate});
 

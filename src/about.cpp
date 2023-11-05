@@ -40,7 +40,7 @@ void About::init_label()
     str += "\n";
 
     str += QString("Qt Version: %1\n").arg(qVersion());
-    str += QString("Ffmpeg Version: %1\n").arg(FFMPEG_VERSION);
+    str += QString("FFmpeg Version: %1\n").arg(FFMPEG_VERSION);
     str += QString("OpenCV Version: %1\n").arg(CV_VERSION);
     str += QString("Datetime: %1\n").arg(__TIMESTAMP__);
     

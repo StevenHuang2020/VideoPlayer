@@ -74,7 +74,7 @@
      <x>0</x>
      <y>0</y>
      <width>640</width>
-     <height>18</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuMedia">
@@ -88,12 +88,12 @@
     </widget>
     <widget class="QMenu" name="menuSavedPlaylist">
      <property name="title">
-      <string>Saved Playlist</string>
+      <string>Saved Playlists</string>
      </property>
     </widget>
     <addaction name="actionOpen"/>
     <addaction name="actionYoutube"/>
-    <addaction name="actionOpenNetwoekUrl"/>
+    <addaction name="actionOpenNetworkUrl"/>
     <addaction name="separator"/>
     <addaction name="actionPlayList"/>
     <addaction name="menuSavedPlaylist"/>
@@ -446,7 +446,7 @@
   </action>
   <action name="actionKeyboard_Usage">
    <property name="text">
-    <string>Usage Tips</string>
+    <string>Tips</string>
    </property>
   </action>
   <action name="actionLine">
@@ -495,7 +495,7 @@
     <string>Playlist</string>
    </property>
   </action>
-  <action name="actionOpenNetwoekUrl">
+  <action name="actionOpenNetworkUrl">
    <property name="text">
     <string>Open Network Url</string>
    </property>

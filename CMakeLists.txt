@@ -283,14 +283,14 @@ if(WIN32)
     # copy ffmpeg dll libraries
     add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${CMAKE_SOURCE_DIR}/src/ffmpeg/bin/avcodec-59.dll"
-        "${CMAKE_SOURCE_DIR}/src/ffmpeg/bin/avdevice-59.dll"
-        "${CMAKE_SOURCE_DIR}/src/ffmpeg/bin/avfilter-8.dll"
-        "${CMAKE_SOURCE_DIR}/src/ffmpeg/bin/avformat-59.dll"
-        "${CMAKE_SOURCE_DIR}/src/ffmpeg/bin/avutil-57.dll"
-        "${CMAKE_SOURCE_DIR}/src/ffmpeg/bin/postproc-56.dll"
+        "${CMAKE_SOURCE_DIR}/src/ffmpeg/bin/avcodec-60.dll"
+        "${CMAKE_SOURCE_DIR}/src/ffmpeg/bin/avdevice-60.dll"
+        "${CMAKE_SOURCE_DIR}/src/ffmpeg/bin/avfilter-9.dll"
+        "${CMAKE_SOURCE_DIR}/src/ffmpeg/bin/avformat-60.dll"
+        "${CMAKE_SOURCE_DIR}/src/ffmpeg/bin/avutil-58.dll"
+        "${CMAKE_SOURCE_DIR}/src/ffmpeg/bin/postproc-57.dll"
         "${CMAKE_SOURCE_DIR}/src/ffmpeg/bin/swresample-4.dll"
-        "${CMAKE_SOURCE_DIR}/src/ffmpeg/bin/swscale-6.dll"
+        "${CMAKE_SOURCE_DIR}/src/ffmpeg/bin/swscale-7.dll"
         $<TARGET_FILE_DIR:${TARGET_NAME}>)
 
     # copy opencv dll libraries

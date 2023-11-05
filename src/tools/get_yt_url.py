@@ -7,15 +7,28 @@
 Description: Get youtube stream url
 # https://pytube.io/en/latest/user/streams.html
 """""""""""""""""""""""""""""""""""""""""""""""""""""
-
-from pytube import YouTube
 import sys
+from pytube import YouTube
+
+
+def get_subtitle(yt, downPath=None):
+    print(yt.captions.all())
+    # print(yt.captions, type(yt.captions))
+    caption = yt.captions['en']
+    if caption:
+        str_cap = caption.generate_srt_captions()
+        print('str_cap=', str_cap)
+        # subtitles = validateTitle(yt.title) + '.srt'
+        # writeSubtitles(downPath + subtitles, str_cap)
+    else:
+        print('subtitle error, not found!')
 
 
 def get_stream_url(url, opt_id=0, all=False):
     opt = ["best", "worst", "bestvideo", "worstvideo", "bestaudio", "worstaudio"]
 
     yt = YouTube(url)
+
     # print(f'Title: \'{yt.title}\'')
     only_audio = False
     if opt_id > 3 and opt_id <= 5:

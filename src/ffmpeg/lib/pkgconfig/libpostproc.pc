@@ -5,9 +5,9 @@ includedir=${prefix}/include
 
 Name: libpostproc
 Description: FFmpeg postprocessing library
-Version: 56.5.100
+Version: 57.4.100
 Requires: 
-Requires.private: libavutil >= 57.24.101
+Requires.private: libavutil >= 58.31.100
 Conflicts:
 Libs: -L${libdir}  -lpostproc 
 Cflags: -I${includedir}

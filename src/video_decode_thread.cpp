@@ -147,8 +147,7 @@ void VideoDecodeThread::run()
                         : 0);
         pts =
             (tmp_frame->pts == AV_NOPTS_VALUE) ? NAN : tmp_frame->pts * av_q2d(tb);
-        ret = queue_picture(is, tmp_frame, pts, duration, tmp_frame->pkt_pos,
-                            is->viddec.pkt_serial);
+        ret = queue_picture(is, tmp_frame, pts, duration, AV_CODEC_FLAG_COPY_OPAQUE, is->viddec.pkt_serial);
         av_frame_unref(tmp_frame);
 #endif
 

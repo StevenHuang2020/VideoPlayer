@@ -42,6 +42,7 @@ cmake --build . --config Release
 ```
 
 ##### History
+- v2.2.0, updated FFmpeg lib
 - v2.1.2, added Youtube URL Python script parsing
 - v2.1.1, change to clang-format
 - v2.0.10, updated thread exit control, fixed crash bug;
@@ -66,7 +67,7 @@ cmake --build . --config Release
 
 ##### References
 
- - A/V library [FFmpeg](https://ffmpeg.org/) <br/>
+ - A/V library [FFmpeg](https://www.ffmpeg.org/download.html#build-windows) ,[Dev](https://github.com/BtbN/FFmpeg-Builds/releases) <br/>
  - GUI framework [QT](https://www.qt.io/)
  - QT skins [GitHub](https://github.com/GTRONICK/QSS)
  - Youtube stream-media url [youtube-dl](https://youtube-dl.org/)
