@@ -18,7 +18,6 @@ const AppSettings::Section AppSettings::m_sections[] = {
 AppSettings::AppSettings(const QString& file)
 {
     m_pSettings = std::make_unique<QSettings>(file, QSettings::IniFormat);
-    m_pSettings->setIniCodec("UTF-8");
 
     print_settings();
 }
@@ -27,20 +26,17 @@ void AppSettings::print_settings() const
 {
     if (m_pSettings)
     {
-        qDebug() << "videoplayer configure file:"
-                 << QDir::toNativeSeparators(m_pSettings->fileName());
+        qDebug() << "videoplayer configure file:" << QDir::toNativeSeparators(m_pSettings->fileName());
         qDebug() << "organizationName:" << m_pSettings->organizationName();
         qDebug() << "applicationName:" << m_pSettings->applicationName();
 
-        for (const QString& group : m_pSettings->childGroups())
+        for (const auto& group : m_pSettings->childGroups())
         {
             m_pSettings->beginGroup(group);
             qDebug() << "group:" << group;
-            for (const QString& key : m_pSettings->childKeys())
+            for (const auto& key : m_pSettings->childKeys())
             {
-                qDebug() << QString("key:%1, value:%2")
-                                .arg(key)
-                                .arg(m_pSettings->value(key).toString());
+                qDebug() << QString("key:%1, value:%2").arg(key).arg(m_pSettings->value(key).toString());
             }
             m_pSettings->endGroup();
         }
@@ -57,8 +53,7 @@ QVariant AppSettings::get_value(SectionID id, const QString& key) const
 {
     if (id > SECTION_ID_NONE && id < SECTION_ID_MAX)
     {
-        QString group = QString(m_sections[id].str);
-        return get_value(group, key);
+        return get_value(QString(m_sections[id].str), key);
     }
     return QVariant(QVariant::Invalid);
 }
@@ -73,8 +68,7 @@ void AppSettings::set_value(const QString& group, const QString& key, const QVar
     m_pSettings->setValue(group_key(group, key), value);
 }
 
-QVariant AppSettings::get_value(const QString& group,
-                                const QString& key) const
+QVariant AppSettings::get_value(const QString& group,                                const QString& key) const
 {
     return m_pSettings->value(group_key(group, key));
 }

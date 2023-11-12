@@ -12,23 +12,20 @@ void qimage_to_mat(const QImage& image, cv::OutputArray& out)
         }
         case QImage::Format_RGB32:
         {
-            cv::Mat view(image.height(), image.width(), CV_8UC4,
-                         (void*)image.constBits(), image.bytesPerLine());
+            cv::Mat view(image.height(), image.width(), CV_8UC4, (void*)image.constBits(), image.bytesPerLine());
             view.copyTo(out);
             break;
         }
         case QImage::Format_RGB888:
         {
-            cv::Mat view(image.height(), image.width(), CV_8UC3,
-                         (void*)image.constBits(), image.bytesPerLine());
+            cv::Mat view(image.height(), image.width(), CV_8UC3, (void*)image.constBits(), image.bytesPerLine());
             cv::cvtColor(view, out, cv::COLOR_RGB2BGR);
             break;
         }
         default:
         {
-            QImage conv = image.convertToFormat(QImage::Format_ARGB32);
-            cv::Mat view(conv.height(), conv.width(), CV_8UC4, (void*)conv.constBits(),
-                         conv.bytesPerLine());
+            auto conv = image.convertToFormat(QImage::Format_ARGB32);
+            cv::Mat view(conv.height(), conv.width(), CV_8UC4, (void*)conv.constBits(), conv.bytesPerLine());
             view.copyTo(out);
             break;
         }
@@ -37,7 +34,7 @@ void qimage_to_mat(const QImage& image, cv::OutputArray& out)
 
 void mat_to_qimage(cv::InputArray& image, QImage& out)
 {
-    int type = image.type();
+    auto type = image.type();
     switch (type)
     {
         case CV_8UC4:
@@ -45,8 +42,7 @@ void mat_to_qimage(cv::InputArray& image, QImage& out)
             qDebug("image format:%d, CV_8UC4", type);
 
             cv::Mat view(image.getMat());
-            QImage view2(view.data, view.cols, view.rows, (int)view.step[0],
-                         QImage::Format_ARGB32);
+            QImage view2(view.data, view.cols, view.rows, (int)view.step[0], QImage::Format_ARGB32);
             out = view2.copy();
             break;
         }
@@ -55,10 +51,8 @@ void mat_to_qimage(cv::InputArray& image, QImage& out)
             qDebug("image format:%d, CV_8UC3", type);
 
             cv::Mat mat;
-            cvtColor(image, mat,
-                     cv::COLOR_BGR2BGRA); // COLOR_BGR2RGB doesn't behave so use RGBA
-            QImage view(mat.data, mat.cols, mat.rows, (int)mat.step[0],
-                        QImage::Format_ARGB32);
+            cvtColor(image, mat, cv::COLOR_BGR2BGRA); // COLOR_BGR2RGB doesn't behave so use RGBA
+            QImage view(mat.data, mat.cols, mat.rows, (int)mat.step[0], QImage::Format_ARGB32);
             out = view.copy();
             break;
         }
@@ -68,8 +62,7 @@ void mat_to_qimage(cv::InputArray& image, QImage& out)
 
             cv::Mat mat;
             cvtColor(image, mat, cv::COLOR_GRAY2BGRA);
-            QImage view(mat.data, mat.cols, mat.rows, (int)mat.step[0],
-                        QImage::Format_ARGB32);
+            QImage view(mat.data, mat.cols, mat.rows, (int)mat.step[0], QImage::Format_ARGB32);
             out = view.copy();
             break;
         }

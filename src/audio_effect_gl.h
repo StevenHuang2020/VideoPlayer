@@ -2,7 +2,7 @@
 
 #include <QImage>
 #include <QKeyEvent>
-#include <QOpenGLWidget>
+#include <QtOpenGLWidgets>
 #include "audio_effect_helper.h"
 #include "audio_play_thread.h"
 

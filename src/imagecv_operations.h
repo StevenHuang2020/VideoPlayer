@@ -6,7 +6,6 @@
  *
  ******************************************/
 
-
 #ifndef __IMAGECV_OPERATIONS_H__
 #define __IMAGECV_OPERATIONS_H__
 
@@ -24,8 +23,12 @@
 using namespace std;
 using namespace cv;
 
-
-enum BlurType { GAUSSIAN, BLUR, MEDIAN };
+enum BlurType
+{
+    GAUSSIAN,
+    BLUR,
+    MEDIAN
+};
 
 Mat load_img(const char* file, int flag = cv::IMREAD_COLOR);
 Mat load_grey(const char* file);
@@ -65,16 +68,14 @@ void contrast_bright_img(Mat& I, double alpha = 1.0, int beta = 0);
 
 Mat threshold_img(const Mat& img, int thresh = 127, int type = THRESH_BINARY | THRESH_OTSU);
 Mat thresholdAdaptive_img(const Mat& img, int adaptiveMethod = cv::ADAPTIVE_THRESH_MEAN_C,
-	int thresholdType = cv::THRESH_BINARY, int blockSize = 11, double C = 2);
+                          int thresholdType = cv::THRESH_BINARY, int blockSize = 11, double C = 2);
 Mat covert_color_img(const Mat& img, int format = COLOR_BGR2GRAY);
 Mat filter_img(const Mat& img, const Mat& kernel);
 
 Mat normalize_img(const Mat& img, double alpha = 1, double beta = 0,
-	int norm_type = NORM_L2);
+                  int norm_type = NORM_L2);
 
 void gen_color_table(uchar* const p, int size = 256, int divideWith = 10);
-
-
 
 /*********************smooth images******************/
 Mat blur_img(const Mat& I, BlurType smoothType = GAUSSIAN, int ksize = 5, int sigma = 3);

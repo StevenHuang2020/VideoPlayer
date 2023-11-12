@@ -5,17 +5,15 @@
 #include <QPainter>
 #include <QPen>
 #include <QFont>
-#include <QMatrix>
 #include <QGraphicsEffect>
 #include <QGraphicsScene>
 #include <QGraphicsPixmapItem>
 #include <QGraphicsColorizeEffect>
 
-
 void image_info(const QImage& img);
 void create_image(QImage& img);
 bool draw_img_text(QImage& img, const QString& str, const QRect rt,
-	QPen pen = QPen(Qt::red), QFont font = QFont("Times", 48, QFont::Bold));
+                   QPen pen = QPen(Qt::red), QFont font = QFont("Times", 48, QFont::Bold));
 
 bool draw_img_rect(QImage& img, const QRect rt, QPen pen = QPen(Qt::red));
 void grey_image(QImage& img);

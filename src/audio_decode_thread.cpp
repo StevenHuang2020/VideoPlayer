@@ -9,9 +9,13 @@
 #include "audio_decode_thread.h"
 
 AudioDecodeThread::AudioDecodeThread(QObject* parent, VideoState* pState)
-    : QThread(parent), m_pState(pState) {}
+    : QThread(parent), m_pState(pState)
+{
+}
 
-AudioDecodeThread::~AudioDecodeThread() {}
+AudioDecodeThread::~AudioDecodeThread()
+{
+}
 
 void AudioDecodeThread::run()
 {

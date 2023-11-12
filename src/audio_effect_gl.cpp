@@ -11,9 +11,9 @@
 #include <QPainter>
 #include "audio_effect_gl.h"
 
-AudioEffectGL::AudioEffectGL(QWidget* parent) : QOpenGLWidget(parent), m_data({})
+AudioEffectGL::AudioEffectGL(QWidget* parent) : QOpenGLWidget(parent)
 {
-    Qt::WindowFlags flags = windowFlags();
+    auto flags = windowFlags();
     flags |= Qt::Window;
     flags |= Qt::WindowStaysOnTopHint;
     flags &= (~Qt::WindowContextHelpButtonHint);

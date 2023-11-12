@@ -1,8 +1,10 @@
 #pragma once
 
 #include <QAudio>
-#include <QAudioDeviceInfo>
-#include <QAudioOutput>
+//#include <QAudioDeviceInfo>
+#include <QMediaDevices>
+#include <QAudioDevice>
+#include <QAudioSink>
 #include <QDebug>
 #include <QFile>
 #include <QIODevice>
@@ -16,8 +18,8 @@
 
 typedef struct AudioData
 {
-    uint16_t len;
-    char buffer[BUFFER_LEN];
+    uint16_t len = 0;
+    char buffer[BUFFER_LEN] = {0};
 } AudioData;
 
 typedef struct AudioFrameFmt
@@ -38,6 +40,7 @@ public:
 
 public:
     void print_device() const;
+    void audio_device_detail(const QAudioDevice& device) const;
     bool init_device(int sample_rate = 8000, int channel = 1, AVSampleFormat sample_fmt = AV_SAMPLE_FMT_S16, float default_vol = 0.8);
     void stop_device();
     void play_file(const QString& file);
@@ -75,10 +78,10 @@ private:
     } Audio_Resample;
 
 private:
-    std::unique_ptr<QAudioOutput> m_pOutput;
-    QIODevice* m_audioDevice;
-    VideoState* m_pState;
+    std::unique_ptr<QAudioSink> m_pOutput{nullptr};
+    QIODevice* m_audioDevice{nullptr};
+    VideoState* m_pState{nullptr};
     Audio_Resample m_audioResample;
-    bool m_bExitThread;
-    bool m_bSendToVisual;
+    bool m_bExitThread{false};
+    bool m_bSendToVisual{false};
 };

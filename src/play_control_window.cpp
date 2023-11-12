@@ -15,42 +15,27 @@
 #define PLAY_SPEED_STOP 2 // 4 speed multiple from start to stop in step
 
 PlayControlWnd::PlayControlWnd(QWidget* parent)
-    : QWidget(parent), ui(std::make_unique<Ui::play_control_window>()),
-      m_hours(0), m_mins(0), m_secs(0)
+    : QWidget(parent), ui(std::make_unique<Ui::play_control_window>())
 {
     ui->setupUi(this);
 
     setLayout(ui->gridLayout);
     ui->gridLayout->setContentsMargins(0, 0, 0, 0);
 
-    connect(ui->slider_vol, SIGNAL(valueChanged(int)), ui->label_vol,
-            SLOT(setNum(int)));
-    connect(ui->check_mute, &QCheckBox::stateChanged, this,
-            &PlayControlWnd::volume_muted);
-    connect(ui->check_mute, &QCheckBox::stateChanged, (MainWindow*)parent,
-            &MainWindow::play_mute);
-    connect(ui->btn_stop, &QPushButton::clicked, (MainWindow*)parent,
-            &MainWindow::stop_play);
-    connect(ui->btn_play, &QPushButton::clicked, (MainWindow*)parent,
-            &MainWindow::pause_play);
-    connect(ui->slider_vol, &QSlider::valueChanged, (MainWindow*)parent,
-            &MainWindow::set_volume);
-    connect(ui->btn_pre, &QPushButton::pressed, (MainWindow*)parent,
-            &MainWindow::play_seek_pre);
-    connect(ui->btn_next, &QPushButton::pressed, (MainWindow*)parent,
-            &MainWindow::play_seek_next);
-    connect(ui->progress_slider, &QSlider::sliderReleased, (MainWindow*)parent,
-            &MainWindow::play_start_seek);
-    connect(ui->progress_slider, &QSlider::sliderPressed, (MainWindow*)parent,
-            &MainWindow::pause_play);
-    connect(ui->progress_slider, &ClickableSlider::onClick, (MainWindow*)parent,
-            &MainWindow::play_seek);
-    connect(ui->slider_speed, &QSlider::valueChanged, this,
-            &PlayControlWnd::speed_changed);
-    // connect(ui->slider_speed, &QSlider::sliderReleased, (MainWindow*)parent,
-    // &MainWindow::set_play_speed);
-    connect(ui->slider_speed, &QSlider::valueChanged, (MainWindow*)parent,
-            &MainWindow::set_play_speed);
+    connect(ui->slider_vol, SIGNAL(valueChanged(int)), ui->label_vol, SLOT(setNum(int)));
+    connect(ui->check_mute, &QCheckBox::stateChanged, this, &PlayControlWnd::volume_muted);
+    connect(ui->check_mute, &QCheckBox::stateChanged, (MainWindow*)parent, &MainWindow::play_mute);
+    connect(ui->btn_stop, &QPushButton::clicked, (MainWindow*)parent, &MainWindow::stop_play);
+    connect(ui->btn_play, &QPushButton::clicked, (MainWindow*)parent, &MainWindow::pause_play);
+    connect(ui->slider_vol, &QSlider::valueChanged, (MainWindow*)parent, &MainWindow::set_volume);
+    connect(ui->btn_pre, &QPushButton::pressed, (MainWindow*)parent, &MainWindow::play_seek_pre);
+    connect(ui->btn_next, &QPushButton::pressed, (MainWindow*)parent, &MainWindow::play_seek_next);
+    connect(ui->progress_slider, &QSlider::sliderReleased, (MainWindow*)parent, &MainWindow::play_start_seek);
+    connect(ui->progress_slider, &QSlider::sliderPressed, (MainWindow*)parent, &MainWindow::pause_play);
+    connect(ui->progress_slider, &ClickableSlider::onClick, (MainWindow*)parent, &MainWindow::play_seek);
+    connect(ui->slider_speed, &QSlider::valueChanged, this, &PlayControlWnd::speed_changed);
+    // connect(ui->slider_speed, &QSlider::sliderReleased, (MainWindow*)parent,&MainWindow::set_play_speed);
+    connect(ui->slider_speed, &QSlider::valueChanged, (MainWindow*)parent, &MainWindow::set_play_speed);
 
     clear_all();
 
@@ -126,11 +111,9 @@ void PlayControlWnd::speed_adjust(bool up)
 
 void PlayControlWnd::init_slider_speed()
 {
-    int maxSpeed = (PLAY_SPEED_STOP + PLAY_SPEED_STEP - PLAY_SPEED_START) /
-                   PLAY_SPEED_STEP; // 8
+    int maxSpeed = (PLAY_SPEED_STOP + PLAY_SPEED_STEP - PLAY_SPEED_START) / PLAY_SPEED_STEP; // 8
     ui->slider_speed->setMaximum(maxSpeed);
-    ui->slider_speed->setValue((1 + PLAY_SPEED_STEP - PLAY_SPEED_START) /
-                               PLAY_SPEED_STEP); // set 1x speed
+    ui->slider_speed->setValue((1 + PLAY_SPEED_STEP - PLAY_SPEED_START) / PLAY_SPEED_STEP); // set 1x speed
 }
 
 void PlayControlWnd::set_volume_slider(float volume)
@@ -206,12 +189,12 @@ void PlayControlWnd::get_play_time_params(int64_t total_secs, int64_t& hours, in
 
 void PlayControlWnd::update_play_time(int64_t hours, int64_t mins, int64_t secs)
 {
-    QString time_str = get_play_time(hours, mins, secs);
+    auto time_str = get_play_time(hours, mins, secs);
     ui->label_curTime->setText(time_str);
 
     int percent = 0;
-    double total = get_total_time();
-    double cur = get_time_secs(hours, mins, secs);
+    auto total = get_total_time();
+    auto cur = get_time_secs(hours, mins, secs);
     cur = cur > total ? total : cur;
     if (total > 0)
     {
@@ -252,20 +235,13 @@ void PlayControlWnd::set_total_time(int64_t hours, int64_t mins, int64_t secs)
     m_mins = mins;
     m_secs = secs;
 
-    double total = get_total_time();
-    set_progress_bar(total);
-
-    QString duration_str = get_play_time(hours, mins, secs);
-
-    ui->label_totalTime->setText(duration_str);
+    set_progress_bar(get_total_time());
+    ui->label_totalTime->setText(get_play_time(hours, mins, secs));
 }
 
 void PlayControlWnd::set_progress_bar(double total_secs)
 {
     get_progress_slider()->setMaximum(total_secs);
-
-    // int step = total_secs / width();
-    // get_progress_slider()->setSingleStep(step);
 }
 
 QString PlayControlWnd::get_play_time(int64_t hours, int64_t mins, int64_t secs)
@@ -318,12 +294,10 @@ void PlayControlWnd::update_btn_play(bool bPause)
     if (bPause)
     {
         ui->btn_play->setText("Play");
-        // qDebug("set play");
     }
     else
     {
         ui->btn_play->setText("Pause");
-        // qDebug("set pause");
     }
 }
 
@@ -337,8 +311,7 @@ void PlayControlWnd::enable_play_buttons(bool enable)
 
 void PlayControlWnd::keyPressEvent(QKeyEvent* event)
 {
-    MainWindow* pParent = (MainWindow*)parent();
-    if (pParent)
+    if (MainWindow* pParent = (MainWindow*)parent())
     {
         QApplication::sendEvent(pParent, event);
         event->ignore();

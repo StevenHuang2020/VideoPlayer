@@ -30,7 +30,7 @@ void PlayerSkin::set_system_style(const QString& style)
 
 void PlayerSkin::set_custom_style(const QString& name)
 {
-    QString file = appendPath(m_qss_path, name + ".qss");
+    auto file = appendPath(m_qss_path, name + ".qss");
     QFile qss(file);
 
     if (QFileInfo::exists(file))

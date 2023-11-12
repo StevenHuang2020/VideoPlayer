@@ -16,7 +16,9 @@ const QRegularExpression VideoPlayThread::m_assFilter = QRegularExpression("{\\\
 const QRegularExpression VideoPlayThread::m_assNewLineReplacer = QRegularExpression("\\\\n|\\\\N");
 
 VideoPlayThread::VideoPlayThread(QObject* parent, VideoState* pState)
-    : QThread(parent), m_pState(pState), m_bExitThread(false) {}
+    : QThread(parent), m_pState(pState)
+{
+}
 
 VideoPlayThread::~VideoPlayThread()
 {
@@ -60,8 +62,7 @@ void VideoPlayThread::video_refresh(VideoState* is, double* remaining_time)
     double time;
     Frame *sp, *sp2;
 
-    if (!is->paused && get_master_sync_type(is) == AV_SYNC_EXTERNAL_CLOCK &&
-        is->realtime)
+    if (!is->paused && get_master_sync_type(is) == AV_SYNC_EXTERNAL_CLOCK && is->realtime)
         check_external_clock_speed(is);
 
     if (is->video_st)
@@ -100,8 +101,7 @@ void VideoPlayThread::video_refresh(VideoState* is, double* remaining_time)
             time = av_gettime_relative() / 1000000.0;
             if (time < is->frame_timer + delay)
             {
-                *remaining_time =
-                    FFMIN(is->frame_timer + delay - time, *remaining_time);
+                *remaining_time = FFMIN(is->frame_timer + delay - time, *remaining_time);
                 goto display;
             }
 
@@ -141,11 +141,8 @@ void VideoPlayThread::video_refresh(VideoState* is, double* remaining_time)
                         sp2 = nullptr;
 
                     if (sp->serial != is->subtitleq.serial ||
-                        (is->vidclk.pts >
-                         (sp->pts + ((float)sp->sub.end_display_time / 1000))) ||
-                        (sp2 &&
-                         is->vidclk.pts >
-                             (sp2->pts + ((float)sp2->sub.start_display_time / 1000))))
+                        (is->vidclk.pts > (sp->pts + ((float)sp->sub.end_display_time / 1000))) ||
+                        (sp2 && is->vidclk.pts > (sp2->pts + ((float)sp2->sub.start_display_time / 1000))))
                     {
 #if 0
 						if (sp->uploaded) {
@@ -384,11 +381,9 @@ void VideoPlayThread::video_image_display(VideoState* is)
                     if (sub_rect->type == SUBTITLE_ASS)
                     {
                         qDebug("subtitle[%d], format:%d, type:%d, text:%s, flags:%d", i,
-                               sp->sub.format, sub_rect->type, sub_rect->text,
-                               sub_rect->flags);
+                               sp->sub.format, sub_rect->type, sub_rect->text, sub_rect->flags);
                         // QString ass = QString::fromUtf8(sub_rect->ass);
-                        QString ass = QString::fromLocal8Bit(
-                            QString::fromStdString(sub_rect->ass).toUtf8());
+                        QString ass = QString::fromLocal8Bit(QString::fromStdString(sub_rect->ass).toUtf8());
                         QStringList assList = ass.split(",");
                         if (assList.size() > 8)
                         {
@@ -460,15 +455,13 @@ void VideoPlayThread::video_image_display(VideoState* is)
     // qDebug("frame w:%d,h:%d, pts:%lld, dts:%lld", pVideoCtx->width,
     // pVideoCtx->height, pFrame->pts, pFrame->pkt_dts);
 
-    sws_scale(pResample->sws_ctx, (uint8_t const* const*)pFrame->data,
-              pFrame->linesize, 0, pVideoCtx->height, pFrameRGB->data,
-              pFrameRGB->linesize);
+    sws_scale(pResample->sws_ctx, (uint8_t const* const*)pFrame->data, pFrame->linesize, 0,
+              pVideoCtx->height, pFrameRGB->data, pFrameRGB->linesize);
 
     QImage img(pVideoCtx->width, pVideoCtx->height, QImage::Format_RGB888);
     for (int y = 0; y < pVideoCtx->height; ++y)
     {
-        memcpy(img.scanLine(y), pFrameRGB->data[0] + y * pFrameRGB->linesize[0],
-               pVideoCtx->width * 3);
+        memcpy(img.scanLine(y), pFrameRGB->data[0] + y * pFrameRGB->linesize[0], pVideoCtx->width * 3);
     }
 
     emit frame_ready(img);
@@ -483,32 +476,28 @@ bool VideoPlayThread::init_resample_param(AVCodecContext* pVideo, bool bHardware
         if (bHardware)
             pix_fmt = AV_PIX_FMT_NV12;
 
-        struct SwsContext* sws_ctx =
-            sws_getContext(pVideo->width, pVideo->height,
-                           pix_fmt, // AV_PIX_FMT_YUV420P
-                           pVideo->width, pVideo->height,
-                           AV_PIX_FMT_RGB24, // sws_scale destination color scheme
-                           SWS_BILINEAR, nullptr, nullptr, nullptr);
+        struct SwsContext* sws_ctx = sws_getContext(pVideo->width, pVideo->height,
+                                                    pix_fmt, // AV_PIX_FMT_YUV420P
+                                                    pVideo->width, pVideo->height,
+                                                    AV_PIX_FMT_RGB24, // sws_scale destination color scheme
+                                                    SWS_BILINEAR, nullptr, nullptr, nullptr);
 
         AVFrame* pFrameRGB = av_frame_alloc();
-        if (pFrameRGB == nullptr)
+        if (!pFrameRGB)
         {
             printf("Could not allocate rgb frame.\n");
             return false;
         }
 
-        int numBytes = av_image_get_buffer_size(AV_PIX_FMT_RGB24, pVideo->width,
-                                                pVideo->height, 32);
-        uint8_t* const buffer_RGB =
-            (uint8_t*)av_malloc(numBytes * sizeof(uint8_t));
-        if (buffer_RGB == nullptr)
+        int numBytes = av_image_get_buffer_size(AV_PIX_FMT_RGB24, pVideo->width, pVideo->height, 32);
+        uint8_t* const buffer_RGB = (uint8_t*)av_malloc(numBytes * sizeof(uint8_t));
+        if (!buffer_RGB)
         {
             printf("Could not allocate buffer.\n");
             return false;
         }
 
-        av_image_fill_arrays(pFrameRGB->data, pFrameRGB->linesize, buffer_RGB,
-                             AV_PIX_FMT_RGB24, pVideo->width, pVideo->height, 32);
+        av_image_fill_arrays(pFrameRGB->data, pFrameRGB->linesize, buffer_RGB, AV_PIX_FMT_RGB24, pVideo->width, pVideo->height, 32);
 
         pResample->sws_ctx = sws_ctx;
         pResample->pFrameRGB = pFrameRGB;

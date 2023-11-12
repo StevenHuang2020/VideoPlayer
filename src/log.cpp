@@ -95,7 +95,8 @@ Logger::Logger(const QString& file) : m_logfile(nullptr), m_ts(nullptr)
         if (m_logfile->open(QIODevice::WriteOnly | QIODevice::Append))
         {
             m_ts = std::make_unique<QTextStream>(m_logfile.get());
-            m_ts->setCodec(QTextCodec::codecForName("UTF8"));
+            //m_ts->setCodec(QTextCodec::codecForName("UTF8"));
+            m_ts->setEncoding(QStringConverter::Utf8);
         }
     }
 }
@@ -109,5 +110,5 @@ Logger::~Logger()
 void Logger::log(const QString& str)
 {
     if (m_ts)
-        (*m_ts) << str << endl;
+        (*m_ts) << str << Qt::endl;
 }

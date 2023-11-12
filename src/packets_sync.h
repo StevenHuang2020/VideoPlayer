@@ -187,12 +187,12 @@ typedef struct Decoder
 
 typedef struct Threads
 {
-    QThread* read_tid;
-    QThread* video_decode_tid;
-    QThread* audio_decode_tid;
-    QThread* video_play_tid;
-    QThread* audio_play_tid;
-    QThread* subtitle_decode_tid;
+    QThread* read_tid{nullptr};
+    QThread* video_decode_tid{nullptr};
+    QThread* audio_decode_tid{nullptr};
+    QThread* video_play_tid{nullptr};
+    QThread* audio_play_tid{nullptr};
+    QThread* subtitle_decode_tid{nullptr};
 } Threads;
 
 typedef struct VideoState

@@ -6,8 +6,7 @@
 // Common QT funtions
 // *
 
-#include"common.h"
-
+#include "common.h"
 
 QString appendPath(const QString& path, const QString& sub_path)
 {

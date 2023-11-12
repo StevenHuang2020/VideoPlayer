@@ -14,11 +14,9 @@ int64_t start_time = AV_NOPTS_VALUE;
 static enum AVPixelFormat hw_pix_fmt;
 
 VideoStateData::VideoStateData(bool use_hardware, bool loop_play)
-    : m_pState(nullptr), m_bHasVideo(false), m_bHasAudio(false),
-      m_bHasSubtitle(false), m_avctxVideo(nullptr), m_avctxAudio(nullptr),
-      m_avctxSubtitle(nullptr), m_bUseHardware(use_hardware),
-      m_bHardwareSuccess(false), m_hw_device_ctx(nullptr),
-      m_bLoopPlay(loop_play) {}
+    : m_bUseHardware(use_hardware), m_bLoopPlay(loop_play)
+{
+}
 
 VideoStateData::~VideoStateData()
 {
@@ -35,7 +33,10 @@ void VideoStateData::delete_video_state()
     }
 }
 
-VideoState* VideoStateData::get_state() const { return m_pState; }
+VideoState* VideoStateData::get_state() const
+{
+    return m_pState;
+}
 
 bool VideoStateData::is_hardware_decode() const
 {
@@ -45,14 +46,14 @@ bool VideoStateData::is_hardware_decode() const
 int VideoStateData::create_video_state(const char* filename)
 {
     int ret = -1;
-    if (filename == nullptr || !filename[0])
+    if (!filename || !filename[0])
     {
         qDebug("filename is invalid, please select a valid media file.");
         return ret;
     }
 
     m_pState = stream_open(filename);
-    if (m_pState == nullptr)
+    if (!m_pState)
     {
         qDebug("stream_open failed!");
         return ret;
@@ -63,17 +64,12 @@ int VideoStateData::create_video_state(const char* filename)
 
 void VideoStateData::print_state() const
 {
-    VideoState* is = m_pState;
-    if (is)
+    if (const auto is = m_pState)
     {
-        qDebug("[VideoState]PacketQueue(v:%p,a:%p,s:%p)", &is->videoq, &is->audioq,
-               &is->subtitleq);
-        qDebug("[VideoState]FrameQueue(v:%p,a:%p,s:%p)", &is->pictq, &is->sampq,
-               &is->subpq);
-        qDebug("[VideoState]Decoder(v:%p,a:%p,s:%p)", &is->viddec, &is->auddec,
-               &is->subdec);
-        qDebug("[VideoState]Clock(v:%p,a:%p,s:%p)", &is->vidclk, &is->audclk,
-               &is->extclk);
+        qDebug("[VideoState]PacketQueue(v:%p,a:%p,s:%p)", &is->videoq, &is->audioq, &is->subtitleq);
+        qDebug("[VideoState]FrameQueue(v:%p,a:%p,s:%p)", &is->pictq, &is->sampq, &is->subpq);
+        qDebug("[VideoState]Decoder(v:%p,a:%p,s:%p)", &is->viddec, &is->auddec, &is->subdec);
+        qDebug("[VideoState]Clock(v:%p,a:%p,s:%p)", &is->vidclk, &is->audclk, &is->extclk);
     }
 }
 
@@ -119,8 +115,7 @@ int VideoStateData::open_media(VideoState* is)
     err = avformat_find_stream_info(pFormatCtx, nullptr);
     if (err < 0)
     {
-        av_log(nullptr, AV_LOG_WARNING, "%s: could not find codec parameters\n",
-               is->filename);
+        av_log(nullptr, AV_LOG_WARNING, "%s: could not find codec parameters\n", is->filename);
         ret = -1;
         goto fail;
     }
@@ -133,8 +128,7 @@ int VideoStateData::open_media(VideoState* is)
     //	seek_by_bytes = (pFormatCtx->iformat->flags & AVFMT_TS_DISCONT) &&
     //strcmp("ogg", pFormatCtx->iformat->name);
 
-    is->max_frame_duration =
-        (pFormatCtx->iformat->flags & AVFMT_TS_DISCONT) ? 10.0 : 3600.0;
+    is->max_frame_duration = (pFormatCtx->iformat->flags & AVFMT_TS_DISCONT) ? 10.0 : 3600.0;
 
     /* if seeking requested, we execute it */
     if (start_time != AV_NOPTS_VALUE)
@@ -145,12 +139,10 @@ int VideoStateData::open_media(VideoState* is)
         /* add the stream start time */
         if (pFormatCtx->start_time != AV_NOPTS_VALUE)
             timestamp += pFormatCtx->start_time;
-        ret =
-            avformat_seek_file(pFormatCtx, -1, INT64_MIN, timestamp, INT64_MAX, 0);
+        ret = avformat_seek_file(pFormatCtx, -1, INT64_MIN, timestamp, INT64_MAX, 0);
         if (ret < 0)
         {
-            av_log(nullptr, AV_LOG_WARNING, "%s: could not seek to position %0.3f\n",
-                   is->filename, (double)timestamp / AV_TIME_BASE);
+            av_log(nullptr, AV_LOG_WARNING, "%s: could not seek to position %0.3f\n", is->filename, (double)timestamp / AV_TIME_BASE);
         }
     }
 
@@ -164,32 +156,26 @@ int VideoStateData::open_media(VideoState* is)
         enum AVMediaType type = st->codecpar->codec_type;
         st->discard = AVDISCARD_ALL;
         if (type >= 0 && wanted_stream_spec[type] && st_index[type] == -1)
-            if (avformat_match_stream_specifier(pFormatCtx, st,
-                                                wanted_stream_spec[type]) > 0)
+            if (avformat_match_stream_specifier(pFormatCtx, st, wanted_stream_spec[type]) > 0)
                 st_index[type] = i;
     }
     for (i = 0; i < AVMEDIA_TYPE_NB; i++)
     {
         if (wanted_stream_spec[i] && st_index[i] == -1)
         {
-            av_log(nullptr, AV_LOG_ERROR,
-                   "Stream specifier %s does not match any %s stream\n",
-                   wanted_stream_spec[i], av_get_media_type_string(AVMediaType(i)));
+            av_log(nullptr, AV_LOG_ERROR, "Stream specifier %s does not match any %s stream\n", wanted_stream_spec[i],
+                   av_get_media_type_string(AVMediaType(i)));
             st_index[i] = INT_MAX;
         }
     }
 
-    st_index[AVMEDIA_TYPE_VIDEO] =
-        av_find_best_stream(pFormatCtx, AVMEDIA_TYPE_VIDEO,
-                            st_index[AVMEDIA_TYPE_VIDEO], -1, nullptr, 0);
-    st_index[AVMEDIA_TYPE_AUDIO] = av_find_best_stream(
-        pFormatCtx, AVMEDIA_TYPE_AUDIO, st_index[AVMEDIA_TYPE_AUDIO],
-        st_index[AVMEDIA_TYPE_VIDEO], nullptr, 0);
-    st_index[AVMEDIA_TYPE_SUBTITLE] = av_find_best_stream(
-        pFormatCtx, AVMEDIA_TYPE_SUBTITLE, st_index[AVMEDIA_TYPE_SUBTITLE],
-        (st_index[AVMEDIA_TYPE_AUDIO] >= 0 ? st_index[AVMEDIA_TYPE_AUDIO]
-                                           : st_index[AVMEDIA_TYPE_VIDEO]),
-        nullptr, 0);
+    st_index[AVMEDIA_TYPE_VIDEO] = av_find_best_stream(pFormatCtx, AVMEDIA_TYPE_VIDEO, st_index[AVMEDIA_TYPE_VIDEO], -1, nullptr, 0);
+    st_index[AVMEDIA_TYPE_AUDIO] = av_find_best_stream(pFormatCtx, AVMEDIA_TYPE_AUDIO, st_index[AVMEDIA_TYPE_AUDIO],
+                                                       st_index[AVMEDIA_TYPE_VIDEO], nullptr, 0);
+    st_index[AVMEDIA_TYPE_SUBTITLE] = av_find_best_stream(pFormatCtx, AVMEDIA_TYPE_SUBTITLE, st_index[AVMEDIA_TYPE_SUBTITLE],
+                                                          (st_index[AVMEDIA_TYPE_AUDIO] >= 0 ? st_index[AVMEDIA_TYPE_AUDIO]
+                                                                                             : st_index[AVMEDIA_TYPE_VIDEO]),
+                                                          nullptr, 0);
 
     /* open the streams */
     if (st_index[AVMEDIA_TYPE_VIDEO] >= 0)
@@ -209,8 +195,7 @@ int VideoStateData::open_media(VideoState* is)
 
     if (is->video_stream < 0 && is->audio_stream < 0)
     {
-        av_log(nullptr, AV_LOG_FATAL,
-               "Failed to open file '%s' or configure filtergraph\n", is->filename);
+        av_log(nullptr, AV_LOG_FATAL, "Failed to open file '%s' or configure filtergraph\n", is->filename);
         ret = -1;
         goto fail;
     }
@@ -247,11 +232,9 @@ VideoState* VideoStateData::stream_open(const char* filename, const AVInputForma
     is->xleft = 0;
 
     /* start video display */
-    if (frame_queue_init(&is->pictq, &is->videoq, VIDEO_PICTURE_QUEUE_SIZE, 1) <
-        0)
+    if (frame_queue_init(&is->pictq, &is->videoq, VIDEO_PICTURE_QUEUE_SIZE, 1) < 0)
         goto fail;
-    if (frame_queue_init(&is->subpq, &is->subtitleq, SUBPICTURE_QUEUE_SIZE, 0) <
-        0)
+    if (frame_queue_init(&is->subpq, &is->subtitleq, SUBPICTURE_QUEUE_SIZE, 0) < 0)
         goto fail;
     if (frame_queue_init(&is->sampq, &is->audioq, SAMPLE_QUEUE_SIZE, 1) < 0)
         goto fail;
@@ -272,14 +255,11 @@ VideoState* VideoStateData::stream_open(const char* filename, const AVInputForma
     init_clock(&is->extclk, &is->extclk.serial);
     is->audio_clock_serial = -1;
     if (startup_volume < 0)
-        av_log(nullptr, AV_LOG_WARNING, "-volume=%d < 0, setting to 0\n",
-               startup_volume);
+        av_log(nullptr, AV_LOG_WARNING, "-volume=%d < 0, setting to 0\n", startup_volume);
     if (startup_volume > 100)
-        av_log(nullptr, AV_LOG_WARNING, "-volume=%d > 100, setting to 100\n",
-               startup_volume);
+        av_log(nullptr, AV_LOG_WARNING, "-volume=%d > 100, setting to 100\n", startup_volume);
     startup_volume = av_clip(startup_volume, 0, 100);
-    startup_volume =
-        av_clip(SDL_MIX_MAXVOLUME * startup_volume / 100, 0, SDL_MIX_MAXVOLUME);
+    startup_volume = av_clip(SDL_MIX_MAXVOLUME * startup_volume / 100, 0, SDL_MIX_MAXVOLUME);
     is->audio_volume = startup_volume;
     is->muted = 0;
     is->av_sync_type = av_sync_type;
@@ -300,25 +280,25 @@ fail:
 
 void VideoStateData::threads_setting(VideoState* is, const Threads& threads)
 {
-    if (is == nullptr)
+    if (!is)
         return;
 
-    assert(is->threads.read_tid == nullptr);
-    assert(is->threads.video_decode_tid == nullptr);
-    assert(is->threads.audio_decode_tid == nullptr);
-    assert(is->threads.video_play_tid == nullptr);
-    assert(is->threads.audio_play_tid == nullptr);
-    assert(is->threads.subtitle_decode_tid == nullptr);
+    assert(!is->threads.read_tid);
+    assert(!is->threads.video_decode_tid);
+    assert(!is->threads.audio_decode_tid);
+    assert(!is->threads.video_play_tid);
+    assert(!is->threads.audio_play_tid);
+    assert(!is->threads.subtitle_decode_tid);
 
     is->threads = threads;
 }
 
 void VideoStateData::read_thread_exit_wait(VideoState* is)
 {
-    if (is->read_thread_exit != 0)
+    if (!is)
         return;
 
-    if (is == nullptr)
+    if (is->read_thread_exit != 0)
         return;
 
     if (is->threads.read_tid)
@@ -332,7 +312,7 @@ void VideoStateData::read_thread_exit_wait(VideoState* is)
 
 void VideoStateData::threads_exit_wait(VideoState* is)
 {
-    if (is == nullptr)
+    if (!is)
         return;
 
     if (is->threads.video_play_tid)
@@ -431,8 +411,7 @@ static enum AVPixelFormat get_hw_format(AVCodecContext* ctx, const enum AVPixelF
             return *p;
     }
 
-    fprintf(stderr, "Failed to get HW surface format, codec_id=%d\n",
-            (int)ctx->codec_id);
+    fprintf(stderr, "Failed to get HW surface format, codec_id=%d\n", (int)ctx->codec_id);
     return AV_PIX_FMT_NONE;
 }
 
@@ -455,8 +434,7 @@ int VideoStateData::hw_decoder_init(AVCodecContext* ctx, const enum AVHWDeviceTy
 {
     int err = 0;
 
-    if ((err = av_hwdevice_ctx_create(&m_hw_device_ctx, type, nullptr, nullptr,
-                                      0)) < 0)
+    if ((err = av_hwdevice_ctx_create(&m_hw_device_ctx, type, nullptr, nullptr, 0)) < 0)
     {
         fprintf(stderr, "Failed to create specified HW device.\n");
         return err;
@@ -480,7 +458,10 @@ bool VideoStateData::open_hardware(AVCodecContext* avctx, const AVCodec* codec, 
     return true;
 }
 
-void VideoStateData::close_hardware() { av_buffer_unref(&m_hw_device_ctx); }
+void VideoStateData::close_hardware()
+{
+    av_buffer_unref(&m_hw_device_ctx);
+}
 
 int VideoStateData::stream_component_open(VideoState* is, int stream_index)
 {
@@ -503,8 +484,7 @@ int VideoStateData::stream_component_open(VideoState* is, int stream_index)
     if (!avctx)
         return AVERROR(ENOMEM);
 
-    ret =
-        avcodec_parameters_to_context(avctx, ic->streams[stream_index]->codecpar);
+    ret = avcodec_parameters_to_context(avctx, ic->streams[stream_index]->codecpar);
     if (ret < 0)
         goto fail;
     avctx->pkt_timebase = ic->streams[stream_index]->time_base;
@@ -525,13 +505,11 @@ int VideoStateData::stream_component_open(VideoState* is, int stream_index)
             if (m_bUseHardware)
             {
                 m_bHardwareSuccess = false;
-                const char* hardware_device =
-                    "dxva2"; // device = <vaapi|vdpau|dxva2|d3d11va>
+                const char* hardware_device = "dxva2"; // device = <vaapi|vdpau|dxva2|d3d11va>
                 ret = open_hardware(avctx, codec, hardware_device);
                 if (!ret)
                 {
-                    qWarning("hardware-accelerated opened failed, device:%s",
-                             hardware_device);
+                    qWarning("hardware-accelerated opened failed, device:%s", hardware_device);
                     goto fail;
                 }
 
@@ -543,8 +521,7 @@ int VideoStateData::stream_component_open(VideoState* is, int stream_index)
 
     if (!codec)
     {
-        av_log(nullptr, AV_LOG_WARNING, "No decoder could be found for codec %s\n",
-               avcodec_get_name(avctx->codec_id));
+        av_log(nullptr, AV_LOG_WARNING, "No decoder could be found for codec %s\n", avcodec_get_name(avctx->codec_id));
         ret = AVERROR(EINVAL);
         goto fail;
     }
@@ -552,9 +529,7 @@ int VideoStateData::stream_component_open(VideoState* is, int stream_index)
     avctx->codec_id = codec->id;
     if (stream_lowres > codec->max_lowres)
     {
-        av_log(avctx, AV_LOG_WARNING,
-               "The maximum value for lowres supported by the decoder is %d\n",
-               codec->max_lowres);
+        av_log(avctx, AV_LOG_WARNING, "The maximum value for lowres supported by the decoder is %d\n", codec->max_lowres);
         stream_lowres = codec->max_lowres;
     }
     avctx->lowres = stream_lowres;
@@ -579,10 +554,8 @@ int VideoStateData::stream_component_open(VideoState* is, int stream_index)
             // "atempo=2"; const char* afilters = nullptr; const char* afilters =
             // "atempo=2.0";
             is->audio_filter_src.freq = avctx->sample_rate;
-            is->audio_filter_src.channels =
-                avctx->ch_layout.nb_channels; // avctx->channels;
-            is->audio_filter_src.channel_layout =
-                avctx->ch_layout; //  avctx->channel_layout
+            is->audio_filter_src.channels = avctx->ch_layout.nb_channels; // avctx->channels;
+            is->audio_filter_src.channel_layout = avctx->ch_layout;       //  avctx->channel_layout
             is->audio_filter_src.fmt = avctx->sample_fmt;
             if ((ret = configure_audio_filters(is, is->afilters, 0)) < 0)
                 goto fail;
@@ -594,8 +567,7 @@ int VideoStateData::stream_component_open(VideoState* is, int stream_index)
             format = av_buffersink_get_format(sink);
             AVChannelLayout chn_layout;
             av_buffersink_get_ch_layout(sink, &chn_layout);
-            qDebug("afilter sink: sample rate:%d, chn:%d, fmt:%d, chn_layout:%d",
-                   sample_rate, nb_channels, format, chn_layout.u);
+            qDebug("afilter sink: sample rate:%d, chn:%d, fmt:%d, chn_layout:%d", sample_rate, nb_channels, format, chn_layout.u);
         }
 #else
             sample_rate = avctx->sample_rate;
@@ -680,7 +652,7 @@ void VideoStateData::stream_component_close(VideoState* is, int stream_index)
             av_freep(&is->rdft_data);
             is->rdft = nullptr;
             is->rdft_bits = 0;
-    }*/
+            }*/
             break;
 
         case AVMEDIA_TYPE_VIDEO:
@@ -718,11 +690,20 @@ void VideoStateData::stream_component_close(VideoState* is, int stream_index)
     }
 }
 
-bool VideoStateData::has_video() const { return m_bHasVideo; }
+bool VideoStateData::has_video() const
+{
+    return m_bHasVideo;
+}
 
-bool VideoStateData::has_audio() const { return m_bHasAudio; }
+bool VideoStateData::has_audio() const
+{
+    return m_bHasAudio;
+}
 
-bool VideoStateData::has_subtitle() const { return m_bHasSubtitle; }
+bool VideoStateData::has_subtitle() const
+{
+    return m_bHasSubtitle;
+}
 
 AVCodecContext* VideoStateData::get_contex(AVMediaType type) const
 {
@@ -750,8 +731,7 @@ enum AVHWDeviceType VideoStateData::get_hwdevice(const char* device) const
     enum AVHWDeviceType type = av_hwdevice_find_type_by_name(device);
     if (type == AV_HWDEVICE_TYPE_NONE)
     {
-        av_log(nullptr, AV_LOG_WARNING, "Device type %s is not supported.\n",
-               device);
+        av_log(nullptr, AV_LOG_WARNING, "Device type %s is not supported.\n", device);
 
         av_log(nullptr, AV_LOG_INFO, "Available device types:");
         while ((type = av_hwdevice_iterate_types(type)) != AV_HWDEVICE_TYPE_NONE)
@@ -762,10 +742,9 @@ enum AVHWDeviceType VideoStateData::get_hwdevice(const char* device) const
     return type;
 }
 
-enum AVPixelFormat
-VideoStateData::get_hwdevice_decoder(const AVCodec* decoder, enum AVHWDeviceType type) const
+enum AVPixelFormat VideoStateData::get_hwdevice_decoder(const AVCodec* decoder, enum AVHWDeviceType type) const
 {
-    if (decoder == nullptr || AV_HWDEVICE_TYPE_NONE == type)
+    if (!decoder || AV_HWDEVICE_TYPE_NONE == type)
         return AV_PIX_FMT_NONE;
 
     for (int i = 0;; i++)
@@ -773,13 +752,10 @@ VideoStateData::get_hwdevice_decoder(const AVCodec* decoder, enum AVHWDeviceType
         const AVCodecHWConfig* config = avcodec_get_hw_config(decoder, i);
         if (!config)
         {
-            av_log(nullptr, AV_LOG_WARNING,
-                   "Decoder %s does not support device type %s.\n", decoder->name,
-                   av_hwdevice_get_type_name(type));
+            av_log(nullptr, AV_LOG_WARNING, "Decoder %s does not support device type %s.\n", decoder->name, av_hwdevice_get_type_name(type));
             return AV_PIX_FMT_NONE;
         }
-        if (config->methods & AV_CODEC_HW_CONFIG_METHOD_HW_DEVICE_CTX &&
-            config->device_type == type)
+        if (config->methods & AV_CODEC_HW_CONFIG_METHOD_HW_DEVICE_CTX && config->device_type == type)
         {
             return config->pix_fmt;
         }

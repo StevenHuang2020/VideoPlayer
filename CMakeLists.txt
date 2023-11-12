@@ -132,11 +132,12 @@ endif()
 set(QTDIR $ENV{QTDIR} CACHE STRING "Qt install path")
 list(APPEND CMAKE_PREFIX_PATH ${QTDIR})
 
-# Find the necessary Qt5 modules
-find_package(Qt5Core REQUIRED)
-find_package(Qt5Gui REQUIRED)
-find_package(Qt5Widgets REQUIRED)
-find_package(Qt5Multimedia REQUIRED)
+# Find the necessary QT LIBS
+find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Gui)
+find_package(Qt6 REQUIRED COMPONENTS Widgets)
+find_package(Qt6 REQUIRED COMPONENTS Multimedia)
+find_package(Qt6 REQUIRED COMPONENTS OpenGLWidgets)
 
 # Test for supported Qt version
 find_program(QMAKE_EXECUTABLE NAMES qmake HINTS ${QTDIR} ENV QTDIR PATH_SUFFIXES bin)
@@ -156,7 +157,7 @@ set(QT_RESOURCES
     src/qmake_qmake_qm_files.qrc
 )
 
-qt5_add_resources(RESOURCES ${QT_RESOURCES})
+qt6_add_resources(RESOURCES ${QT_RESOURCES})
 
 #-------------------------------------------------------------------------------
 #   COMPILE FLAGS
@@ -209,20 +210,25 @@ source_group("Translation Files" REGULAR_EXPRESSION ".*[.]ts")
 #-------------------------------------------------------------------------------
 
 set(LIBRARIES
-    Qt5::Core
-    Qt5::Gui
-    Qt5::Widgets
-    Qt5::Multimedia
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Widgets
+    Qt6::Multimedia
+    Qt6::OpenGLWidgets
     Threads::Threads
 )
 
 list(APPEND LIBRARIES
+    # FFmpeg libs
     avcodec.lib
     avutil.lib
     avformat.lib
     swscale.lib
     swresample.lib
     avfilter.lib
+    
+    # opencv libs
+    opencv_world455$<$<CONFIG:Debug>:d>.lib
 )
 
 # Remove duplicate library dependencies.
@@ -257,7 +263,7 @@ include_directories(${INCLUDE_DIRS})
 add_executable(${TARGET_NAME} ${GUI_TYPE} ${SOURCE_FILES} ${RESOURCES})
 
 # link libraries
-target_link_libraries(${TARGET_NAME} ${LIBRARIES})
+target_link_libraries(${TARGET_NAME} debug ${LIBRARIES})
 
 # Set link directories
 target_link_directories(${TARGET_NAME} PUBLIC ${LINK_DIRS})

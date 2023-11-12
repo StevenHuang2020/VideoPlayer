@@ -78,13 +78,13 @@ QString dump_format(AVFormatContext* ic, int index, const char* url, int is_outp
     const char* indent = "  ";
     uint8_t* printed = nullptr;
 
-    if (ic == nullptr)
+    if (!ic)
     {
         qErrnoWarning("invalid parameter!");
         goto fail;
     }
 
-    if (url == nullptr || (!url[0]))
+    if (!url || !url[0])
     {
         qErrnoWarning("url is invalid!");
         goto fail;

@@ -10,11 +10,9 @@
 
 typedef struct Video_Resample
 {
-    AVFrame* pFrameRGB;
-    uint8_t* buffer_RGB;
-    struct SwsContext* sws_ctx;
-
-    Video_Resample() : pFrameRGB(nullptr), buffer_RGB(nullptr), sws_ctx(nullptr) {}
+    AVFrame* pFrameRGB{nullptr};
+    uint8_t* buffer_RGB{nullptr};
+    struct SwsContext* sws_ctx{nullptr};
 } Video_Resample;
 
 class VideoPlayThread : public QThread
@@ -47,9 +45,9 @@ private:
     void parse_subtitle_ass(const QString& text);
 
 private:
-    VideoState* m_pState;
+    VideoState* m_pState{nullptr};
     Video_Resample m_Resample;
-    bool m_bExitThread;
+    bool m_bExitThread{false};
 
     const static QRegularExpression m_assFilter;
     const static QRegularExpression m_assNewLineReplacer;

@@ -104,18 +104,6 @@ void random_image(QImage& img)
 
             //*rgbpixel = QColor(r % 255, g % 255, b % 255).rgb();
             *rgbpixel = qRgb(r, g, b);
-
-            /*
-      QColor color = QColor(r%255, g%255, b%255);
-      QRgb ca = color.rgb();
-      int ca_r = color.red();
-      int ca_g = color.green();
-      int ca_b = color.blue();
-      QRgb cc = color.rgba();
-
-      QRgb cb = qRgb(r, g, b);
-      qDebug("cb=0x%X", cb);
-      */
         }
     }
 #else
@@ -160,10 +148,6 @@ void split_image(QImage& img, QImage& r_img, QImage& b_img, QImage& g_img)
             uint g = qGreen(*all_rgbpixel);
             uint b = qBlue(*all_rgbpixel);
 
-            /**r_rgbpixel = qRgb(r, r, r);
-       *g_rgbpixel = qRgb(g, g, g);
-       *b_rgbpixel = qRgb(b, b, b);*/
-
             *r_rgbpixel = qRgb(r, 0, 0);
             *g_rgbpixel = qRgb(0, g, 0);
             *b_rgbpixel = qRgb(0, 0, b);
@@ -171,14 +155,20 @@ void split_image(QImage& img, QImage& r_img, QImage& b_img, QImage& g_img)
     }
 }
 
-void invert_image(QImage& img) { img.invertPixels(); }
+void invert_image(QImage& img)
+{
+    img.invertPixels();
+}
 
 void mirro_image(QImage& img, bool horizontal, bool vertical)
 {
     img = img.mirrored(horizontal, vertical);
 }
 
-void swap_image(QImage& img) { img = img.rgbSwapped(); }
+void swap_image(QImage& img)
+{
+    img = img.rgbSwapped();
+}
 
 void scale_image(QImage& img, int width, int height)
 {

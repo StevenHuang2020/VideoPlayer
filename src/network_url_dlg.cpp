@@ -25,7 +25,7 @@ NetworkUrlDlg::NetworkUrlDlg(QWidget* parent)
     ui->setupUi(this);
     setLayout(ui->gridLayout);
 
-    Qt::WindowFlags flags = windowFlags();
+    auto flags = windowFlags();
     flags |= Qt::WindowStaysOnTopHint;
     flags &= (~Qt::WindowMinMaxButtonsHint);
     flags &= (~Qt::WindowContextHelpButtonHint);
@@ -33,4 +33,7 @@ NetworkUrlDlg::NetworkUrlDlg(QWidget* parent)
     setWindowFlags(flags);
 }
 
-QString NetworkUrlDlg::get_url() const { return ui->lineEdit->text(); }
+QString NetworkUrlDlg::get_url() const
+{
+    return ui->lineEdit->text();
+}

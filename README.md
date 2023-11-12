@@ -42,6 +42,7 @@ cmake --build . --config Release
 ```
 
 ##### History
+- v2.2.2, updated to QT6
 - v2.2.0, updated FFmpeg lib
 - v2.1.2, added Youtube URL Python script parsing
 - v2.1.1, change to clang-format

@@ -38,7 +38,7 @@ int ReadThread::loop_read()
     // AVFormatContext* pFormatCtx = is->ic;
     assert(is);
     // assert(pFormatCtx);
-    if (is == nullptr)
+    if (!is)
         return ret;
 
     pkt = av_packet_alloc();

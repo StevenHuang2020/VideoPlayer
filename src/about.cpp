@@ -16,7 +16,7 @@ About::About(QWidget* parent) : QDialog(parent), ui(std::make_unique<Ui::About>(
     ui->setupUi(this);
     setLayout(ui->verticalLayout);
 
-    Qt::WindowFlags flags = windowFlags();
+    auto flags = windowFlags();
     flags |= Qt::WindowStaysOnTopHint;
     flags &= (~Qt::WindowMinMaxButtonsHint);
     flags &= (~Qt::WindowContextHelpButtonHint);
@@ -32,25 +32,32 @@ About::~About()
 
 void About::init_label()
 {
-    QString str = "";
-    str += "Video player v";
-    str += PLAYER_VERSION;
-    str += " (x64)";
-    str += "\n";
-    str += "\n";
+    auto align = Qt::AlignLeft; //Qt::AlignCenter;
 
-    str += QString("Qt Version: %1\n").arg(qVersion());
-    str += QString("FFmpeg Version: %1\n").arg(FFMPEG_VERSION);
-    str += QString("OpenCV Version: %1\n").arg(CV_VERSION);
-    str += QString("Datetime: %1\n").arg(__TIMESTAMP__);
-    
+    QString str = "";
+    str += "<b>Video Player v";
+    str += PLAYER_VERSION;
+    str += " (x64)</b>";
+    str += "<br>";
+    str += "<br>";
+
+    str += QString("<a href=\"https://www.qt.io/\">QT</a> Version: %1<br>").arg(qVersion());
+    str += QString("<a href=\"https://www.ffmpeg.org/\">FFmpeg</a> Version: %1<br>").arg(FFMPEG_VERSION);
+    str += QString("<a href=\"https://opencv.org/\">OpenCV</a> Version: %1<br>").arg(CV_VERSION);
+    str += QString("Datetime: %1<br>").arg(__TIMESTAMP__);
+
     str = QApplication::translate("about", str.toStdString().c_str(), Q_NULLPTR);
+    ui->label->setTextFormat(Qt::RichText);
+    ui->label->setTextInteractionFlags(Qt::TextBrowserInteraction);
+    ui->label->setOpenExternalLinks(true);
+    ui->label->setAlignment(align);
     ui->label->setText(str);
 
-    str = "\nCopy Right @ <a href=\"https://github.com/StevenHuang2020/VideoPlayer\">Steven Huang</a>\n";
+    str = "\nCopy Right @ <a href=\"https://github.com/StevenHuang2020/VideoPlayer/\">Steven Huang</a>\n";
     str = QApplication::translate("about", str.toStdString().c_str(), Q_NULLPTR);
     ui->label_name->setTextFormat(Qt::RichText);
     ui->label_name->setTextInteractionFlags(Qt::TextBrowserInteraction);
     ui->label_name->setOpenExternalLinks(true);
+    ui->label_name->setAlignment(align);
     ui->label_name->setText(str);
 }

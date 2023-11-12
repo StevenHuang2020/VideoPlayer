@@ -36,10 +36,10 @@ void BarHelper::draw_data_bar(QPainter* painter, std::vector<int>& data, int n, 
 {
     assert(data.size() == n);
 
-    qreal w_step = (w - (n - 1) * h_inter) * 1.0 / n;
+    auto w_step = (w - (n - 1) * h_inter) * 1.0 / n;
     for (int i = 0; i < n; ++i)
     {
-        qreal top = data[i]; // rand() % height;
+        auto top = data[i]; // rand() % height;
         QRectF rt(i * (w_step + h_inter), h - top, w_step, top);
         painter->drawRect(rt);
     }
@@ -49,10 +49,9 @@ void BarHelper::draw_data_line(QPainter* painter, std::vector<int>& data, int n,
 {
     painter->setPen(m_pen);
 
-    qreal w_step = (w - (n - 1) * h_inter) * 1.0 / n;
+    auto w_step = (w - (n - 1) * h_inter) * 1.0 / n;
     for (size_t i = 0; i < n - 1; ++i)
     {
-
         qreal x1 = i * (w_step + h_inter);
         qreal y1 = h - data[i];
         qreal x2 = x1 + (w_step + h_inter);
@@ -160,7 +159,7 @@ void BarHelper::draw_data_style(QPainter* painter, const QRect& rt, const AudioD
 
 void BarHelper::paint(QPainter* painter, QPaintEvent* event, const AudioData& data)
 {
-    QRect rt = event->rect();
+    auto rt = event->rect();
     painter->fillRect(rt, m_background);
     // painter->translate(0, -1 * rt.height() / 2);
 
@@ -189,14 +188,14 @@ void BarHelper::get_data(const AudioData& data, std::vector<int>& v, bool left) 
 /* v data samples to num*/
 void BarHelper::data_sample_old(std::vector<int>& v, const uint32_t num)
 {
-    size_t size = v.size();
+    auto size = v.size();
     if (num <= 0 || size < num)
     {
         v.insert(v.end(), num - size, 0);
         return;
     }
 
-    size_t numItems = size / num;
+    auto numItems = size / num;
     if (numItems <= 1)
     {
         v.erase(v.begin() + num, v.end());
@@ -218,14 +217,14 @@ void BarHelper::data_sample_old(std::vector<int>& v, const uint32_t num)
 
 void BarHelper::data_sample(std::vector<int>& v, const uint32_t num)
 {
-    size_t size = v.size();
+    auto size = v.size();
     if (num <= 0 || size < num)
     {
         v.insert(v.end(), num - size, 0);
         return;
     }
 
-    size_t numItems = size / num;
+    auto numItems = size / num;
     if (numItems <= 1)
     {
         v.erase(v.begin() + num, v.end());
@@ -242,7 +241,7 @@ void BarHelper::data_sample(std::vector<int>& v, const uint32_t num)
 
 void BarHelper::binary_data(std::vector<int>& v)
 {
-    size_t j = 0;
+    auto j = 0;
     for (size_t i = 0; i < v.size(); i += 2)
         v[j++] = v[i];
 
@@ -310,7 +309,7 @@ void BarHelper::normal_data(std::vector<int>& v, const int height)
 
 void BarHelper::data_frequency(std::vector<int>& v, const uint32_t num)
 {
-    size_t size = v.size();
+    auto size = v.size();
     if (num <= 0 || size < num)
     {
         v.insert(v.end(), num - size, 0);

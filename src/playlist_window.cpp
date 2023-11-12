@@ -17,7 +17,7 @@ PlayListWnd::PlayListWnd(QWidget* parent)
     ui->setupUi(this);
     setLayout(ui->gridLayout);
 
-    Qt::WindowFlags flags = windowFlags();
+    auto flags = windowFlags();
     flags |= Qt::Window;
     flags |= Qt::WindowStaysOnTopHint;
     flags &= (~Qt::WindowContextHelpButtonHint);
@@ -35,7 +35,7 @@ PlayListWnd::PlayListWnd(QWidget* parent)
 
 void PlayListWnd::init_list()
 {
-    QTableWidget* pTable = get_table();
+    auto pTable = get_table();
 
     QStringList headerLabels;
     // headerLabels << "#" << "Title" << "Duration" << "Path";
@@ -45,7 +45,7 @@ void PlayListWnd::init_list()
     pTable->setColumnCount(headerLabels.size());
     pTable->setHorizontalHeaderLabels(headerLabels);
 
-    QHeaderView* header = pTable->horizontalHeader();
+    auto header = pTable->horizontalHeader();
     header->setFixedHeight(35);
     // header->setSectionResizeMode(QHeaderView::Stretch);
     // header->setSectionResizeMode(1, QHeaderView::ResizeToContents); //column
@@ -59,12 +59,10 @@ void PlayListWnd::init_list()
     pTable->setSelectionBehavior(QAbstractItemView::SelectRows);
     pTable->setSelectionMode(QAbstractItemView::SingleSelection);
 
-    connect(pTable, SIGNAL(cellDoubleClicked(int, int)), this,
-            SLOT(cellSelected(int, int)));
+    connect(pTable, SIGNAL(cellDoubleClicked(int, int)), this, SLOT(cellSelected(int, int)));
 
     pTable->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(pTable, SIGNAL(customContextMenuRequested(const QPoint&)), this,
-            SLOT(displayMenu(const QPoint&)));
+    connect(pTable, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(displayMenu(const QPoint&)));
 }
 
 bool PlayListWnd::add_data_file(const QString& file)
@@ -112,7 +110,7 @@ void PlayListWnd::clear_data_files()
 
 void PlayListWnd::add_table_line(const PlayListLine& data)
 {
-    QTableWidget* const pTable = get_table();
+    const auto pTable = get_table();
     const int count = pTable->rowCount();
     pTable->setRowCount(count + 1);
 
@@ -120,14 +118,14 @@ void PlayListWnd::add_table_line(const PlayListLine& data)
     pTable->setItem(count, col++, new QTableWidgetItem(data.fileName));
     pTable->setItem(count, col++, new QTableWidgetItem(data.duration));
 
-    QString file = QDir::toNativeSeparators(data.file);
+    auto file = QDir::toNativeSeparators(data.file);
     pTable->setItem(count, col++, new QTableWidgetItem(file));
     pTable->setRowHeight(count, 16);
 }
 
 void PlayListWnd::update_table_list()
 {
-    QTableWidget* const pTable = get_table();
+    const auto pTable = get_table();
     while (pTable->rowCount() > 0)
         pTable->removeRow(0);
 
@@ -156,7 +154,7 @@ void PlayListWnd::update_table_list()
 
 void PlayListWnd::cellSelected(int row, int col)
 {
-    QString file = get_data_file(row);
+    auto file = get_data_file(row);
     qDebug() << "file clicked:"
              << "row:" << row << "col:" << col << "file:" << file;
     emit play_file(file);
@@ -164,7 +162,7 @@ void PlayListWnd::cellSelected(int row, int col)
 
 QString PlayListWnd::get_cursel_file() const
 {
-    QTableWidget* const pTable = get_table();
+    const auto pTable = get_table();
     return get_data_file(pTable->currentRow());
 }
 
@@ -216,12 +214,12 @@ void PlayListWnd::closeEvent(QCloseEvent* event)
 
 void PlayListWnd::dropEvent(QDropEvent* event)
 {
-    const QMimeData* mimeData = event->mimeData();
+    const auto mimeData = event->mimeData();
 
     if (!mimeData->hasUrls())
         return;
 
-    QList<QUrl> urlList = mimeData->urls();
+    auto urlList = mimeData->urls();
 
     QStringList files;
     for (int i = 0; i < urlList.size(); i++)
@@ -249,7 +247,7 @@ QString PlayListWnd::get_file_duration(const QString& file) const
 
 void PlayListWnd::dragEnterEvent(QDragEnterEvent* event)
 {
-    const QMimeData* mimeData = event->mimeData();
+    const auto mimeData = event->mimeData();
     if (mimeData->hasUrls())
         event->acceptProposedAction();
     event->accept();
@@ -270,13 +268,14 @@ void PlayListWnd::keyPressEvent(QKeyEvent* event)
 
 void PlayListWnd::set_sel_file(const QString& file)
 {
-    QTableWidget* const pTable = get_table();
-
-    pTable->selectRow(0); // default
-    for (int i = 0; i < pTable->rowCount(); i++)
+    if (const auto pTable = get_table())
     {
-        if (get_row_file(i) == file)
-            pTable->selectRow(i);
+        pTable->selectRow(0); // default
+        for (int i = 0; i < pTable->rowCount(); i++)
+        {
+            if (get_row_file(i) == file)
+                pTable->selectRow(i);
+        }
     }
 }
 
@@ -288,8 +287,7 @@ void PlayListWnd::get_files(QStringList& files) const
 
 void PlayListWnd::deleteBtn_clicked()
 {
-    QString sel = get_cursel_file();
-    if (!sel.isEmpty())
+    if (QString sel = get_cursel_file(); !sel.isEmpty())
     {
         del_data_file(sel);
         update_table_list();
@@ -312,9 +310,8 @@ bool PlayListWnd::saveBtn_clicked()
         return false;
     }
 
-    static QString dir = QDir::currentPath();
-    QString fileName = QFileDialog::getSaveFileName(
-        this, tr("Save Playlist File"), dir, tr("Playlist (*.pl)"));
+    auto dir = QDir::currentPath();
+    auto fileName = QFileDialog::getSaveFileName(this, tr("Save Playlist File"), dir, tr("Playlist (*.pl)"));
     if (fileName.isEmpty())
         return false;
 
@@ -324,8 +321,8 @@ bool PlayListWnd::saveBtn_clicked()
     if (file.open(QIODevice::WriteOnly))
     {
         QTextStream stream(&file);
-        stream.setCodec("UTF-8");
-        stream << files.join(PLAYLIST_SEPERATE_CHAR) << endl;
+        stream.setEncoding(QStringConverter::Utf8);
+        stream << files.join(PLAYLIST_SEPERATE_CHAR) << Qt::endl;
         stream.flush();
 
         file.close();
@@ -344,20 +341,22 @@ void PlayListWnd::update_files(const QStringList& files)
 
 void PlayListWnd::displayMenu(const QPoint& pos)
 {
-    QTableWidget* pTable = get_table();
-    if (pTable->rowCount() <= 0)
-        return;
+    if (auto pTable = get_table())
+    {
+        if (pTable->rowCount() <= 0)
+            return;
 
-    if (m_tmpMenu)
-        m_tmpMenu->exec(pTable->viewport()->mapToGlobal(pos));
+        if (m_tmpMenu)
+            m_tmpMenu->exec(pTable->viewport()->mapToGlobal(pos));
+    }
 }
 
 void PlayListWnd::create_temp_menu()
 {
     m_tmpMenu = std::make_unique<QMenu>(this);
-    QAction* del_act = m_tmpMenu->addAction("Delete");
-    QAction* clear_act = m_tmpMenu->addAction("Clear");
-    QAction* save_act = m_tmpMenu->addAction("Save");
+    auto del_act = m_tmpMenu->addAction("Delete");
+    auto clear_act = m_tmpMenu->addAction("Clear");
+    auto save_act = m_tmpMenu->addAction("Save");
 
     connect(del_act, &QAction::triggered, this, &PlayListWnd::deleteBtn_clicked);
     connect(clear_act, &QAction::triggered, this, &PlayListWnd::clearBtn_clicked);
@@ -366,8 +365,7 @@ void PlayListWnd::create_temp_menu()
 
 void PlayListWnd::set_cur_palyingfile()
 {
-    MainWindow* pParent = (MainWindow*)parent();
-    if (pParent)
+    if (auto pParent = (MainWindow*)parent())
         set_sel_file(pParent->get_playingfile());
 }
 
@@ -378,7 +376,7 @@ bool PlayListWnd::is_local(const QString& file)
 
 QString PlayListWnd::mimeType(const QString& file)
 {
-    QMimeType mimeType = QMimeDatabase().mimeTypeForFile(file);
+    auto mimeType = QMimeDatabase().mimeTypeForFile(file);
     qDebug() << file << ", MIME info:";
     qDebug() << "name:" << mimeType.name();
     qDebug() << "comment:" << mimeType.comment();
@@ -400,8 +398,8 @@ bool PlayListWnd::is_media(const QString& file) const
     if (!is_local(file)) // assume all network url are media files
         return true;
 
-    QString mimetype = mimeType(file);
-    QStringList mimetypes = mimetype.split("/");
+    auto mimetype = mimeType(file);
+    auto mimetypes = mimetype.split("/");
     if (mimetypes[0] == "video" || mimetypes[0] == "audio")
         return true;
 

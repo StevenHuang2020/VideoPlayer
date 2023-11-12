@@ -20,7 +20,7 @@ YoutubeUrlDlg::YoutubeUrlDlg(QWidget* parent)
     ui->setupUi(this);
     setLayout(ui->gridLayout);
 
-    Qt::WindowFlags flags = windowFlags();
+    auto flags = windowFlags();
     flags |= Qt::WindowStaysOnTopHint;
     flags &= (~Qt::WindowMinMaxButtonsHint);
     flags &= (~Qt::WindowContextHelpButtonHint);
@@ -39,8 +39,8 @@ YoutubeUrlDlg::~YoutubeUrlDlg()
 
 void YoutubeUrlDlg::init_options()
 {
-    QComboBox* pCombox = ui->comboBox;
-    pCombox->addItems(m_options);
+    if (auto pCombox = ui->comboBox)
+        pCombox->addItems(m_options);
     set_options_index(0);
 }
 

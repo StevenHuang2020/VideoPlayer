@@ -4,7 +4,7 @@
 #include<QTextStream>
 #include<QFileInfo>
 #include<QTime>
-#include<QTextCodec>
+//#include<QTextCodec>
 #include<memory>
 
 void logOutput(const QtMsgType type, const QMessageLogContext& context, const QString& msg);

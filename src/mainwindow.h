@@ -1,7 +1,6 @@
 #pragma once
 
 #include <QActionGroup>
-#include <QDesktopWidget>
 #include <QElapsedTimer>
 #include <QFileDialog>
 #include <QMainWindow>
@@ -110,7 +109,7 @@ private slots:
     void on_actionHelp_triggered();
     void on_actionAbout_triggered();
     void on_actionStop_triggered();
-    void on_actionHide_Status_triggered();
+    //void on_actionHide_Status_triggered();
     void on_actionFullscreen_triggered();
     void on_actionHide_Play_Ctronl_triggered();
     void on_actionYoutube_triggered();
@@ -152,6 +151,7 @@ private:
     void print_size() const;
     void keep_aspect_ratio(bool bWidth = true);
     void create_style_menu();
+    inline QRect screen_rect() const { return QApplication::primaryScreen()->geometry(); };
     inline VideoLabel* get_video_label() const { return m_video_label.get(); }
     inline PlayControlWnd* get_play_control() const { return m_play_control_wnd.get(); }
     inline QObject* get_object(const QString& name) const { return findChild<QObject*>(name); }
@@ -186,8 +186,7 @@ private:
     bool create_decode_subtitle_thread(); // decode subtitle thread
     bool create_video_play_thread();      // video play thread
     bool create_audio_play_thread();      // audio play thread
-    bool start_play_thread();             // this thread will init audio device to avoid
-                                          // frezzing ui
+    bool start_play_thread();             // this thread to avoid frezzing ui
     void all_thread_start();
     void video_seek_inc(double incr);
     void video_seek(double pos = 0, double incr = 0);
@@ -222,36 +221,36 @@ public slots:
 private:
     std::unique_ptr<Ui::MainWindow> ui;
 
-    std::unique_ptr<ReadThread> m_pPacketReadThread;               // read packets thread
-    std::unique_ptr<VideoDecodeThread> m_pDecodeVideoThread;       // decode video thread
-    std::unique_ptr<AudioDecodeThread> m_pDecodeAudioThread;       // decode audio thread
-    std::unique_ptr<SubtitleDecodeThread> m_pDecodeSubtitleThread; // decode subtitle thread
-    std::unique_ptr<AudioPlayThread> m_pAudioPlayThread;           // audio play thread
-    std::unique_ptr<VideoPlayThread> m_pVideoPlayThread;           // video play thread
-    std::unique_ptr<VideoStateData> m_pVideoState;                 // sync packets
-    std::unique_ptr<StartPlayThread> m_pBeforePlayThread;          // time-consuming operations before play
-    std::unique_ptr<YoutubeUrlThread> m_pYoutubeUrlThread;         // youtube url parsing
-    std::unique_ptr<StopWaitingThread> m_pStopplayWaitingThread;   // waiting stop play
+    std::unique_ptr<ReadThread> m_pPacketReadThread{nullptr};               // read packets thread
+    std::unique_ptr<VideoDecodeThread> m_pDecodeVideoThread{nullptr};       // decode video thread
+    std::unique_ptr<AudioDecodeThread> m_pDecodeAudioThread{nullptr};       // decode audio thread
+    std::unique_ptr<SubtitleDecodeThread> m_pDecodeSubtitleThread{nullptr}; // decode subtitle thread
+    std::unique_ptr<AudioPlayThread> m_pAudioPlayThread{nullptr};           // audio play thread
+    std::unique_ptr<VideoPlayThread> m_pVideoPlayThread{nullptr};           // video play thread
+    std::unique_ptr<VideoStateData> m_pVideoState{nullptr};                 // sync packets
+    std::unique_ptr<StartPlayThread> m_pBeforePlayThread{nullptr};          // time-consuming operations before play
+    std::unique_ptr<YoutubeUrlThread> m_pYoutubeUrlThread{nullptr};         // youtube url parsing
+    std::unique_ptr<StopWaitingThread> m_pStopplayWaitingThread{nullptr};   // waiting stop play
 
     QString m_videoFile;
-    QTimer m_timer; // mouse moving checker timer
+    QTimer m_timer; // mouse moving checking timer
     AppSettings m_settings;
     PlayerSkin m_skin;
     QString m_subtitle;
 
-    std::unique_ptr<VideoLabel> m_video_label;
-    std::unique_ptr<PlayControlWnd> m_play_control_wnd;
-    std::unique_ptr<AudioEffectGL> m_audio_effect_wnd;
-    std::unique_ptr<PlayListWnd> m_playListWnd;
+    std::unique_ptr<VideoLabel> m_video_label{nullptr};
+    std::unique_ptr<PlayControlWnd> m_play_control_wnd{nullptr};
+    std::unique_ptr<AudioEffectGL> m_audio_effect_wnd{nullptr};
+    std::unique_ptr<PlayListWnd> m_playListWnd{nullptr};
 
 private:
-    std::unique_ptr<QAction> m_recentFileActs[MaxRecentFiles];
-    std::unique_ptr<QAction> m_recentClear;
-    std::unique_ptr<QActionGroup> m_styleActsGroup; // style menus group
-    std::unique_ptr<QAction> m_styleActions[MaxSkinStlyes];
-    std::unique_ptr<QActionGroup> m_CvActsGroup; // cv menus group
-    std::unique_ptr<QActionGroup> m_AVisualTypeActsGroup;
-    std::unique_ptr<QActionGroup> m_AVisualGrapicTypeActsGroup;
-    std::unique_ptr<QAction> m_savedPlaylists[MaxPlaylist];
-    std::unique_ptr<QAction> m_PlaylistsClear;
+    std::unique_ptr<QAction> m_recentFileActs[MaxRecentFiles] = {nullptr};
+    std::unique_ptr<QAction> m_recentClear{nullptr};
+    std::unique_ptr<QActionGroup> m_styleActsGroup{nullptr}; // style menus group
+    std::unique_ptr<QAction> m_styleActions[MaxSkinStlyes] = {nullptr};
+    std::unique_ptr<QActionGroup> m_CvActsGroup{nullptr}; // cv menus group
+    std::unique_ptr<QActionGroup> m_AVisualTypeActsGroup{nullptr};
+    std::unique_ptr<QActionGroup> m_AVisualGrapicTypeActsGroup{nullptr};
+    std::unique_ptr<QAction> m_savedPlaylists[MaxPlaylist] = {nullptr};
+    std::unique_ptr<QAction> m_PlaylistsClear{nullptr};
 };
