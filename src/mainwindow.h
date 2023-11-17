@@ -109,7 +109,6 @@ private slots:
     void on_actionHelp_triggered();
     void on_actionAbout_triggered();
     void on_actionStop_triggered();
-    //void on_actionHide_Status_triggered();
     void on_actionFullscreen_triggered();
     void on_actionHide_Play_Ctronl_triggered();
     void on_actionYoutube_triggered();
@@ -149,9 +148,12 @@ private:
     void update_paly_control_status();
     void update_paly_control_muted();
     void print_size() const;
+    void print_screen() const;
     void keep_aspect_ratio(bool bWidth = true);
     void create_style_menu();
-    inline QRect screen_rect() const { return QApplication::primaryScreen()->geometry(); };
+    inline QScreen* screen() const;
+    QRect screen_rect() const;
+    qreal screen_scale() const;
     inline VideoLabel* get_video_label() const { return m_video_label.get(); }
     inline PlayControlWnd* get_play_control() const { return m_play_control_wnd.get(); }
     inline QObject* get_object(const QString& name) const { return findChild<QObject*>(name); }
@@ -178,7 +180,7 @@ private:
     void show_audio_effect(bool bShow = true);
     void play_control_key(Qt::Key key);
     void set_default_bkground();
-    bool create_video_state(const char* filename);
+    bool create_video_state(const QString& file);
     void delete_video_state();
     bool create_read_thread();            // read packet thread
     bool create_decode_video_thread();    // decode thread

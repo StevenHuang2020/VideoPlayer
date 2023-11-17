@@ -10,9 +10,9 @@
 #include "mainwindow.h"
 #include "packets_sync.h"
 #include "play_control_window.h"
+#include "common.h"
 
-PlayListWnd::PlayListWnd(QWidget* parent)
-    : QWidget(parent), ui(std::make_unique<Ui::PlayList>())
+PlayListWnd::PlayListWnd(QWidget* parent) : QWidget(parent), ui(std::make_unique<Ui::PlayList>())
 {
     ui->setupUi(this);
     setLayout(ui->gridLayout);
@@ -118,7 +118,7 @@ void PlayListWnd::add_table_line(const PlayListLine& data)
     pTable->setItem(count, col++, new QTableWidgetItem(data.fileName));
     pTable->setItem(count, col++, new QTableWidgetItem(data.duration));
 
-    auto file = QDir::toNativeSeparators(data.file);
+    auto file = toNativePath(data.file);
     pTable->setItem(count, col++, new QTableWidgetItem(file));
     pTable->setRowHeight(count, 16);
 }

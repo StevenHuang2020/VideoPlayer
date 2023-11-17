@@ -14,8 +14,7 @@
 const QStringList YoutubeUrlDlg::m_options = {
     "best", "worst", "bestvideo", "worstvideo", "bestaudio", "worstaudio"};
 
-YoutubeUrlDlg::YoutubeUrlDlg(QWidget* parent)
-    : QDialog(parent), ui(std::make_unique<Ui::YoutubeUrlDlg>())
+YoutubeUrlDlg::YoutubeUrlDlg(QWidget* parent) : QDialog(parent), ui(std::make_unique<Ui::YoutubeUrlDlg>())
 {
     ui->setupUi(this);
     setLayout(ui->gridLayout);

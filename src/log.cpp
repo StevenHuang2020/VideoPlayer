@@ -66,6 +66,9 @@ void logOutput(const QtMsgType type, const QMessageLogContext& context, const QS
             break;
     }
 
+    if (msg.startsWith("QObject::startTimer:") || msg.startsWith("QObject::killTimer:"))
+        return;
+
 #if !NDEBUG // log to debug window with debug version
     txt = QString("[%1][%2]%3 (file:%4:%5, fun:%6)\n")
               .arg(time)

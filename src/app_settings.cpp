@@ -26,7 +26,7 @@ void AppSettings::print_settings() const
 {
     if (m_pSettings)
     {
-        qDebug() << "videoplayer configure file:" << QDir::toNativeSeparators(m_pSettings->fileName());
+        qDebug() << "videoplayer configure file:" << toNativePath(m_pSettings->fileName());
         qDebug() << "organizationName:" << m_pSettings->organizationName();
         qDebug() << "applicationName:" << m_pSettings->applicationName();
 
@@ -68,7 +68,7 @@ void AppSettings::set_value(const QString& group, const QString& key, const QVar
     m_pSettings->setValue(group_key(group, key), value);
 }
 
-QVariant AppSettings::get_value(const QString& group,                                const QString& key) const
+QVariant AppSettings::get_value(const QString& group, const QString& key) const
 {
     return m_pSettings->value(group_key(group, key));
 }

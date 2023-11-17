@@ -7,6 +7,7 @@
 // ***********************************************************/
 
 #include "mainwindow.h"
+#include "common.h"
 #include "about.h"
 #include "ffmpeg_init.h"
 #include "imagecv_operations.h"
@@ -50,7 +51,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(std::make_uniq
 #if AUTO_HIDE_PLAYCONTROL
     // set mouse moving detection timer
     setMouseTracking(true);
-    m_timer.setInterval(5 * 1000);
+    m_timer.setInterval(3 * 1000);
     m_timer.setSingleShot(false);
     connect(&m_timer, &QTimer::timeout, this, &MainWindow::check_hide_play_control);
     m_timer.start();
@@ -66,12 +67,32 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(std::make_uniq
     connect(ui->actionLine, &QAction::triggered, this, &MainWindow::popup_audio_effect);
     connect(ui->actionBar, &QAction::triggered, this, &MainWindow::popup_audio_effect);
     connect(ui->actionPie, &QAction::triggered, this, &MainWindow::popup_audio_effect);
+
+    print_screen();
 }
 
 MainWindow::~MainWindow()
 {
     stop_play();
     save_settings();
+}
+
+QScreen* MainWindow::screen() const
+{
+    return QApplication::primaryScreen();
+}
+
+QRect MainWindow::screen_rect() const
+{
+    //auto pScreen = screen();
+    //auto scale = pScreen->devicePixelRatio();
+    //return QRect(0, 0, rt.width() * scale, rt.height() * scale);
+    return screen()->geometry();
+}
+
+qreal MainWindow::screen_scale() const
+{
+    return screen()->devicePixelRatio();
 }
 
 void MainWindow::create_video_label()
@@ -399,6 +420,85 @@ void MainWindow::print_size() const
     qDebug("menuBar pt (x:%d, y:%d)", pt.x(), pt.y());
 }
 
+void MainWindow::print_screen() const
+{
+    auto screen = QApplication::primaryScreen();
+    auto rt = screen->availableGeometry();
+    qDebug("availableGeometry rt (x:%d, y:%d, width:%d, height:%d)", rt.x(), rt.y(), rt.width(), rt.height());
+
+    auto sz = screen->availableSize();
+    qDebug("availableSize sz (width:%d, height:%d)", sz.width(), sz.height());
+
+    sz = screen->size();
+    qDebug("size sz (width:%d, height:%d)", sz.width(), sz.height());
+
+    rt = screen->virtualGeometry();
+    qDebug("virtualGeometry rt (x:%d, y:%d, width:%d, height:%d)", rt.x(), rt.y(), rt.width(), rt.height());
+
+    sz = screen->virtualSize();
+    qDebug("virtualSize sz (width:%d, height:%d)", sz.width(), sz.height());
+
+    rt = screen->availableVirtualGeometry();
+    qDebug("availableVirtualGeometry rt (x:%d, y:%d, width:%d, height:%d)", rt.x(), rt.y(), rt.width(), rt.height());
+
+    sz = screen->availableVirtualSize();
+    qDebug("availableVirtualSize sz (width:%d, height:%d)", sz.width(), sz.height());
+
+    rt = screen->geometry();
+    qDebug("geometry rt (x:%d, y:%d, width:%d, height:%d)", rt.x(), rt.y(), rt.width(), rt.height());
+
+    auto depth = screen->depth();
+    qDebug() << "depth :" << depth;
+
+    auto ratio = screen->devicePixelRatio();
+    qDebug() << "devicePixelRatio :" << ratio;
+
+    auto dot_per_inch = screen->logicalDotsPerInch();
+    qDebug() << "logicalDotsPerInch :" << dot_per_inch;
+
+    auto x = screen->logicalDotsPerInchX();
+    qDebug() << "logicalDotsPerInchX :" << x;
+
+    auto y = screen->logicalDotsPerInchY();
+    qDebug() << "logicalDotsPerInchY :" << y;
+
+    auto str = screen->manufacturer();
+    qDebug() << "manufacturer :" << str;
+
+    str = screen->model();
+    qDebug() << "model :" << str;
+
+    str = screen->name();
+    qDebug() << "name :" << str;
+
+    str = screen->serialNumber();
+    qDebug() << "serialNumber :" << str;
+
+    auto o = screen->nativeOrientation();
+    qDebug() << "nativeOrientation :" << o;
+
+    o = screen->orientation();
+    qDebug() << "orientation :" << o;
+
+    o = screen->primaryOrientation();
+    qDebug() << "primaryOrientation :" << o;
+
+    auto ph_d = screen->physicalDotsPerInch();
+    qDebug() << "physicalDotsPerInch :" << ph_d;
+
+    ph_d = screen->physicalDotsPerInchX();
+    qDebug() << "physicalDotsPerInchX :" << ph_d;
+
+    ph_d = screen->physicalDotsPerInchY();
+    qDebug() << "physicalDotsPerInchY :" << ph_d;
+
+    auto sz_f = screen->physicalSize();
+    qDebug() << "physicalSize :" << sz_f;
+
+    auto fr = screen->refreshRate();
+    qDebug() << "refreshRate :" << fr;
+}
+
 void MainWindow::resizeEvent(QResizeEvent* event)
 {
     update_video_label();
@@ -490,6 +590,10 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* event)
             {
                 m_timer.stop();
                 auto_hide_play_control(false);
+            }
+            else
+            {
+                m_timer.start();
             }
         }
 
@@ -638,12 +742,6 @@ void MainWindow::on_actionStop_triggered()
 {
     stop_play();
 }
-
-//void MainWindow::on_actionHide_Status_triggered()
-//{
-//    hide_statusbar(ui->actionHide_Status->isChecked());
-//    update_play_control();
-//}
 
 void MainWindow::on_actionHide_Play_Ctronl_triggered()
 {
@@ -1211,7 +1309,7 @@ void MainWindow::wait_stop_play(const QString& file)
 
 void MainWindow::play_failed(const QString& file)
 {
-    show_msg_dlg(QString("File play failed, file: %1").arg(QDir::toNativeSeparators(file)));
+    show_msg_dlg(QString("File play failed, file: %1").arg(toNativePath(file)));
 }
 
 bool MainWindow::is_playing() const
@@ -1260,14 +1358,13 @@ bool MainWindow::start_play()
 
     bool ret = false;
 
-    QString msg = QString("Start to play file: %1").arg(QDir::toNativeSeparators(m_videoFile));
+    QString msg = QString("Start to play file: %1").arg(toNativePath(m_videoFile));
     qInfo("");
     qInfo("%s", qUtf8Printable(msg)); // qPrintable(msg)
     // qInfo("%s", msg);
     // displayStatusMessage(msg);
 
-    const char* filename = m_videoFile.toStdString().c_str();
-    if (!filename || !filename[0])
+    if (m_videoFile.isEmpty())
     {
         qWarning("filename is invalid, please select a valid media file.");
         return ret;
@@ -1289,7 +1386,7 @@ bool MainWindow::start_play()
     qDebug("---------------------------------%d milliseconds", timer.elapsed());
 #endif
 
-    ret = create_video_state(filename); // time-consuming for open of network url
+    ret = create_video_state(m_videoFile); // time-consuming for open of network url
     if (!ret)
     {
         qWarning("video state create failed.\n");
@@ -1520,7 +1617,7 @@ void MainWindow::play_control_key(Qt::Key key)
     }
 }
 
-bool MainWindow::create_video_state(const char* filename)
+bool MainWindow::create_video_state(const QString& file)
 {
     bool use_hardware = ui->actionHardware_decode->isChecked();
     bool loop = ui->actionLoop_Play->isChecked();
@@ -1528,7 +1625,7 @@ bool MainWindow::create_video_state(const char* filename)
     if (!m_pVideoState)
     {
         m_pVideoState = std::make_unique<VideoStateData>(use_hardware, loop);
-        auto ret = m_pVideoState->create_video_state(filename);
+        auto ret = m_pVideoState->create_video_state(file.toStdString().c_str());
         m_pVideoState->print_state();
         if (ret < 0)
         {
@@ -1682,8 +1779,9 @@ bool MainWindow::create_video_play_thread() // video play thread
 
             if (pVideo)
             {
+                auto scale = screen_scale();
                 auto size_center = centralWidget()->size();
-                auto window_size = size() + QSize(pVideo->width, pVideo->height) - size_center;
+                auto window_size = size() + QSize(pVideo->width / scale, pVideo->height / scale) - size_center;
 
                 int width = window_size.width();
                 int height = window_size.height();
@@ -1762,7 +1860,7 @@ void MainWindow::image_ready(const QImage& img)
     QImage image = img.copy();
 
     if (!m_subtitle.isEmpty())
-    { // subtitle
+    {
         int height = 90;
         // QPen pen = QPen(Qt::white);
         QFont font = QFont("Times", 15, QFont::Bold);
@@ -2027,20 +2125,16 @@ void MainWindow::print_decodeContext(const AVCodecContext* pDecodeCtx, bool bVid
 
     if (bVideo)
     {
-        qInfo("***************Video decode context*****************");
-        qInfo("codec_name: %s", pDecodeCtx->codec->name);
+        qInfo("video codec_name: %s", pDecodeCtx->codec->name);
         qInfo("codec_type: %d, codec_id: %d, codec_tag: %d", pDecodeCtx->codec_type, pDecodeCtx->codec_id, pDecodeCtx->codec_tag);
         qInfo("width: %d, height: %d, codec_tag: %d", pDecodeCtx->width, pDecodeCtx->height);
-        qInfo("***************Video decode context end*****************\n");
     }
     else
     {
-        qInfo("***************Audio decode context*****************");
-        qInfo("codec_name: %s", pDecodeCtx->codec->name);
+        qInfo("audio codec_name: %s", pDecodeCtx->codec->name);
         qInfo("codec_type: %d, codec_id: %d, codec_tag: %d", pDecodeCtx->codec_type, pDecodeCtx->codec_id, pDecodeCtx->codec_tag);
         qInfo("sample_rate: %d, channels: %d, sample_fmt: %d", pDecodeCtx->sample_rate, pDecodeCtx->ch_layout.nb_channels, pDecodeCtx->sample_fmt);
         qInfo("frame_size: %d, frame_number: %d, block_align: %d", pDecodeCtx->frame_size, pDecodeCtx->frame_num, pDecodeCtx->block_align);
-        qInfo("***************Audio decode context end*****************\n");
     }
 }
 

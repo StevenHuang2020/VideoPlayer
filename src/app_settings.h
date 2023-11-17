@@ -5,6 +5,7 @@
 #include <QDir>
 #include <QVAriant>
 #include <memory>
+#include "common.h"
 
 class AppSettings
 {

@@ -48,6 +48,7 @@ set(HEADER_FILES
     src/playlist_window.h
     src/network_url_dlg.h
     src/common.h
+    src/youtube_json.h
 )
 
 # .cpp files
@@ -82,6 +83,7 @@ set(SOURCE_FILES
     src/playlist_window.cpp
     src/network_url_dlg.cpp
     src/common.cpp
+    src/youtube_json.cpp
 )
 
 

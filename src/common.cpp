@@ -12,3 +12,8 @@ QString appendPath(const QString& path, const QString& sub_path)
 {
     return QDir::cleanPath(path + QDir::separator() + sub_path);
 }
+
+QString toNativePath(const QString& path)
+{
+    return QDir::toNativeSeparators(path);
+}

@@ -53,7 +53,17 @@ int ffmpeg_init()
     av_log_set_callback(log_callback);
 
     // print_ffmpeg_info(AV_LOG_INFO);
+    check_error(-22);
     return 0;
+}
+
+void check_error(int error)
+{
+    char errorStr[256] = {0};
+    qDebug("ENOMEM: %d", AVERROR(ENOMEM));
+    qDebug("ENOMEM: %d", AVERROR(EINVAL));
+    qDebug("ENOMEM: %d", AVERROR_OPTION_NOT_FOUND);
+    av_strerror(error, errorStr, sizeof(errorStr));
 }
 
 void print_ffmpeg_info()
@@ -94,11 +104,12 @@ QString dump_format(AVFormatContext* ic, int index, const char* url, int is_outp
     if (ic->nb_streams && !printed)
         goto fail;
 
-    snprintf(tmp, sizeof(tmp), "%s #%d, %s, %s '%s':\n",
+    snprintf(tmp, sizeof(tmp), "%s #%d, %s, %s '%s':",
              is_output ? "Output" : "Input", index,
              is_output ? ic->oformat->name : ic->iformat->name,
              is_output ? "to" : "from", url);
     str += tmp;
+    str += "\n";
 
     str += dump_metadata(ic->metadata, indent);
 

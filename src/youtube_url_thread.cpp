@@ -8,6 +8,7 @@
 
 #include "youtube_url_thread.h"
 #include "common.h"
+#include "youtube_json.h"
 
 bool YoutubeUrlThread::m_bInstalledpyTube = false;
 
@@ -36,7 +37,7 @@ bool YoutubeUrlThread::excute_process(const QString& exec, const QStringList& pa
     if (status == QProcess::ExitStatus::NormalExit)
     {
         output = QString(process.readAllStandardOutput());
-        qDebug() << "output:" << output;
+        qDebug() << "output: " << output;
         success = true;
     }
 
@@ -89,6 +90,37 @@ void YoutubeUrlThread::youtube_python()
 
     if (excute_process(exec, params, output) && !output.isEmpty())
     {
+#if 1
+        qInfo() << "Yutube Jason: " << output.trimmed();
+        auto parts = output.split("\r\n");
+        parts.removeAll(QString(""));
+
+        YoutubeJsonParser parser(parts.takeLast());
+        auto url = parser.get_best_url();
+        switch(m_data.opt_index)
+        {
+            case 0:
+                url = parser.get_best_url();
+                break;
+            case 1:
+                url = parser.get_worst_url();
+                break;
+            case 2:
+                url = parser.get_bestvideo_url();
+                break;
+            case 3:
+                url = parser.get_worstvideo_url();
+                break;
+            case 4:
+                url = parser.get_bestaudio_url();
+                break;
+            case 5:
+                url = parser.get_worstaudio_url();
+                break;
+        }
+        emit resultReady(url);
+        return;
+#else
         int index = output.indexOf("https://");
         if (index > 0)
         {
@@ -96,6 +128,7 @@ void YoutubeUrlThread::youtube_python()
             emit resultReady(output);
             return;
         }
+#endif
     }
 
     qWarning() << "Parsing url failed, url:" << m_data.url << "options:" << m_data.option;
