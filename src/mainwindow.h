@@ -155,7 +155,7 @@ private:
     inline QScreen* screen() const;
     QRect screen_rect() const;
     qreal screen_scale() const;
-    QSize dislay_video_size(AVCodecContext* pCtxVideo) const;
+    QSize display_video_size(AVCodecContext* pCtxVideo) const;
     inline VideoLabel* get_video_label() const { return m_video_label.get(); }
     inline PlayControlWnd* get_play_control() const { return m_play_control_wnd.get(); }
     inline QObject* get_object(const QString& name) const { return findChild<QObject*>(name); }

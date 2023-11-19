@@ -95,7 +95,7 @@ qreal MainWindow::screen_scale() const
     return screen()->devicePixelRatio();
 }
 
-QSize MainWindow::dislay_video_size(AVCodecContext* pVideo) const
+QSize MainWindow::display_video_size(AVCodecContext* pVideo) const
 {
     auto scale = screen_scale(); //screen display scale
     if (pVideo && scale != 0)
@@ -892,7 +892,7 @@ void MainWindow::keep_aspect_ratio(bool bWidth)
     auto sizeLabel = pLabel->size();
     auto sz = size();
     auto screen_rt = screen_rect();
-    auto video_sz = dislay_video_size(pVideoCtx);
+    auto video_sz = display_video_size(pVideoCtx);
 
     int h_change = 0;
     int w_change = 0;
@@ -938,8 +938,9 @@ void MainWindow::on_actionOriginalSize_triggered()
     auto sizeLabel = pLabel->size();
     auto sz = size();
 
-    int new_width = dislay_video_size(pVideoCtx).width();
-    int new_height = dislay_video_size(pVideoCtx).height();
+    auto video_sz = display_video_size(pVideoCtx);
+    int new_width = video_sz.width();
+    int new_height = video_sz.height();
 
     if (new_width < minimumWidth())
     {
@@ -1785,7 +1786,7 @@ bool MainWindow::create_video_play_thread() // video play thread
             if (pVideo)
             {
                 auto size_center = centralWidget()->size();
-                auto n_size = size() + dislay_video_size(pVideo) - size_center;
+                auto n_size = size() + display_video_size(pVideo) - size_center;
 
                 resize_window(n_size); // Adjust window size
 
