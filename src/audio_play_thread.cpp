@@ -23,7 +23,6 @@
 AudioPlayThread::AudioPlayThread(QObject* parent, VideoState* pState) : QThread(parent), m_pState(pState)
 {
     print_device();
-
     qRegisterMetaType<AudioData>("AudioData");
 }
 
@@ -44,30 +43,6 @@ void AudioPlayThread::print_device() const
 
     for (const auto& device : QMediaDevices::audioOutputs())
         audio_device_detail(device);
-
-    /*
-    auto edians = deviceInfo.supportedByteOrders();
-    for (const QAudioFormat::Endian& endian : edians)
-        qDebug() << "Endian: " << endian;
-    auto sampleTypes = deviceInfo.supportedSampleTypes();
-    for (const QAudioFormat::SampleType& sampleType : sampleTypes)
-        qDebug() << "sampleType: " << sampleType;
-
-    auto codecs = deviceInfo.supportedCodecs();
-    for (const QString& codec : codecs)
-        qDebug() << "codec: " << codec;
-
-    auto sampleRates = deviceInfo.supportedSampleRates();
-    for (const int& sampleRate : sampleRates)
-        qDebug() << "sampleRate: " << sampleRate;
-
-    auto ChannelCounts = deviceInfo.supportedChannelCounts();
-    for (const int& channelCount : ChannelCounts)
-        qDebug() << "channelCount: " << channelCount;
-
-    auto sampleSizes = deviceInfo.supportedSampleSizes();
-    for (const int& sampleSize : sampleSizes)
-        qDebug() << "sampleSize: " << sampleSize;*/
 }
 
 void AudioPlayThread::audio_device_detail(const QAudioDevice& device) const

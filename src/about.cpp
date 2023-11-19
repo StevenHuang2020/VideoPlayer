@@ -34,7 +34,7 @@ void About::init_label()
 {
     auto align = Qt::AlignLeft; //Qt::AlignCenter;
 
-    QString str = "";
+    QString str;
     str += "<b>Video Player v";
     str += PLAYER_VERSION;
     str += " (x64)</b>";

@@ -67,18 +67,16 @@ private:
     {
         // AVFrame* pFrame;
         // uint8_t* buffer;
-        struct SwrContext* swrCtx;
+        struct SwrContext* swrCtx{nullptr};
 
         // uint64_t channel_layout;	// out
         // AVChannelLayout channel_layout;
         // AVSampleFormat sample_fmt;
         // int sample_rate;
-
-        Audio_Resample() : swrCtx(nullptr) {}
     } Audio_Resample;
 
 private:
-    std::unique_ptr<QAudioSink> m_pOutput{nullptr};
+    std::unique_ptr<QAudioSink> m_pOutput;
     QIODevice* m_audioDevice{nullptr};
     VideoState* m_pState{nullptr};
     Audio_Resample m_audioResample;

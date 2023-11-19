@@ -95,6 +95,15 @@ qreal MainWindow::screen_scale() const
     return screen()->devicePixelRatio();
 }
 
+QSize MainWindow::dislay_video_size(AVCodecContext* pVideo) const
+{
+    auto scale = screen_scale(); //screen display scale
+    if (pVideo && scale != 0)
+        return QSize(pVideo->width / scale, pVideo->height / scale);
+
+    return QSize(0, 0);
+}
+
 void MainWindow::create_video_label()
 {
     m_video_label = std::make_unique<VideoLabel>(centralWidget());
@@ -770,10 +779,8 @@ void MainWindow::on_actionMedia_Info_triggered()
 
 void MainWindow::on_actionKeyboard_Usage_triggered()
 {
-    QString str = "";
+    QString str;
     QString indent = "		";
-    // str += "Keyboard" + indent + "Function\n";
-    // str += "----------------------------------------------------\n";
     str += "A" + indent + "Video aspect ratio\n";
     str += "F" + indent + "Fulllscreen/Unfullscreen\n";
     str += "H" + indent + "Show help\n";
@@ -787,7 +794,6 @@ void MainWindow::on_actionKeyboard_Usage_triggered()
     str += "Right" + indent + "Play forward\n";
     str += "<" + indent + "Speed down\n";
     str += ">" + indent + "Speed up\n";
-    // str += "----------------------------------------------------";
 
     show_msg_dlg(str, "Keyboard Control");
 }
@@ -808,6 +814,11 @@ void MainWindow::popup_audio_effect()
         show_audio_effect();
         start_send_data();
     }
+}
+
+void MainWindow::resize_window(const QSize& size)
+{
+    resize_window(size.width(), size.height());
 }
 
 void MainWindow::resize_window(int width, int height)
@@ -875,47 +886,43 @@ void MainWindow::keep_aspect_ratio(bool bWidth)
 
     auto pVideoCtx = m_pVideoState->get_contex(AVMEDIA_TYPE_VIDEO);
     auto pLabel = get_video_label();
-    if (pVideoCtx && pLabel)
+    if (!pVideoCtx || !pLabel)
+        return;
+
+    auto sizeLabel = pLabel->size();
+    auto sz = size();
+    auto screen_rt = screen_rect();
+    auto video_sz = dislay_video_size(pVideoCtx);
+
+    int h_change = 0;
+    int w_change = 0;
+    if (bWidth)
     {
-        auto sizeLabel = pLabel->size();
-        auto sz = size();
-        auto screen_rt = screen_rect();
-
-        int new_height = 0;
-        int new_width = 0;
-        int h_change = 0, w_change = 0;
-        if (bWidth)
-        {
-            new_height = sizeLabel.width() * pVideoCtx->height / pVideoCtx->width;
-            h_change = new_height - sizeLabel.height();
-            sz += QSize(0, h_change);
-        }
-        else
-        {
-            new_width = sizeLabel.height() * pVideoCtx->width / pVideoCtx->height;
-            w_change = new_width - sizeLabel.width();
-            sz += QSize(w_change, 0);
-        }
-
-        // size greater than screen size
-        if (sz.width() > screen_rt.width())
-        {
-            w_change = screen_rt.width() - sz.width();
-            // h_change = w_change * sizeLabel.height() / sizeLabel.width();
-            h_change = w_change * pVideoCtx->height / pVideoCtx->width;
-            sz += QSize(w_change, h_change);
-        }
-
-        if (sz.height() > screen_rt.height())
-        {
-            h_change = screen_rt.height() - sz.height();
-            // w_change = h_change * sizeLabel.width() / sizeLabel.height();
-            w_change = h_change * pVideoCtx->width / pVideoCtx->height;
-            sz += QSize(w_change, h_change);
-        }
-
-        resize_window(sz.width(), sz.height());
+        h_change = sizeLabel.width() * video_sz.height() / video_sz.width() - sizeLabel.height();
+        sz += QSize(0, h_change);
     }
+    else
+    {
+        w_change = sizeLabel.height() * video_sz.width() / video_sz.height() - sizeLabel.width();
+        sz += QSize(w_change, 0);
+    }
+
+    // size greater than screen size
+    if (sz.width() > screen_rt.width())
+    {
+        w_change = screen_rt.width() - sz.width();
+        h_change = w_change * video_sz.height() / video_sz.width();
+        sz += QSize(w_change, h_change);
+    }
+
+    if (sz.height() > screen_rt.height())
+    {
+        h_change = screen_rt.height() - sz.height();
+        w_change = h_change * video_sz.width() / video_sz.height();
+        sz += QSize(w_change, h_change);
+    }
+
+    resize_window(sz);
 }
 
 void MainWindow::on_actionOriginalSize_triggered()
@@ -925,34 +932,32 @@ void MainWindow::on_actionOriginalSize_triggered()
 
     auto pVideoCtx = m_pVideoState->get_contex(AVMEDIA_TYPE_VIDEO);
     auto pLabel = get_video_label();
-    if (pVideoCtx && pLabel)
+    if (!pVideoCtx || !pLabel)
+        return;
+
+    auto sizeLabel = pLabel->size();
+    auto sz = size();
+
+    int new_width = dislay_video_size(pVideoCtx).width();
+    int new_height = dislay_video_size(pVideoCtx).height();
+
+    if (new_width < minimumWidth())
     {
-        auto sizeLabel = pLabel->size();
-        auto sz = size();
-        auto screen_rt = screen_rect();
-
-        int h_change = 0, w_change = 0;
-        int new_width = pVideoCtx->width;
-        int new_height = pVideoCtx->height;
-
-        if (new_width < minimumWidth())
-        {
-            new_height = minimumWidth() * new_height / new_width;
-            new_width = minimumWidth();
-        }
-
-        if (new_height < minimumHeight())
-        {
-            new_width = minimumHeight() * new_width / new_height;
-            new_height = minimumHeight();
-        }
-
-        w_change = new_width - sizeLabel.width();
-        h_change = new_height - sizeLabel.height();
-
-        sz += QSize(w_change, h_change);
-        resize_window(sz.width(), sz.height());
+        new_height = minimumWidth() * new_height / new_width;
+        new_width = minimumWidth();
     }
+
+    if (new_height < minimumHeight())
+    {
+        new_width = minimumHeight() * new_width / new_height;
+        new_height = minimumHeight();
+    }
+
+    int w_change = new_width - sizeLabel.width();
+    int h_change = new_height - sizeLabel.height();
+
+    sz += QSize(w_change, h_change);
+    resize_window(sz);
 }
 
 void MainWindow::hide_play_control(bool bHide)
@@ -1779,17 +1784,13 @@ bool MainWindow::create_video_play_thread() // video play thread
 
             if (pVideo)
             {
-                auto scale = screen_scale();
                 auto size_center = centralWidget()->size();
-                auto window_size = size() + QSize(pVideo->width / scale, pVideo->height / scale) - size_center;
+                auto n_size = size() + dislay_video_size(pVideo) - size_center;
 
-                int width = window_size.width();
-                int height = window_size.height();
-
-                resize_window(width, height); // Adjust window size
+                resize_window(n_size); // Adjust window size
 
                 auto sz = minimumSize();
-                if (width < sz.width() || height < sz.height())
+                if (n_size.width() < sz.width() || n_size.height() < sz.height())
                 {
                     keep_aspect_ratio();
                 }

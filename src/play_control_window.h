@@ -57,7 +57,7 @@ private:
     void keyPressEvent(QKeyEvent* event) override;
 
 private:
-    std::unique_ptr<Ui::play_control_window> ui{nullptr};
+    std::unique_ptr<Ui::play_control_window> ui;
     int64_t m_hours{0};
     int64_t m_mins{0};
     int64_t m_secs{0};

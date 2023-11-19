@@ -119,7 +119,7 @@ void PlayControlWnd::init_slider_speed()
 void PlayControlWnd::set_volume_slider(float volume)
 {
     enable_slider_vol(true);
-    int max = ui->slider_vol->maximum();
+    auto max = ui->slider_vol->maximum();
     ui->slider_vol->setValue(int(volume * max));
 }
 
@@ -246,7 +246,7 @@ void PlayControlWnd::set_progress_bar(double total_secs)
 
 QString PlayControlWnd::get_play_time(int64_t hours, int64_t mins, int64_t secs)
 {
-    QString str = "";
+    QString str;
 
     if (hours == 0)
     {
@@ -311,7 +311,7 @@ void PlayControlWnd::enable_play_buttons(bool enable)
 
 void PlayControlWnd::keyPressEvent(QKeyEvent* event)
 {
-    if (MainWindow* pParent = (MainWindow*)parent())
+    if (auto pParent = (MainWindow*)parent())
     {
         QApplication::sendEvent(pParent, event);
         event->ignore();

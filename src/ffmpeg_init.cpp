@@ -83,7 +83,7 @@ void print_ffmpeg_info()
 
 QString dump_format(AVFormatContext* ic, int index, const char* url, int is_output)
 {
-    QString str = "";
+    QString str;
     char tmp[BUFF_MAXLEN];
     const char* indent = "  ";
     uint8_t* printed = nullptr;
@@ -228,7 +228,7 @@ fail:
 
 QString dump_metadata(const AVDictionary* m, const char* indent)
 {
-    QString str = "";
+    QString str;
     char tmp[BUFF_MAXLEN];
 
     if (m && !(av_dict_count(m) == 1 && av_dict_get(m, "language", nullptr, 0)))
@@ -273,7 +273,7 @@ QString dump_metadata(const AVDictionary* m, const char* indent)
 
 QString dump_stream_format(const AVFormatContext* ic, int i, int index, int is_output)
 {
-    QString str = "";
+    QString str;
     char tmp[BUFF_MAXLEN];
 
     char buf[256];
@@ -438,7 +438,7 @@ QString print_fps(double d, const char* postfix)
 
 QString dump_sidedata(const AVStream* st, const char* indent)
 {
-    QString str = "";
+    QString str;
     char tmp[BUFF_MAXLEN];
 
     if (!st->codecpar)

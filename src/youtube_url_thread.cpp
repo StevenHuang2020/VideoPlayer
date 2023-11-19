@@ -46,7 +46,7 @@ bool YoutubeUrlThread::excute_process(const QString& exec, const QStringList& pa
 
 void YoutubeUrlThread::youtube_dl_exe()
 {
-    QString output = "";
+    QString output;
     QString exec = appendPath(QDir::currentPath(), "tools/youtube-dl.exe");
 
     QStringList params;
@@ -78,7 +78,7 @@ void YoutubeUrlThread::youtube_python()
     if (!m_bInstalledpyTube)
         python_install_pytube();
 
-    QString output = "";
+    QString output;
     QString exec = "python";
     QString script = appendPath(QDir::currentPath(), "tools/get_yt_url.py");
 
@@ -90,14 +90,13 @@ void YoutubeUrlThread::youtube_python()
 
     if (excute_process(exec, params, output) && !output.isEmpty())
     {
-#if 1
         qInfo() << "Yutube Jason: " << output.trimmed();
         auto parts = output.split("\r\n");
         parts.removeAll(QString(""));
 
         YoutubeJsonParser parser(parts.takeLast());
         auto url = parser.get_best_url();
-        switch(m_data.opt_index)
+        switch (m_data.opt_index)
         {
             case 0:
                 url = parser.get_best_url();
@@ -120,15 +119,6 @@ void YoutubeUrlThread::youtube_python()
         }
         emit resultReady(url);
         return;
-#else
-        int index = output.indexOf("https://");
-        if (index > 0)
-        {
-            output.remove(0, index);
-            emit resultReady(output);
-            return;
-        }
-#endif
     }
 
     qWarning() << "Parsing url failed, url:" << m_data.url << "options:" << m_data.option;
@@ -137,7 +127,7 @@ void YoutubeUrlThread::youtube_python()
 
 bool YoutubeUrlThread::python_install_pytube()
 {
-    QString output = "";
+    QString output;
     QString exec = "pip";
 
     QStringList params;
