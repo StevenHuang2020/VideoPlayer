@@ -217,7 +217,8 @@ private:
     void remove_playlist_file(const QString& fileName);
     void update_savedPlaylists_actions();
     bool read_playlist(const QString& playlist_file, QStringList& files) const;
-
+    void play_window_size();
+    void adjust_window_size(QSize& size);
 public slots:
     void clear_savedPlaylists();
     void open_playlist();

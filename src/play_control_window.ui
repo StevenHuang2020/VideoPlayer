@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>589</width>
-    <height>111</height>
+    <width>632</width>
+    <height>188</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -21,8 +21,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>588</width>
-     <height>81</height>
+     <width>461</width>
+     <height>61</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout">
@@ -48,22 +48,6 @@
       </property>
      </spacer>
     </item>
-    <item row="0" column="2" rowspan="2">
-     <spacer name="horizontalSpacer">
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-      <property name="sizeType">
-       <enum>QSizePolicy::Fixed</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>5</width>
-        <height>20</height>
-       </size>
-      </property>
-     </spacer>
-    </item>
     <item row="1" column="1">
      <layout class="QHBoxLayout" name="horizontalLayout_2">
       <property name="spacing">
@@ -79,13 +63,13 @@
         </property>
         <property name="minimumSize">
          <size>
-          <width>62</width>
+          <width>44</width>
           <height>0</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>62</width>
+          <width>44</width>
           <height>16777215</height>
          </size>
         </property>
@@ -104,13 +88,13 @@
         </property>
         <property name="minimumSize">
          <size>
-          <width>62</width>
+          <width>44</width>
           <height>0</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>62</width>
+          <width>44</width>
           <height>16777215</height>
          </size>
         </property>
@@ -129,18 +113,21 @@
         </property>
         <property name="minimumSize">
          <size>
-          <width>62</width>
+          <width>44</width>
           <height>0</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>62</width>
+          <width>44</width>
           <height>16777215</height>
          </size>
         </property>
         <property name="text">
          <string>&gt;&gt;</string>
+        </property>
+        <property name="autoDefault">
+         <bool>false</bool>
         </property>
        </widget>
       </item>
@@ -157,13 +144,13 @@
         </property>
         <property name="minimumSize">
          <size>
-          <width>62</width>
+          <width>44</width>
           <height>0</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>62</width>
+          <width>44</width>
           <height>16777215</height>
          </size>
         </property>
@@ -198,7 +185,7 @@
         </property>
         <property name="minimumSize">
          <size>
-          <width>100</width>
+          <width>45</width>
           <height>30</height>
          </size>
         </property>
@@ -244,13 +231,13 @@
         </property>
         <property name="minimumSize">
          <size>
-          <width>45</width>
+          <width>28</width>
           <height>0</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>45</width>
+          <width>28</width>
           <height>16777215</height>
          </size>
         </property>
@@ -286,6 +273,9 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
+        <property name="layoutDirection">
+         <enum>Qt::LeftToRight</enum>
+        </property>
         <property name="text">
          <string>Mute</string>
         </property>
@@ -301,13 +291,13 @@
         </property>
         <property name="minimumSize">
          <size>
-          <width>100</width>
+          <width>45</width>
           <height>22</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>100</width>
+          <width>16777215</width>
           <height>22</height>
          </size>
         </property>
@@ -338,13 +328,13 @@
         </property>
         <property name="minimumSize">
          <size>
-          <width>28</width>
+          <width>20</width>
           <height>0</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>28</width>
+          <width>20</width>
           <height>16777215</height>
          </size>
         </property>
@@ -352,7 +342,7 @@
          <string>0</string>
         </property>
         <property name="alignment">
-         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         <set>Qt::AlignCenter</set>
         </property>
        </widget>
       </item>
@@ -448,6 +438,22 @@
        <size>
         <width>20</width>
         <height>2</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item row="0" column="2" rowspan="2">
+     <spacer name="horizontalSpacer">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeType">
+       <enum>QSizePolicy::Fixed</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>5</width>
+        <height>20</height>
        </size>
       </property>
      </spacer>

@@ -22,6 +22,17 @@ cmake_minimum_required(VERSION 3.8.1)
 set(QT_MINIMUM_VERSION 5.9)
 
 #-------------------------------------------------------------------------------
+#   PROJECT SETTINGS
+#-------------------------------------------------------------------------------
+
+set(TARGET_NAME VideoPlayer)
+
+set(PROJECT_NAME ${TARGET_NAME})
+
+# Set the project name
+PROJECT(${PROJECT_NAME})
+
+#-------------------------------------------------------------------------------
 #   SOURCE CODE
 #-------------------------------------------------------------------------------
 
@@ -103,16 +114,6 @@ if(WIN32)
     LIST(APPEND SOURCE_FILES ${HEADER_FILES})
 endif()
 
-#-------------------------------------------------------------------------------
-#   PROJECT SETTINGS
-#-------------------------------------------------------------------------------
-
-set(TARGET_NAME VideoPlayer)
-
-set(PROJECT_NAME ${TARGET_NAME})
-
-# Set the project name
-PROJECT(${PROJECT_NAME})
 
 #-------------------------------------------------------------------------------
 #   Qt Settings
@@ -166,13 +167,13 @@ qt6_add_resources(RESOURCES ${QT_RESOURCES})
 #-------------------------------------------------------------------------------
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 20)
 
 if(MSVC)
     set(GUI_TYPE WIN32)
     add_compile_options(/MP)
 elseif(CMAKE_COMPILER_IS_GNUCXX)
-    add_compile_options(-std=c++14)
+    add_compile_options(-std=c++20)
 endif(MSVC)
 
 

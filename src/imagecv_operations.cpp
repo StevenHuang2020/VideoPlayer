@@ -39,10 +39,8 @@ void write_img(const Mat& img, const char* file)
 string info_img(const Mat& img)
 {
     char buff[1024] = {0};
-    snprintf(buff, sizeof(buff) - 1,
-             "channel:%d, width:%d, height:%d, depth:%d, type:%d, typeStr:%s",
-             img_channel(img), img_w(img), img_h(img), img_depth(img),
-             img_type(img), type2str(img_type(img)).c_str());
+    snprintf(buff, sizeof(buff) - 1, "channel:%d, width:%d, height:%d, depth:%d, type:%d, typeStr:%s",
+             img_channel(img), img_w(img), img_h(img), img_depth(img), img_type(img), type2str(img_type(img)).c_str());
 
     return std::string(buff);
 }
@@ -114,13 +112,12 @@ int img_h(const Mat& img)
 
 Mat img_swap_channel(const Mat& img)
 {
-    Mat res = img.clone();
+    auto res = img.clone();
 
-    const uint channel = img_channel(img);
+    auto channel = img_channel(img);
     if (channel >= 3)
     {
         // assert(channel <= 4);
-
         std::vector<Mat> src_channels;
         cv::split(img, src_channels);
 
@@ -128,7 +125,7 @@ Mat img_swap_channel(const Mat& img)
         dst_channels.emplace_back(src_channels[2]); // swap r,g,b <==> b,g,r
         dst_channels.emplace_back(src_channels[1]);
         dst_channels.emplace_back(src_channels[0]);
-        for (uint i = 3; i < channel; i++)
+        for (decltype(channel) i = 3; i < channel; i++)
             dst_channels.emplace_back(src_channels[i]);
 
         cv::merge(dst_channels, res);
@@ -155,8 +152,7 @@ Mat grey_img(const Mat& img)
 Mat resize_img(const Mat& img, int new_w, int new_h)
 {
     Mat res;
-    Size sz = Size(new_w, new_h);
-    cv::resize(img, res, sz);
+    cv::resize(img, res, Size(new_w, new_h));
     return res;
 }
 
@@ -170,7 +166,7 @@ Mat diff_imgs(const Mat& img1, const Mat& img2)
 double distance_imgs(const Mat& img1, const Mat& img2)
 {
     Mat res;
-    Mat diff = diff_imgs(img1, img2);
+    auto diff = diff_imgs(img1, img2);
     pow(diff, 2, res);
 
     double sum1 = cv::sum(res)[0];
@@ -212,12 +208,9 @@ Mat histgram_img(const Mat& img)
     const float* histRange[] = {range};
     bool uniform = true, accumulate = false;
     Mat b_hist, g_hist, r_hist;
-    calcHist(&bgr_planes[0], 1, 0, Mat(), b_hist, 1, &histSize, histRange,
-             uniform, accumulate);
-    calcHist(&bgr_planes[1], 1, 0, Mat(), g_hist, 1, &histSize, histRange,
-             uniform, accumulate);
-    calcHist(&bgr_planes[2], 1, 0, Mat(), r_hist, 1, &histSize, histRange,
-             uniform, accumulate);
+    calcHist(&bgr_planes[0], 1, 0, Mat(), b_hist, 1, &histSize, histRange, uniform, accumulate);
+    calcHist(&bgr_planes[1], 1, 0, Mat(), g_hist, 1, &histSize, histRange, uniform, accumulate);
+    calcHist(&bgr_planes[2], 1, 0, Mat(), r_hist, 1, &histSize, histRange, uniform, accumulate);
     int hist_w = 512, hist_h = 400;
     int bin_w = cvRound((double)hist_w / histSize);
     Mat histImage(hist_h, hist_w, CV_8UC3, Scalar(0, 0, 0));
@@ -312,39 +305,35 @@ void exposure_img(Mat& I, uchar thresh)
 
 Mat threshold_img(const Mat& img, int thresh, int type)
 {
-    Mat grey = grey_img(img);
     Mat res;
-    cv::threshold(grey, res, thresh, 255, type);
+    cv::threshold(grey_img(img), res, thresh, 255, type);
     return res;
 }
 
-Mat thresholdAdaptive_img(const Mat& img, int adaptiveMethod, int thresholdType,
-                          int blockSize, double C)
+Mat thresholdAdaptive_img(const Mat& img, int adaptiveMethod, int thresholdType, int blockSize, double C)
 {
-    Mat grey = grey_img(img);
     Mat res;
-    cv::adaptiveThreshold(grey, res, 255, adaptiveMethod, thresholdType,
-                          blockSize, C);
+    cv::adaptiveThreshold(grey_img(img), res, 255, adaptiveMethod, thresholdType, blockSize, C);
     return res;
 }
 
 Mat covert_color_img(const Mat& img, int format)
 {
-    Mat res = img.clone();
+    auto res = img.clone();
     cv::cvtColor(img, res, format);
     return res;
 }
 
 Mat filter_img(const Mat& img, const Mat& kernel)
 {
-    Mat res = img.clone();
+    auto res = img.clone();
     cv::filter2D(img, res, -1, kernel);
     return res;
 }
 
 Mat normalize_img(const Mat& img, double alpha, double beta, int norm_type)
 {
-    Mat res = img.clone();
+    auto res = img.clone();
     cv::normalize(img, res, alpha, beta, norm_type);
     return res;
 }
@@ -353,9 +342,9 @@ void scane_img_colortable(Mat& I, const uchar* const table)
 {
     // accept only char type matrices
     CV_Assert(I.depth() == CV_8U);
-    int channels = I.channels();
-    int nRows = I.rows;
-    int nCols = I.cols * channels;
+    auto channels = I.channels();
+    auto nRows = I.rows;
+    auto nCols = I.cols * channels;
     if (I.isContinuous())
     {
         nCols *= nRows;
@@ -385,7 +374,7 @@ void scane_img_colortable2(Mat& I, const uchar* const table)
 {
     // accept only char type matrices
     CV_Assert(I.depth() == CV_8U);
-    const int channels = I.channels();
+    const auto channels = I.channels();
     switch (channels)
     {
         case 1:
@@ -415,11 +404,10 @@ void scane_img_LUT(Mat& I, const Mat& table)
 
 void gamma_img(Mat& I, float gamma)
 {
-    Mat lookUpTable = cv::Mat(1, 256, CV_8UC1, Scalar(0, 0, 0));
+    auto lookUpTable = cv::Mat(1, 256, CV_8UC1, Scalar(0, 0, 0));
     for (int i = 0; i < 256; i++)
     {
-        lookUpTable.at<uchar>(0, i) =
-            saturate_cast<uchar>(pow(i / 255.0, 1.0 / gamma) * 255.0);
+        lookUpTable.at<uchar>(0, i) = saturate_cast<uchar>(pow(i / 255.0, 1.0 / gamma) * 255.0);
     }
 
     cv::LUT(I, lookUpTable, I);
@@ -467,8 +455,7 @@ void contrast_bright_img(Mat& I, double alpha, int beta)
 Mat canny_img(const Mat& I, double threshold1, double threshold2)
 {
     Mat edges;
-    Mat grey = grey_img(I);
-    cv::Canny(grey, edges, threshold1, threshold2);
+    cv::Canny(grey_img(I), edges, threshold1, threshold2);
     return edges;
 }
 
@@ -477,7 +464,7 @@ Mat sobel_img(const Mat& I, bool borizontal, int ksize, double scale, double del
     Mat grad;
     Mat abs_grad;
     int ddepth = CV_16S;
-    Mat grey = grey_img(I);
+    auto grey = grey_img(I);
 
     if (borizontal)
     {
@@ -494,18 +481,17 @@ Mat sobel_img(const Mat& I, bool borizontal, int ksize, double scale, double del
 Mat sobel_img_XY(const Mat& I, int ksize, double scale, double delta)
 {
     Mat grad;
-    Mat abs_grad_x = sobel_img(I, true, ksize, scale, delta);
-    Mat abs_grad_y = sobel_img(I, false, ksize, scale, delta);
-
+    auto abs_grad_x = sobel_img(I, true, ksize, scale, delta);
+    auto abs_grad_y = sobel_img(I, false, ksize, scale, delta);
     cv::addWeighted(abs_grad_x, 0.5, abs_grad_y, 0.5, 0, grad);
     return grad;
 }
 
 Mat scharr_img(const Mat& I, bool borizontal)
 {
-    Mat grad, abs_grad;
-
-    Mat grey = grey_img(I);
+    Mat grad;
+    Mat abs_grad;
+    auto grey = grey_img(I);
     if (borizontal)
     {
         Scharr(grey, grad, CV_16S, 1, 0);
@@ -522,16 +508,15 @@ Mat scharr_img(const Mat& I, bool borizontal)
 Mat scharr_img_XY(const Mat& I)
 {
     Mat grad;
-    Mat abs_grad_x = scharr_img(I, true);
-    Mat abs_grad_y = scharr_img(I, false);
+    auto abs_grad_x = scharr_img(I, true);
+    auto abs_grad_y = scharr_img(I, false);
     cv::addWeighted(abs_grad_x, 0.5, abs_grad_y, 0.5, 0, grad);
     return grad;
 }
 
 Mat prewitt_img(const Mat& I, bool borizontal)
 {
-    Mat grey = grey_img(I);
-
+    auto grey = grey_img(I);
     if (borizontal)
     {
         cv::Mat kernel({3, 3}, {1, 0, -1, 1, 0, -1, 1, 0, -1});
@@ -547,17 +532,17 @@ Mat prewitt_img(const Mat& I, bool borizontal)
 Mat prewitt_img_XY(const Mat& I)
 {
     Mat grad;
-    Mat abs_grad_x = prewitt_img(I, true);
-    Mat abs_grad_y = prewitt_img(I, false);
+    auto abs_grad_x = prewitt_img(I, true);
+    auto abs_grad_y = prewitt_img(I, false);
     cv::addWeighted(abs_grad_x, 0.5, abs_grad_y, 0.5, 0, grad);
     return grad;
 }
 
 Mat laplacian_img(const Mat& I)
 {
-    Mat laplace, result;
-    Mat grey = grey_img(I);
-    cv::Laplacian(grey, laplace, CV_16S, 5);
+    Mat laplace;
+    Mat result;
+    cv::Laplacian(grey_img(I), laplace, CV_16S, 5);
     cv::convertScaleAbs(laplace, result);
     return result;
 }
@@ -565,7 +550,7 @@ Mat laplacian_img(const Mat& I)
 Mat blur_img(const Mat& I, BlurType smoothType, int ksize, int sigma)
 {
     ksize = ksize | 1; // ksize must be odd number
-    Mat smoothed = I.clone();
+    auto smoothed = I.clone();
     if (smoothType == GAUSSIAN)
     {
         cv::GaussianBlur(I, smoothed, Size(ksize, ksize), sigma, sigma);
@@ -588,8 +573,7 @@ Mat cornerHarris(const Mat& src)
     int apertureSize = 3;
     double k = 0.04;
     int thresh = 200;
-    Mat src_gray = grey_img(src);
-
+    auto src_gray = grey_img(src);
     Mat dst = Mat::zeros(src.size(), CV_32FC1);
 
     cornerHarris(src_gray, dst, blockSize, apertureSize, k);
@@ -611,8 +595,10 @@ Mat cornerHarris(const Mat& src)
 
 void face_detect(Mat& img, const char* haarXML, double scale)
 {
-    vector<Rect> faces, faces2;
-    Mat gray, smallImg;
+    std::vector<Rect> faces;
+    std::vector<Rect> faces2;
+    Mat gray;
+    Mat smallImg;
     CascadeClassifier cascade;
 
     cascade.load(haarXML);
@@ -620,7 +606,7 @@ void face_detect(Mat& img, const char* haarXML, double scale)
         return;
 
     cvtColor(img, gray, COLOR_BGR2GRAY); // Convert to Gray Scale
-    double fx = 1 / scale;
+    double fx = 1.0f / scale;
 
     // Resize the Grayscale Image
     resize(gray, smallImg, Size(), fx, fx, INTER_LINEAR);
@@ -636,7 +622,7 @@ void face_detect(Mat& img, const char* haarXML, double scale)
         Mat smallImgROI;
         vector<Rect> nestedObjects;
         Point center;
-        Scalar color = Scalar(255, 0, 0); // Color for Drawing tool
+        auto color = Scalar(255, 0, 0); // Color for Drawing tool
         int radius;
 
         double aspect_ratio = (double)r.width / r.height;
@@ -650,8 +636,7 @@ void face_detect(Mat& img, const char* haarXML, double scale)
         else
         {
             rectangle(img, cvPoint(cvRound(r.x * scale), cvRound(r.y * scale)),
-                      cvPoint(cvRound((r.x + r.width - 1) * scale),
-                              cvRound((r.y + r.height - 1) * scale)),
+                      cvPoint(cvRound((r.x + r.width - 1) * scale), cvRound((r.y + r.height - 1) * scale)),
                       color, 3, 8, 0);
         }
     }

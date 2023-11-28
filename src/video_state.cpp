@@ -163,8 +163,8 @@ int VideoStateData::open_media(VideoState* is)
     {
         if (wanted_stream_spec[i] && st_index[i] == -1)
         {
-            av_log(nullptr, AV_LOG_ERROR, "Stream specifier %s does not match any %s stream\n", wanted_stream_spec[i],
-                   av_get_media_type_string(AVMediaType(i)));
+            av_log(nullptr, AV_LOG_ERROR, "Stream specifier %s does not match any %s stream\n",
+                   wanted_stream_spec[i], av_get_media_type_string(AVMediaType(i)));
             st_index[i] = INT_MAX;
         }
     }
@@ -173,9 +173,7 @@ int VideoStateData::open_media(VideoState* is)
     st_index[AVMEDIA_TYPE_AUDIO] = av_find_best_stream(pFormatCtx, AVMEDIA_TYPE_AUDIO, st_index[AVMEDIA_TYPE_AUDIO],
                                                        st_index[AVMEDIA_TYPE_VIDEO], nullptr, 0);
     st_index[AVMEDIA_TYPE_SUBTITLE] = av_find_best_stream(pFormatCtx, AVMEDIA_TYPE_SUBTITLE, st_index[AVMEDIA_TYPE_SUBTITLE],
-                                                          (st_index[AVMEDIA_TYPE_AUDIO] >= 0 ? st_index[AVMEDIA_TYPE_AUDIO]
-                                                                                             : st_index[AVMEDIA_TYPE_VIDEO]),
-                                                          nullptr, 0);
+                                                          (st_index[AVMEDIA_TYPE_AUDIO] >= 0 ? st_index[AVMEDIA_TYPE_AUDIO] : st_index[AVMEDIA_TYPE_VIDEO]), nullptr, 0);
 
     /* open the streams */
     if (st_index[AVMEDIA_TYPE_VIDEO] >= 0)

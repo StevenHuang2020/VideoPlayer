@@ -90,7 +90,9 @@ void YoutubeUrlThread::youtube_python()
 
     if (excute_process(exec, params, output) && !output.isEmpty())
     {
-        qInfo() << "Yutube Jason: " << output.trimmed();
+#if _DEBUG
+        qInfo() << "Yutube Json: " << output.trimmed();
+#endif
         auto parts = output.split("\r\n");
         parts.removeAll(QString(""));
 

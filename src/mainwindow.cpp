@@ -67,8 +67,9 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(std::make_uniq
     connect(ui->actionLine, &QAction::triggered, this, &MainWindow::popup_audio_effect);
     connect(ui->actionBar, &QAction::triggered, this, &MainWindow::popup_audio_effect);
     connect(ui->actionPie, &QAction::triggered, this, &MainWindow::popup_audio_effect);
-
+#if !NDEBUG
     print_screen();
+#endif
 }
 
 MainWindow::~MainWindow()
@@ -855,10 +856,10 @@ void MainWindow::resize_window(int width, int height)
 
 void MainWindow::center_window(QRect screen_rec)
 {
-    int x = (screen_rec.width() - this->width()) / 2;
-    int y = (screen_rec.height() - this->height()) / 2;
-    this->move(x, y);
-    this->show();
+    auto x = (screen_rec.width() - width()) / 2;
+    auto y = (screen_rec.height() - height()) / 2;
+    move(x, y);
+    show();
 }
 
 void MainWindow::show_fullscreen(bool bFullscreen)
@@ -1432,6 +1433,8 @@ bool MainWindow::start_play()
             qWarning("video play thread create failed.\n");
             return ret;
         }
+
+        play_window_size();
     }
 
 #if !NDEBUG
@@ -1657,7 +1660,6 @@ bool MainWindow::create_read_thread()
     {
         m_pPacketReadThread = std::make_unique<ReadThread>(this, nullptr);
         connect(m_pPacketReadThread.get(), &ReadThread::finished, this, &MainWindow::read_packet_stopped);
-        // connect(this, &MainWindow::stop_read_packet_thread, m_pPacketReadThread, ReadThread::stop_thread);
         return true;
     }
     return false;
@@ -1672,13 +1674,8 @@ bool MainWindow::create_decode_video_thread()
         {
             m_pDecodeVideoThread = std::make_unique<VideoDecodeThread>(this, pState);
             connect(m_pDecodeVideoThread.get(), &VideoDecodeThread::finished, this, &MainWindow::decode_video_stopped);
-            // connect(m_pDecodeVideoThread, &DecodeThread::audio_ready, this,
-            // &MainWindow::audio_receive); connect(this,
-            // &MainWindow::stop_decode_thread, m_pDecodeVideoThread,
-            // &DecodeThread::stop_decode);
 
             auto avctx = m_pVideoState->get_contex(AVMEDIA_TYPE_VIDEO);
-            assert(avctx);
 
             int ret = decoder_init(&pState->viddec, avctx, &pState->videoq, pState->continue_read_thread);
             if (ret < 0)
@@ -1768,6 +1765,7 @@ bool MainWindow::create_decode_subtitle_thread() // decode subtitle thread
 bool MainWindow::create_video_play_thread() // video play thread
 {
     assert(!m_pVideoPlayThread);
+    bool ret = false;
     if (!m_pVideoPlayThread && m_pVideoState)
     {
         if (auto pState = m_pVideoState->get_state())
@@ -1781,32 +1779,14 @@ bool MainWindow::create_video_play_thread() // video play thread
 
             auto pVideo = m_pVideoState->get_contex(AVMEDIA_TYPE_VIDEO);
             bool bHardware = m_pVideoState->is_hardware_decode();
-            print_decodeContext(pVideo);
-
-            if (pVideo)
-            {
-                auto size_center = centralWidget()->size();
-                auto n_size = size() + display_video_size(pVideo) - size_center;
-
-                resize_window(n_size); // Adjust window size
-
-                auto sz = minimumSize();
-                if (n_size.width() < sz.width() || n_size.height() < sz.height())
-                {
-                    keep_aspect_ratio();
-                }
-            }
-
-            bool ret = m_pVideoPlayThread->init_resample_param(pVideo, bHardware);
+            ret = m_pVideoPlayThread->init_resample_param(pVideo, bHardware);
             if (!ret)
             {
                 qWarning("init_resample_param failed.");
-                return false;
             }
-            return true;
         }
     }
-    return false;
+    return ret;
 }
 
 bool MainWindow::create_audio_play_thread()
@@ -1843,6 +1823,47 @@ bool MainWindow::create_audio_play_thread()
         }
     }
     return false;
+}
+
+void MainWindow::play_window_size()
+{
+    if (!m_pVideoState)
+        return;
+
+    if (auto pVideo = m_pVideoState->get_contex(AVMEDIA_TYPE_VIDEO))
+    {
+        print_decodeContext(pVideo);
+        auto size_center = centralWidget()->size();
+        auto n_size = size() + display_video_size(pVideo) - size_center;
+        adjust_window_size(n_size);
+
+        resize_window(n_size); // Adjust window size
+
+        auto sz = minimumSize();
+        if (n_size.width() < sz.width() || n_size.height() < sz.height())
+        {
+            keep_aspect_ratio();
+        }
+    }
+}
+
+void MainWindow::adjust_window_size(QSize& size)
+{
+    auto rect = screen_rect();
+
+    if (size.width() > rect.width())
+    {
+        auto w = size.width();
+        size.setWidth(rect.width());
+        size.setHeight(size.width() * size.height() / w);
+    }
+
+    if (size.height() > rect.height())
+    {
+        auto h = size.height();
+        size.setHeight(rect.height());
+        size.setWidth(size.height() * size.width() / h);
+    }
 }
 
 bool MainWindow::start_play_thread()
@@ -2013,6 +2034,10 @@ void MainWindow::image_cv(QImage& image)
     else if (ui->actionCanny->isChecked())
     {
         mat_to_qimage(canny_img(matImg), image);
+
+        /*const char* haar = "E:\\projects\\c++\\myProject\\vc\\video_player\\VideoPlayer_CMake\\src\\opencv\\build\\data\\haarcascades\\haarcascade_frontalface_alt.xml";
+        face_detect(matImg, haar);
+        mat_to_qimage(matImg, image);*/
     }
     else if (ui->actionBlur->isChecked())
     {
