@@ -68,6 +68,7 @@ public:
     void show_msg_dlg(const QString& message, const QString& windowTitle = "Warning", const QString& styleSheet = "");
     bool is_playing() const;
     QString get_playingfile() const;
+    void start_yt_play(const YoutubeJsonParser::YtStreamData& st_data);
 
 public slots:
     void image_ready(const QImage&);
@@ -219,6 +220,13 @@ private:
     bool read_playlist(const QString& playlist_file, QStringList& files) const;
     void play_window_size();
     void adjust_window_size(QSize& size);
+    void clear_yt_list();
+    void remove_yt_list(const QString& url);
+    void insert_yt_list(const QString& url, const YoutubeJsonParser::YtStreamData& st);
+
+public:
+    bool find_yt_list(const QString& url, YoutubeJsonParser::YtStreamData& st);
+
 public slots:
     void clear_savedPlaylists();
     void open_playlist();
@@ -258,4 +266,5 @@ private:
     std::unique_ptr<QActionGroup> m_AVisualGrapicTypeActsGroup;
     std::unique_ptr<QAction> m_savedPlaylists[MaxPlaylist];
     std::unique_ptr<QAction> m_PlaylistsClear;
+    std::map<QString, YoutubeJsonParser::YtStreamData> m_playYtList;
 };

@@ -5,6 +5,7 @@
 #include <QDir>
 #include <QProcess>
 #include "youtube_url_dlg.h"
+#include "youtube_json.h"
 
 class YoutubeUrlThread : public QThread
 {
@@ -16,6 +17,7 @@ public:
 signals:
     void resultReady(const QString& s);
     void resultFailed(const QString& s);
+    void resultYtReady(const YoutubeJsonParser::YtStreamData& st_data);
 
 protected:
     void run() override;

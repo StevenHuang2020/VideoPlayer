@@ -53,7 +53,7 @@ void AudioDecodeThread::run()
             dec_channel_layout = frame->ch_layout; // frame->channel_layout; //
 
             reconfigure = cmp_audio_fmts(is->audio_filter_src.fmt,
-                                         is->audio_filter_src.channels,
+                                         is->audio_filter_src.channel_layout.nb_channels,
                                          AVSampleFormat(frame->format),
                                          frame->ch_layout.nb_channels) ||
                           is->audio_filter_src.channel_layout.nb_channels !=
@@ -75,14 +75,14 @@ void AudioDecodeThread::run()
                 av_log(nullptr, AV_LOG_DEBUG,
                        "Audio frame changed from rate:%d ch:%d fmt:%s layout:%s "
                        "serial:%d to rate:%d ch:%d fmt:%s layout:%s serial:%d\n",
-                       is->audio_filter_src.freq, is->audio_filter_src.channels,
+                       is->audio_filter_src.freq, is->audio_filter_src.channel_layout.nb_channels,
                        av_get_sample_fmt_name(is->audio_filter_src.fmt), buf1,
                        last_serial, frame->sample_rate, frame->ch_layout.nb_channels,
                        av_get_sample_fmt_name(AVSampleFormat(frame->format)), buf2,
                        is->auddec.pkt_serial);
 
                 is->audio_filter_src.fmt = (AVSampleFormat)frame->format;
-                is->audio_filter_src.channels = frame->ch_layout.nb_channels;
+                is->audio_filter_src.channel_layout.nb_channels = frame->ch_layout.nb_channels;
                 is->audio_filter_src.channel_layout = dec_channel_layout;
                 is->audio_filter_src.freq = frame->sample_rate;
                 last_serial = is->auddec.pkt_serial;

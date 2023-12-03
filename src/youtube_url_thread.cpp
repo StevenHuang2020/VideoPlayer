@@ -8,7 +8,6 @@
 
 #include "youtube_url_thread.h"
 #include "common.h"
-#include "youtube_json.h"
 
 bool YoutubeUrlThread::m_bInstalledpyTube = false;
 
@@ -97,29 +96,32 @@ void YoutubeUrlThread::youtube_python()
         parts.removeAll(QString(""));
 
         YoutubeJsonParser parser(parts.takeLast());
-        auto url = parser.get_best_url();
+
+        YoutubeJsonParser::YtStreamData st;
+        st.title = parser.m_data.title;
+        st.length = parser.m_data.length;
         switch (m_data.opt_index)
         {
             case 0:
-                url = parser.get_best_url();
+                parser.get_best_stream(st.stream);
                 break;
             case 1:
-                url = parser.get_worst_url();
+                parser.get_worst_stream(st.stream);
                 break;
             case 2:
-                url = parser.get_bestvideo_url();
+                parser.get_bestvideo_stream(st.stream);
                 break;
             case 3:
-                url = parser.get_worstvideo_url();
+                parser.get_worstvideo_stream(st.stream);
                 break;
             case 4:
-                url = parser.get_bestaudio_url();
+                parser.get_bestaudio_stream(st.stream);
                 break;
             case 5:
-                url = parser.get_worstaudio_url();
+                parser.get_worstaudio_stream(st.stream);
                 break;
         }
-        emit resultReady(url);
+        emit resultYtReady(st);
         return;
     }
 

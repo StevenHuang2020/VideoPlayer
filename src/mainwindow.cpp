@@ -1274,6 +1274,13 @@ void MainWindow::set_threads()
     }
 }
 
+void MainWindow::start_yt_play(const YoutubeJsonParser::YtStreamData& st_data)
+{
+    remove_yt_list(st_data.stream.url);
+    insert_yt_list(st_data.stream.url, st_data);
+    start_to_play(st_data.stream.url);
+}
+
 void MainWindow::start_to_play(const QString& file)
 {
     if (is_playing())
@@ -2381,6 +2388,7 @@ bool MainWindow::start_youtube_url_thread(const YoutubeUrlDlg::YoutubeUrlData& d
     m_pYoutubeUrlThread.reset();
     m_pYoutubeUrlThread = std::make_unique<YoutubeUrlThread>(data, this);
     connect(m_pYoutubeUrlThread.get(), &YoutubeUrlThread::resultReady, this, &MainWindow::start_to_play);
+    connect(m_pYoutubeUrlThread.get(), &YoutubeUrlThread::resultYtReady, this, &MainWindow::start_yt_play);
     connect(m_pYoutubeUrlThread.get(), &YoutubeUrlThread::resultFailed, this, &MainWindow::play_failed);
     m_pYoutubeUrlThread->start();
     qDebug("++++++++++ youtube url parsing thread started.");
@@ -2593,6 +2601,32 @@ bool MainWindow::read_playlist(const QString& playlist_file, QStringList& files)
         files = stream.readAll().split(PLAYLIST_SEPERATE_CHAR);
         files.removeAll(QString(""));
         file.close();
+        return true;
+    }
+    return false;
+}
+
+void MainWindow::clear_yt_list()
+{
+    m_playYtList.clear();
+}
+
+void MainWindow::remove_yt_list(const QString& url)
+{
+    if (m_playYtList.find(url) != m_playYtList.end())
+        m_playYtList.erase(url);
+}
+
+void MainWindow::insert_yt_list(const QString& url, const YoutubeJsonParser::YtStreamData& st_data)
+{
+    m_playYtList[url] = st_data;
+}
+
+bool MainWindow::find_yt_list(const QString& url, YoutubeJsonParser::YtStreamData& st_data)
+{
+    if (auto it = m_playYtList.find(url); it != m_playYtList.end())
+    {
+        st_data = it->second;
         return true;
     }
     return false;

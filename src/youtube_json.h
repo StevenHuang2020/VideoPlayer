@@ -29,7 +29,7 @@ public:
         StreamType type{StreamType::Audio};
         QString resolution; //video
         QString abr;        //audio
-        int size{0};
+        int filesize{0};
         QString url;
     } YtStream;
 
@@ -39,8 +39,16 @@ public:
         QString title;
         QString author;
         uint captions_len{0};
+        uint length{0}; // duration
         std::vector<YtStream> streams;
     } YoutubeData;
+
+    typedef struct YtStreamData
+    {
+        QString title;
+        uint length{0};
+        YtStream stream;
+    } YtStreamData;
 
 public:
     explicit YoutubeJsonParser(const QString& json_file);
@@ -56,12 +64,19 @@ public:
     QString get_worstaudio_url() const;
 
     void get_streams(std::vector<YtStream>& streams, CompressionType type) const;
+    bool get_yt_stream(CompressionType type, YtStream& stream, bool order = true) const;
+    bool get_best_stream(YtStream& st) const;
+    bool get_worst_stream(YtStream& st) const;
+    bool get_bestvideo_stream(YtStream& st) const;
+    bool get_worstvideo_stream(YtStream& st) const;
+    bool get_bestaudio_stream(YtStream& st) const;
+    bool get_worstaudio_stream(YtStream& st) const;
 
 private:
     void parse();
     QString read_file(const QString& file);
 
-private:
+public:
     QString m_jsonFile;
     YoutubeData m_data;
 };

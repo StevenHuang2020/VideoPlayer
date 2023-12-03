@@ -17,9 +17,7 @@ int framedrop = -1;
 int packet_queue_init(PacketQueue* q)
 {
     memset(q, 0, sizeof(PacketQueue));
-    // q->pkt_list = av_fifo_alloc(sizeof(MyAVPacketList));
-    q->pkt_list =
-        av_fifo_alloc2(1, sizeof(MyAVPacketList), AV_FIFO_FLAG_AUTO_GROW);
+    q->pkt_list = av_fifo_alloc2(1, sizeof(MyAVPacketList), AV_FIFO_FLAG_AUTO_GROW);
     if (!q->pkt_list)
         return AVERROR(ENOMEM);
     q->mutex = new QMutex();
@@ -207,7 +205,7 @@ int frame_queue_init(FrameQueue* f, PacketQueue* pktq, int max_size, int keep_la
     return 0;
 }
 
-void frame_queue_destory(FrameQueue* f)
+void frame_queue_destroy(FrameQueue* f)
 {
     int i;
     for (i = 0; i < f->max_size; i++)
@@ -495,7 +493,6 @@ int decoder_decode_frame(Decoder* d, AVFrame* frame, AVSubtitle* sub)
         do
         {
             if (d->queue->nb_packets == 0)
-                // SDL_CondSignal(d->empty_queue_cond);
                 d->empty_queue_cond->wakeAll();
 
             if (d->packet_pending)
@@ -540,6 +537,17 @@ int decoder_decode_frame(Decoder* d, AVFrame* frame, AVSubtitle* sub)
         }
         else
         {
+            if (d->pkt->buf && !d->pkt->opaque_ref)
+            {
+                FrameData* fd;
+
+                d->pkt->opaque_ref = av_buffer_allocz(sizeof(*fd));
+                if (!d->pkt->opaque_ref)
+                    return AVERROR(ENOMEM);
+                fd = (FrameData*)d->pkt->opaque_ref->data;
+                fd->pkt_pos = d->pkt->pos;
+            }
+
             if (avcodec_send_packet(d->avctx, d->pkt) == AVERROR(EAGAIN))
             {
                 av_log(d->avctx, AV_LOG_ERROR,

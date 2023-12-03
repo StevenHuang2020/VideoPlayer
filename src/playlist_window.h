@@ -68,18 +68,18 @@ private:
     static QString get_file_name(const QString& path);
     inline bool already_in(const QString& file) const;
     QString get_cursel_file() const;
-    // QString get_cell_str(int row, int col = 2) const; //column 2 is the file
-    // full path
     QString get_row_file(int row) const;
     void init_list();
     void add_table_line(const PlayListLine& data);
     void update_table_list();
+    void clear_table_list();
     bool add_data_file(const QString& file);
-    bool del_data_file(const QString& file);
+    void del_data_file(const QString& file);
     inline QString get_data_file(int id) const;
     void clear_data_files();
     void set_sel_file(const QString& file);
     QString get_file_duration(const QString& file) const;
+    QString get_file_duration(int64_t duration) const;
     void create_temp_menu();
     static QString mimeType(const QString& filePath);
     static bool is_local(const QString& file);
@@ -88,5 +88,5 @@ private:
 private:
     std::unique_ptr<Ui::PlayList> ui;
     std::unique_ptr<QMenu> m_tmpMenu;
-    std::set<std::string> m_data;
+    std::map<QString, PlayListLine> m_dataItems;
 };

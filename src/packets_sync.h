@@ -88,7 +88,6 @@ typedef struct MyAVPacketList
 
 typedef struct PacketQueue
 {
-    // AVFifoBuffer* pkt_list;
     AVFifo* pkt_list;
     int nb_packets;
     int size;
@@ -109,7 +108,6 @@ typedef struct PacketQueue
 typedef struct AudioParams
 {
     int freq;
-    int channels;
     AVChannelLayout channel_layout;
     enum AVSampleFormat fmt;
     int frame_size;
@@ -127,6 +125,11 @@ typedef struct Clock
     int* queue_serial; /* pointer to the current packet queue serial, used for
                         obsolete clock detection */
 } Clock;
+
+typedef struct FrameData
+{
+    int64_t pkt_pos;
+} FrameData;
 
 /* Common struct for handling all types of decoded data and allocated render
  * buffers. */
@@ -349,7 +352,7 @@ void packet_queue_print(const PacketQueue* q, const AVPacket* pkt, const QString
 
 /***************FrameQueue operations*****************/
 int frame_queue_init(FrameQueue* f, PacketQueue* pktq, int max_size, int keep_last);
-void frame_queue_destory(FrameQueue* f);
+void frame_queue_destroy(FrameQueue* f);
 void frame_queue_unref_item(Frame* vp);
 void frame_queue_signal(FrameQueue* f);
 Frame* frame_queue_peek_writable(FrameQueue* f);

@@ -1,7 +1,7 @@
 ## VideoPlayer
-![C++ Version](https://img.shields.io/badge/C++-14-blue)
+![C++ Version](https://img.shields.io/badge/C++-20-blue)
 ![VS Version](https://img.shields.io/badge/VS-2019-blue)
-![QT Version](https://img.shields.io/badge/QT-5-green)
+![QT Version](https://img.shields.io/badge/QT-6-green)
 ![FFmpeg Version](https://img.shields.io/badge/FFmpeg--blue)
 ![OpenCV Version](https://img.shields.io/badge/OpenCV--blue)
 ![CMake](https://img.shields.io/badge/CMake--blue)

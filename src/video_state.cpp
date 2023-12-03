@@ -377,9 +377,9 @@ void VideoStateData::stream_close(VideoState* is)
     packet_queue_destroy(&is->subtitleq);
 
     /* free all pictures */
-    frame_queue_destory(&is->pictq);
-    frame_queue_destory(&is->sampq);
-    frame_queue_destory(&is->subpq);
+    frame_queue_destroy(&is->pictq);
+    frame_queue_destroy(&is->sampq);
+    frame_queue_destroy(&is->subpq);
 
     if (is->continue_read_thread)
     {
@@ -552,8 +552,8 @@ int VideoStateData::stream_component_open(VideoState* is, int stream_index)
             // "atempo=2"; const char* afilters = nullptr; const char* afilters =
             // "atempo=2.0";
             is->audio_filter_src.freq = avctx->sample_rate;
-            is->audio_filter_src.channels = avctx->ch_layout.nb_channels; // avctx->channels;
-            is->audio_filter_src.channel_layout = avctx->ch_layout;       //  avctx->channel_layout
+            is->audio_filter_src.channel_layout.nb_channels = avctx->ch_layout.nb_channels; // avctx->channels;
+            is->audio_filter_src.channel_layout = avctx->ch_layout;                         //  avctx->channel_layout
             is->audio_filter_src.fmt = avctx->sample_fmt;
             if ((ret = configure_audio_filters(is, is->afilters, 0)) < 0)
                 goto fail;

@@ -67,45 +67,54 @@ void PlayListWnd::init_list()
 
 bool PlayListWnd::add_data_file(const QString& file)
 {
-#if 1
-    auto ret = m_data.insert(file.toStdString());
-    return ret.second;
-#else
-    if (!already_in(file))
+    PlayListLine data;
+    data.file = file;
+    if (is_local(data.file))
     {
-        m_data.insert(file.toStdString());
-        return true;
+        data.fileName = get_file_name(data.file);
+        data.duration = get_file_duration(data.file);
+    }
+    else
+    {
+        data.fileName = "Unknow"; // not handled
+        data.duration = "--:--";
+
+        if (auto parent = (MainWindow*)parentWidget())
+        {
+            YoutubeJsonParser::YtStreamData st_data;
+            if (parent->find_yt_list(data.file, st_data))
+            {
+                data.fileName = st_data.title;
+                data.duration = get_file_duration(data.file);
+            }
+        }
     }
 
-    return false;
-#endif
+    m_dataItems.insert({file, data});
+    return true;
 }
 
 inline bool PlayListWnd::already_in(const QString& file) const
 {
-    return m_data.find(file.toStdString()) != m_data.end();
+    return m_dataItems.find(file) != m_dataItems.end();
 }
 
-bool PlayListWnd::del_data_file(const QString& file)
+void PlayListWnd::del_data_file(const QString& file)
 {
     if (already_in(file))
-    {
-        m_data.erase(file.toStdString());
-        return true;
-    }
-    return false;
+        m_dataItems.erase(file);
 }
 
 inline QString PlayListWnd::get_data_file(int id) const
 {
-    assert(id >= 0 && id < m_data.size());
-    std::string str = *std::next(m_data.begin(), id);
-    return QString::fromStdString(str);
+    auto it = m_dataItems.begin();
+    std::advance(it, id);
+    return it->first;
 }
 
 void PlayListWnd::clear_data_files()
 {
-    m_data.clear();
+    m_dataItems.clear();
 }
 
 void PlayListWnd::add_table_line(const PlayListLine& data)
@@ -123,31 +132,19 @@ void PlayListWnd::add_table_line(const PlayListLine& data)
     pTable->setRowHeight(count, 16);
 }
 
-void PlayListWnd::update_table_list()
+void PlayListWnd::clear_table_list()
 {
     const auto pTable = get_table();
     while (pTable->rowCount() > 0)
         pTable->removeRow(0);
+}
 
-    for (auto const& i : m_data)
-    {
-        PlayListLine data = {};
-        data.file = QString::fromStdString(i);
+void PlayListWnd::update_table_list()
+{
+    clear_table_list();
 
-        if (is_local(data.file))
-        {
-            data.fileName = get_file_name(data.file);
-            data.duration = get_file_duration(data.file);
-        }
-        else
-        {
-            data.fileName = "Unknow"; // not handled
-            data.duration = "--:--";
-            // qWarning() << "Not Handled!";
-        }
-
-        add_table_line(data);
-    }
+    for (auto const& i : m_dataItems)
+        add_table_line(i.second);
 
     set_cur_palyingfile();
 }
@@ -170,16 +167,6 @@ QString PlayListWnd::get_row_file(int row) const
 {
     return get_data_file(row);
 }
-
-// QString PlayListWnd::get_cell_str(int row, int col) const
-//{
-//	QTableWidget* const pTable = get_table();
-//	QTableWidgetItem* pItem = pTable->item(row, col); //column file path
-//	if (pItem)
-//		return pItem->text();
-//
-//	return QString("");
-//}
 
 void PlayListWnd::add_files(const QStringList& files)
 {
@@ -238,7 +225,11 @@ QString PlayListWnd::get_file_duration(const QString& file) const
 {
     int64_t duration = 0;
     get_file_info(file.toStdString().c_str(), duration);
+    return get_file_duration(duration);
+}
 
+QString PlayListWnd::get_file_duration(int64_t duration) const
+{
     int64_t hours = 0, mins = 0, secs = 0, us = 0;
     get_duration_time(duration, hours, mins, secs, us);
 
@@ -281,13 +272,13 @@ void PlayListWnd::set_sel_file(const QString& file)
 
 void PlayListWnd::get_files(QStringList& files) const
 {
-    for (auto const& i : m_data)
-        files.append(QString::fromStdString(i));
+    for (auto const& i : m_dataItems)
+        files.append(i.first);
 }
 
 void PlayListWnd::deleteBtn_clicked()
 {
-    if (QString sel = get_cursel_file(); !sel.isEmpty())
+    if (auto sel = get_cursel_file(); !sel.isEmpty())
     {
         del_data_file(sel);
         update_table_list();

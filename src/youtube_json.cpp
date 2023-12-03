@@ -23,6 +23,7 @@ void YoutubeJsonParser::parse()
     m_data.title = json["title"].toString();
     m_data.author = json["author"].toString();
     m_data.captions_len = json["captions_length"].toInt();
+    m_data.length = json["length"].toInt();
     auto v = json["streams"].toArray();
     for (const auto& st : v)
     {
@@ -42,7 +43,7 @@ void YoutubeJsonParser::parse()
             stream.abr = st_obj["abr"].toString();
         }
 
-        stream.size = st_obj["filesize"].toInt();
+        stream.filesize = st_obj["filesize"].toInt();
         stream.url = st_obj["url"].toString();
         m_data.streams.push_back(stream);
     }
@@ -92,7 +93,7 @@ void YoutubeJsonParser::get_streams(std::vector<YtStream>& streams, CompressionT
     }
 }
 
-QString YoutubeJsonParser::get_yt_url(CompressionType type, bool order) const
+bool YoutubeJsonParser::get_yt_stream(CompressionType type, YtStream& stream, bool order) const
 {
     std::vector<YtStream> streams;
     get_streams(streams, type);
@@ -100,14 +101,52 @@ QString YoutubeJsonParser::get_yt_url(CompressionType type, bool order) const
     {
         if (order)
         {
-            return streams.back().url;
+            stream = streams.back();
         }
         else
         {
-            return streams.front().url;
+            stream = streams.front();
         }
+        return true;
     }
+    return false;
+}
 
+bool YoutubeJsonParser::get_best_stream(YtStream& st) const
+{
+    return get_yt_stream(CompressionType::Compressed, st);
+}
+
+bool YoutubeJsonParser::get_worst_stream(YtStream& st) const
+{
+    return get_yt_stream(CompressionType::Compressed, st, false);
+}
+
+bool YoutubeJsonParser::get_bestvideo_stream(YtStream& st) const
+{
+    return get_yt_stream(CompressionType::VideoOnly, st);
+}
+
+bool YoutubeJsonParser::get_worstvideo_stream(YtStream& st) const
+{
+    return get_yt_stream(CompressionType::VideoOnly, st, false);
+}
+
+bool YoutubeJsonParser::get_bestaudio_stream(YtStream& st) const
+{
+    return get_yt_stream(CompressionType::AudioOnly, st);
+}
+
+bool YoutubeJsonParser::get_worstaudio_stream(YtStream& st) const
+{
+    return get_yt_stream(CompressionType::AudioOnly, st, false);
+}
+
+QString YoutubeJsonParser::get_yt_url(CompressionType type, bool order) const
+{
+    YtStream st;
+    if (get_yt_stream(type, st, order))
+        return st.url;
     return QString("");
 }
 
