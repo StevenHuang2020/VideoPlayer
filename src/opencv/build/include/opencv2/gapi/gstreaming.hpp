@@ -225,7 +225,7 @@ public:
      * setSource() to run the graph on a new video stream.
      *
      * @overload
-     * @param args arguments used to contruct and initialize a stream
+     * @param args arguments used to construct and initialize a stream
      * source.
      */
     template<typename T, typename... Args>
@@ -409,7 +409,7 @@ namespace streaming {
 struct GAPI_EXPORTS_W_SIMPLE queue_capacity
 {
     GAPI_WRAP
-    explicit queue_capacity(size_t cap = 1) : capacity(cap) { };
+    explicit queue_capacity(size_t cap = 1) : capacity(cap) { }
     GAPI_PROP_RW
     size_t capacity;
 };

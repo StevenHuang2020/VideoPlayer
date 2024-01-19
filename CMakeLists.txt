@@ -221,6 +221,10 @@ set(LIBRARIES
     Threads::Threads
 )
 
+set(OPENCV_INCLUDE "src/opencv/build/include")
+set(OPENCV_BIN "src/opencv/build/x64/vc16")
+set(OPENCV_LIB opencv_world490$<$<CONFIG:Debug>:d>)
+
 list(APPEND LIBRARIES
     # FFmpeg libs
     avcodec.lib
@@ -231,7 +235,7 @@ list(APPEND LIBRARIES
     avfilter.lib
     
     # opencv libs
-    opencv_world455$<$<CONFIG:Debug>:d>.lib
+    ${OPENCV_LIB}.lib
 )
 
 # Remove duplicate library dependencies.
@@ -242,16 +246,15 @@ list(REMOVE_DUPLICATES LIBRARIES)
 #-------------------------------------------------------------------------------
 set(INCLUDE_DIRS
     "src/ffmpeg/include"
-    "src/opencv/build/include"
     "src/Visual Leak Detector/include"
-    "src/opencv/build/include"
+    "${OPENCV_INCLUDE}"
 )
 
 #-------------------------------------------------------------------------------
 #   ADDITIONAL LINK DIRS
 #-------------------------------------------------------------------------------
 set(LINK_DIRS
-    "src/opencv/build/x64/vc15/lib"
+    "${OPENCV_BIN}/lib"
     "src/ffmpeg/lib"
 )
 
@@ -305,7 +308,7 @@ if(WIN32)
     # copy opencv dll libraries
     add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${CMAKE_SOURCE_DIR}/src/opencv/build/x64/vc15/bin/opencv_world455$<$<CONFIG:Debug>:d>.dll"
+        "${CMAKE_SOURCE_DIR}/${OPENCV_BIN}/bin/${OPENCV_LIB}.dll"
         $<TARGET_FILE_DIR:${TARGET_NAME}>)
 
     # copy tools folder

@@ -6,12 +6,6 @@
  *
  ******************************************/
 
-#ifdef _DEBUG
-#pragma comment(lib, "opencv_world455d.lib")
-#else
-#pragma comment(lib, "opencv_world455.lib")
-#endif
-
 #include "imagecv_operations.h"
 
 Mat load_img(const char* file, int flag)

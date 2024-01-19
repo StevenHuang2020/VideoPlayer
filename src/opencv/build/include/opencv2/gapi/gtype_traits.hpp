@@ -141,8 +141,10 @@ namespace detail
     template<typename U> struct GTypeOf<std::vector<U> >       { using type = cv::GArray<U>; };
     template<typename U> struct GTypeOf                        { using type = cv::GOpaque<U>;};
     template<>           struct GTypeOf<cv::MediaFrame>        { using type = cv::GFrame;    };
-    // FIXME: This is not quite correct since IStreamSource may produce not only Mat but also Scalar
-    // and vector data. TODO: Extend the type dispatching on these types too.
+
+    // FIXME: This is not quite correct since IStreamSource may
+    // produce not only Mat but also MediaFrame, Scalar and vector
+    // data. TODO: Extend the type dispatching on these types too.
     template<>           struct GTypeOf<cv::gapi::wip::IStreamSource::Ptr> { using type = cv::GMat;};
     template<class T> using g_type_of_t = typename GTypeOf<T>::type;
 
@@ -204,7 +206,7 @@ namespace detail
         {
             static_assert(!(cv::detail::has_gshape<GTypeTraits<U>>::value
                             || cv::detail::contains<typename std::decay<U>::type, GAPI_OWN_TYPES_LIST>::value),
-                          "gin/gout must not be used with G* classses or cv::gapi::own::*");
+                          "gin/gout must not be used with G* classes or cv::gapi::own::*");
             return GTypeTraits<T>::wrap_out(u);
         }
     };
@@ -229,10 +231,10 @@ template<typename T> struct GObtainCtor {
     static HostCtor get() { return HostCtor{}; }
 };
 template<typename T> struct GObtainCtor<GArray<T> > {
-    static HostCtor get() { return HostCtor{ConstructVec{&GArray<T>::VCtor}}; };
+    static HostCtor get() { return HostCtor{ConstructVec{&GArray<T>::VCtor}}; }
 };
 template<typename T> struct GObtainCtor<GOpaque<T> > {
-    static HostCtor get() { return HostCtor{ConstructOpaque{&GOpaque<T>::Ctor}}; };
+    static HostCtor get() { return HostCtor{ConstructOpaque{&GOpaque<T>::Ctor}}; }
 };
 } // namespace detail
 } // namespace cv

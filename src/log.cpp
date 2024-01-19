@@ -4,6 +4,9 @@
 //      Copy Right @ Steven Huang. All rights reserved.
 //
 // Log handling module.
+//
+// QT bug tracking:
+// https://bugreports.qt.io/secure/Dashboard.jspa
 // ***********************************************************/
 
 #include <Windows.h>

@@ -46,6 +46,7 @@ G desync(const G &g) {
         , {cv::detail::GTypeTraits<G>::shape}               // output Shape
         , {cv::detail::GTypeTraits<G>::op_kind}             // input data kinds
         , {cv::detail::GObtainCtor<G>::get()}               // output template ctors
+        , {cv::detail::GTypeTraits<G>::op_kind}             // output data kinds
     };
     cv::GCall call(std::move(k));
     call.pass(g);
@@ -67,7 +68,7 @@ G desync(const G &g) {
  * always produce their full output vectors.
  *
  * This operation only makes sense when a GComputation is compiled in
- * straming mode with cv::GComputation::compileStreaming(). If this
+ * streaming mode with cv::GComputation::compileStreaming(). If this
  * operation is used and there are desynchronized outputs, the user
  * should use a special version of cv::GStreamingCompiled::pull()
  * which produces an array of cv::util::optional<> objects.

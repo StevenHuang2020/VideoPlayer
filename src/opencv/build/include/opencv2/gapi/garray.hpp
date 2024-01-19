@@ -102,17 +102,17 @@ namespace detail
         GAPI_Assert(m_hint != nullptr);
         using U = typename std::decay<T>::type;
         return dynamic_cast<TypeHint<U>*>(m_hint.get()) != nullptr;
-    };
+    }
 
     template <typename T>
     void GArrayU::specifyType(){
         m_hint.reset(new TypeHint<typename std::decay<T>::type>);
-    };
+    }
 
     template <typename T>
     void GArrayU::storeKind(){
         setKind(cv::detail::GOpaqueTraits<T>::kind);
-    };
+    }
 
     // This class represents a typed STL vector reference.
     // Depending on origins, this reference may be either "just a" reference to
@@ -177,7 +177,7 @@ namespace detail
             {
                 util::get<rw_own_t>(m_ref).clear();
             }
-            else GAPI_Assert(false); // shouldn't be called in *EXT modes
+            else GAPI_Error("InternalError"); // shouldn't be called in *EXT modes
         }
 
         // Obtain a WRITE reference to underlying object
@@ -381,7 +381,7 @@ public:
      *
      * @note The value of `cv::GArray<T>` may be overwritten by assigning some
      * other `cv::GArray<T>` to the object using `operator=` -- on the
-     * assigment, the old association or value is discarded.
+     * assignment, the old association or value is discarded.
      *
      * @param v a std::vector<T> to associate with this
      * `cv::GArray<T>` object. Vector data is copied into the
