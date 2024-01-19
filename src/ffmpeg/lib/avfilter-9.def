@@ -2,6 +2,8 @@ EXPORTS
     av_buffersink_get_ch_layout
     av_buffersink_get_channel_layout
     av_buffersink_get_channels
+    av_buffersink_get_color_range
+    av_buffersink_get_colorspace
     av_buffersink_get_format
     av_buffersink_get_frame
     av_buffersink_get_frame_flags
