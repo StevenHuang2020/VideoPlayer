@@ -16,4 +16,5 @@ public:
 
 private:
     void keyPressEvent(QKeyEvent* event) override;
+    void mouseDoubleClickEvent(QMouseEvent* event) override;
 };

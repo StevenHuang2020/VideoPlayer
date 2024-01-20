@@ -8,6 +8,7 @@
 
 #include <QApplication>
 #include "video_label.h"
+#include "mainwindow.h"
 
 VideoLabel::VideoLabel(QWidget* parent) : QLabel(parent)
 {
@@ -32,6 +33,14 @@ void VideoLabel::keyPressEvent(QKeyEvent* event)
             // qDebug("video_label key:%s(%d) pressed!\n", qUtf8Printable(event->text()), event->key());
             QWidget::keyPressEvent(event);
             break;
+    }
+}
+
+void VideoLabel::mouseDoubleClickEvent(QMouseEvent* event)
+{
+    if (auto mainWnd = (MainWindow*)(parent()->parent()))
+    {
+        mainWnd->show_fullscreen(!isFullScreen());
     }
 }
 

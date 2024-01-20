@@ -69,6 +69,7 @@ public:
     bool is_playing() const;
     QString get_playingfile() const;
     void start_yt_play(const YoutubeJsonParser::YtStreamData& st_data);
+    void show_fullscreen(bool bFullscreen = true);
 
 public slots:
     void image_ready(const QImage&);
@@ -136,7 +137,6 @@ private:
     void resize_window(int width = 800, int height = 480);
     void resize_window(const QSize& size);
     void center_window(QRect screen_rec);
-    void show_fullscreen(bool bFullscreen = true);
     bool label_fullscreen();
     void hide_statusbar(bool bHide = true);
     void hide_menubar(bool bHide = true);
