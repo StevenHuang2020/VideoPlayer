@@ -111,7 +111,7 @@ void VideoPlayThread::video_refresh(VideoState* is, double* remaining_time)
 
             is->pictq.mutex->lock();
             if (!isnan(vp->pts))
-                update_video_pts(is, vp->pts, vp->serial);
+                update_video_pts(is, vp->pts, vp->pos, vp->serial);
             is->pictq.mutex->unlock();
 
             if (frame_queue_nb_remaining(&is->pictq) > 1)

@@ -49,7 +49,7 @@ void VideoDecodeThread::run()
         /*if (is->abort_request)
             break;*/
 
-        ret = get_video_frame(is, frame); // decode audio/video/subtitle
+        ret = get_video_frame(is, frame);
         if (ret < 0)
             goto the_end;
         if (!ret)
@@ -101,8 +101,6 @@ void VideoDecodeThread::run()
 
         while (ret >= 0)
         {
-            FrameData* fd;
-
             is->frame_last_returned_time = av_gettime_relative() / 1000000.0;
 
             ret = av_buffersink_get_frame_flags(filt_out, frame, 0);
@@ -114,8 +112,6 @@ void VideoDecodeThread::run()
                 break;
             }
 
-            fd = frame->opaque_ref ? (FrameData*)frame->opaque_ref->data : NULL;
-
             is->frame_last_filter_delay =
                 av_gettime_relative() / 1000000.0 - is->frame_last_returned_time;
             if (fabs(is->frame_last_filter_delay) > AV_NOSYNC_THRESHOLD / 10.0)
@@ -124,35 +120,30 @@ void VideoDecodeThread::run()
 #endif
 
 #if 0
-			duration = (frame_rate.num && frame_rate.den ? av_q2d({ frame_rate.den , frame_rate.num }) : 0);
-			pts = (frame->pts == AV_NOPTS_VALUE) ? NAN : frame->pts * av_q2d(tb);
-            ret = queue_picture(is, frame, pts, duration, fd ? fd->pkt_pos : -1, is->viddec.pkt_serial);
-			ret = queue_picture(is, frame, pts, duration, frame->pkt_pos, is->viddec.pkt_serial);
-			av_frame_unref(frame);
+            duration = (frame_rate.num && frame_rate.den ? av_q2d(AVRational{frame_rate.den, frame_rate.num}) : 0);
+            pts = (frame->pts == AV_NOPTS_VALUE) ? NAN : frame->pts * av_q2d(tb);
+            ret = queue_picture(is, frame, pts, duration, frame->pkt_pos, is->viddec.pkt_serial);
+            av_frame_unref(frame);
 #else
+
         tmp_frame = frame;
-        if (frame->format == AV_PIX_FMT_DXVA2_VLD)
+        if (frame->format == AV_PIX_FMT_DXVA2_VLD) // DXVA2 hardware decode frame
         {
             ret = av_hwframe_transfer_data(sw_frame, frame, 0);
             if (ret < 0)
             {
-                av_log(nullptr, AV_LOG_WARNING,
-                       "Error transferring the data to system memory\n");
+                av_log(nullptr, AV_LOG_WARNING, "Error transferring the data to system memory\n");
                 goto the_end;
             }
             // sw_frame->hw_frames_ctx = frame->hw_frames_ctx;
             sw_frame->pts = frame->pts;
             sw_frame->pkt_dts = frame->pkt_dts;
-
             tmp_frame = sw_frame;
         }
 
-        duration = (frame_rate.num && frame_rate.den
-                        ? av_q2d({frame_rate.den, frame_rate.num})
-                        : 0);
-        pts =
-            (tmp_frame->pts == AV_NOPTS_VALUE) ? NAN : tmp_frame->pts * av_q2d(tb);
-        ret = queue_picture(is, tmp_frame, pts, duration, AV_CODEC_FLAG_COPY_OPAQUE, is->viddec.pkt_serial);
+        duration = (frame_rate.num && frame_rate.den ? av_q2d({frame_rate.den, frame_rate.num}) : 0);
+        pts = (frame->pts == AV_NOPTS_VALUE) ? NAN : frame->pts * av_q2d(tb);
+        ret = queue_picture(is, tmp_frame, pts, duration, frame->pkt_pos, is->viddec.pkt_serial);
         av_frame_unref(tmp_frame);
 #endif
 

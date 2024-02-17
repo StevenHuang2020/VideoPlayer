@@ -6,7 +6,6 @@
 // A/V synchronization state. This code is referenced
 // from ffplay.c in Ffmpeg library.
 // ***********************************************************/
-
 #include "video_state.h"
 
 int infinite_buffer = -1;
@@ -80,25 +79,25 @@ int VideoStateData::open_media(VideoState* is)
     uint i;
     int ret = -1;
     int st_index[AVMEDIA_TYPE_NB];
-    AVFormatContext* pFormatCtx = nullptr;
+    AVFormatContext* ic = nullptr;
     const char* wanted_stream_spec[AVMEDIA_TYPE_NB] = {0};
 
     memset(st_index, -1, sizeof(st_index));
 
     is->eof = 0;
 
-    pFormatCtx = avformat_alloc_context();
-    if (!pFormatCtx)
+    ic = avformat_alloc_context();
+    if (!ic)
     {
         av_log(nullptr, AV_LOG_FATAL, "Could not allocate context.\n");
         ret = AVERROR(ENOMEM);
         goto fail;
     }
 
-    pFormatCtx->interrupt_callback.callback = nullptr; // decode_interrupt_cb;
-    pFormatCtx->interrupt_callback.opaque = is;
+    ic->interrupt_callback.callback = nullptr; // decode_interrupt_cb;
+    ic->interrupt_callback.opaque = is;
 
-    err = avformat_open_input(&pFormatCtx, is->filename, is->iformat, nullptr);
+    err = avformat_open_input(&ic, is->filename, is->iformat, nullptr);
     if (err < 0)
     {
         av_log(nullptr, AV_LOG_FATAL, "failed to open %s: %d", is->filename, err);
@@ -106,13 +105,16 @@ int VideoStateData::open_media(VideoState* is)
         goto fail;
     }
 
-    is->ic = pFormatCtx;
+    is->ic = ic;
 
-    pFormatCtx->flags |= AVFMT_FLAG_GENPTS; // gen pts
+    //ic->flags |= AVFMT_FLAG_GENPTS; // gen pts
 
-    av_format_inject_global_side_data(pFormatCtx);
+    av_format_inject_global_side_data(ic);
 
-    err = avformat_find_stream_info(pFormatCtx, nullptr);
+    //AVDictionary** opts = setup_find_stream_info_opts(ic, codec_opts);
+    //int orig_nb_streams = ic->nb_streams;
+
+    err = avformat_find_stream_info(ic, nullptr);
     if (err < 0)
     {
         av_log(nullptr, AV_LOG_WARNING, "%s: could not find codec parameters\n", is->filename);
@@ -120,15 +122,15 @@ int VideoStateData::open_media(VideoState* is)
         goto fail;
     }
 
-    if (pFormatCtx->pb)
-        pFormatCtx->pb->eof_reached = 0; // FIXME hack, ffplay maybe should not use
-                                         // avio_feof() to test for the end
+    if (ic->pb)
+        ic->pb->eof_reached = 0; // FIXME hack, ffplay maybe should not use
+                                 // avio_feof() to test for the end
 
     // if (seek_by_bytes < 0)
-    //	seek_by_bytes = (pFormatCtx->iformat->flags & AVFMT_TS_DISCONT) &&
-    //strcmp("ogg", pFormatCtx->iformat->name);
+    //	seek_by_bytes = (ic->iformat->flags & AVFMT_TS_DISCONT) &&
+    //strcmp("ogg", ic->iformat->name);
 
-    is->max_frame_duration = (pFormatCtx->iformat->flags & AVFMT_TS_DISCONT) ? 10.0 : 3600.0;
+    is->max_frame_duration = (ic->iformat->flags & AVFMT_TS_DISCONT) ? 10.0 : 3600.0;
 
     /* if seeking requested, we execute it */
     if (start_time != AV_NOPTS_VALUE)
@@ -137,26 +139,26 @@ int VideoStateData::open_media(VideoState* is)
 
         timestamp = start_time;
         /* add the stream start time */
-        if (pFormatCtx->start_time != AV_NOPTS_VALUE)
-            timestamp += pFormatCtx->start_time;
-        ret = avformat_seek_file(pFormatCtx, -1, INT64_MIN, timestamp, INT64_MAX, 0);
+        if (ic->start_time != AV_NOPTS_VALUE)
+            timestamp += ic->start_time;
+        ret = avformat_seek_file(ic, -1, INT64_MIN, timestamp, INT64_MAX, 0);
         if (ret < 0)
         {
             av_log(nullptr, AV_LOG_WARNING, "%s: could not seek to position %0.3f\n", is->filename, (double)timestamp / AV_TIME_BASE);
         }
     }
 
-    is->realtime = is_realtime(pFormatCtx);
+    is->realtime = is_realtime(ic);
 
-    av_dump_format(pFormatCtx, 0, is->filename, 0);
+    av_dump_format(ic, 0, is->filename, 0);
 
-    for (i = 0; i < pFormatCtx->nb_streams; i++)
+    for (i = 0; i < ic->nb_streams; i++)
     {
-        AVStream* st = pFormatCtx->streams[i];
+        AVStream* st = ic->streams[i];
         enum AVMediaType type = st->codecpar->codec_type;
         st->discard = AVDISCARD_ALL;
         if (type >= 0 && wanted_stream_spec[type] && st_index[type] == -1)
-            if (avformat_match_stream_specifier(pFormatCtx, st, wanted_stream_spec[type]) > 0)
+            if (avformat_match_stream_specifier(ic, st, wanted_stream_spec[type]) > 0)
                 st_index[type] = i;
     }
     for (i = 0; i < AVMEDIA_TYPE_NB; i++)
@@ -169,10 +171,10 @@ int VideoStateData::open_media(VideoState* is)
         }
     }
 
-    st_index[AVMEDIA_TYPE_VIDEO] = av_find_best_stream(pFormatCtx, AVMEDIA_TYPE_VIDEO, st_index[AVMEDIA_TYPE_VIDEO], -1, nullptr, 0);
-    st_index[AVMEDIA_TYPE_AUDIO] = av_find_best_stream(pFormatCtx, AVMEDIA_TYPE_AUDIO, st_index[AVMEDIA_TYPE_AUDIO],
+    st_index[AVMEDIA_TYPE_VIDEO] = av_find_best_stream(ic, AVMEDIA_TYPE_VIDEO, st_index[AVMEDIA_TYPE_VIDEO], -1, nullptr, 0);
+    st_index[AVMEDIA_TYPE_AUDIO] = av_find_best_stream(ic, AVMEDIA_TYPE_AUDIO, st_index[AVMEDIA_TYPE_AUDIO],
                                                        st_index[AVMEDIA_TYPE_VIDEO], nullptr, 0);
-    st_index[AVMEDIA_TYPE_SUBTITLE] = av_find_best_stream(pFormatCtx, AVMEDIA_TYPE_SUBTITLE, st_index[AVMEDIA_TYPE_SUBTITLE],
+    st_index[AVMEDIA_TYPE_SUBTITLE] = av_find_best_stream(ic, AVMEDIA_TYPE_SUBTITLE, st_index[AVMEDIA_TYPE_SUBTITLE],
                                                           (st_index[AVMEDIA_TYPE_AUDIO] >= 0 ? st_index[AVMEDIA_TYPE_AUDIO] : st_index[AVMEDIA_TYPE_VIDEO]), nullptr, 0);
 
     /* open the streams */
@@ -204,8 +206,8 @@ int VideoStateData::open_media(VideoState* is)
     return 0;
 
 fail:
-    if (pFormatCtx && !is->ic)
-        avformat_close_input(&pFormatCtx);
+    if (ic && !is->ic)
+        avformat_close_input(&ic);
     return ret;
 }
 
@@ -377,9 +379,9 @@ void VideoStateData::stream_close(VideoState* is)
     packet_queue_destroy(&is->subtitleq);
 
     /* free all pictures */
-    frame_queue_destroy(&is->pictq);
-    frame_queue_destroy(&is->sampq);
-    frame_queue_destroy(&is->subpq);
+    frame_queue_destory(&is->pictq);
+    frame_queue_destory(&is->sampq);
+    frame_queue_destory(&is->subpq);
 
     if (is->continue_read_thread)
     {
@@ -470,6 +472,7 @@ int VideoStateData::stream_component_open(VideoState* is, int stream_index)
     AVDictionary* opts = nullptr;
     // const AVDictionaryEntry* t = nullptr;
     int sample_rate, nb_channels;
+    AVChannelLayout ch_layout = {0};
     // int64_t
     int format;
     int ret = 0;
@@ -533,6 +536,11 @@ int VideoStateData::stream_component_open(VideoState* is, int stream_index)
     avctx->lowres = stream_lowres;
 
     // avctx->flags2 |= AV_CODEC_FLAG2_FAST;
+    /*opts = filter_codec_opts(codec_opts, avctx->codec_id, ic, ic->streams[stream_index], codec);
+    if (!av_dict_get(opts, "threads", NULL, 0))
+        av_dict_set(&opts, "threads", "auto", 0);
+    if (stream_lowres)
+        av_dict_set_int(&opts, "lowres", stream_lowres, 0);*/
 
     if ((ret = avcodec_open2(avctx, codec, &opts)) < 0)
     {
@@ -552,8 +560,8 @@ int VideoStateData::stream_component_open(VideoState* is, int stream_index)
             // "atempo=2"; const char* afilters = nullptr; const char* afilters =
             // "atempo=2.0";
             is->audio_filter_src.freq = avctx->sample_rate;
-            is->audio_filter_src.channel_layout.nb_channels = avctx->ch_layout.nb_channels; // avctx->channels;
-            is->audio_filter_src.channel_layout = avctx->ch_layout;                         //  avctx->channel_layout
+            is->audio_filter_src.ch_layout.nb_channels = avctx->ch_layout.nb_channels; // avctx->channels;
+            is->audio_filter_src.ch_layout = avctx->ch_layout;                         //  avctx->channel_layout
             is->audio_filter_src.fmt = avctx->sample_fmt;
             if ((ret = configure_audio_filters(is, is->afilters, 0)) < 0)
                 goto fail;
@@ -569,8 +577,10 @@ int VideoStateData::stream_component_open(VideoState* is, int stream_index)
         }
 #else
             sample_rate = avctx->sample_rate;
-            nb_channels = avctx->channels;
-            AVChannelLayout chn_layout = avctx->channel_layout;
+            ret = av_channel_layout_copy(&ch_layout, &avctx->ch_layout);
+            if (ret < 0)
+                goto fail;
+
 #endif
             /* prepare audio output */
             /*if ((ret = audio_open(is, chn_layout, nb_channels, sample_rate,
@@ -581,9 +591,7 @@ int VideoStateData::stream_component_open(VideoState* is, int stream_index)
             is->audio_stream = stream_index;
             is->audio_st = ic->streams[stream_index];
 
-            if ((is->ic->iformat->flags &
-                 (AVFMT_NOBINSEARCH | AVFMT_NOGENSEARCH | AVFMT_NO_BYTE_SEEK)) &&
-                !is->ic->iformat->read_seek)
+            if ((is->ic->iformat->flags & (AVFMT_NOBINSEARCH | AVFMT_NOGENSEARCH | AVFMT_NO_BYTE_SEEK)) && !is->ic->iformat->read_seek)
             {
                 is->auddec.start_pts = is->audio_st->start_time;
                 is->auddec.start_pts_tb = is->audio_st->time_base;

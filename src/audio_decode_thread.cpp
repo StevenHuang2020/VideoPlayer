@@ -45,7 +45,7 @@ void AudioDecodeThread::run()
 
         if (got_frame)
         {
-            tb = {1, frame->sample_rate};
+            tb = AVRational{1, frame->sample_rate};
 
 #if USE_AVFILTER_AUDIO
             // dec_channel_layout = get_valid_channel_layout(frame->channel_layout,
@@ -53,10 +53,10 @@ void AudioDecodeThread::run()
             dec_channel_layout = frame->ch_layout; // frame->channel_layout; //
 
             reconfigure = cmp_audio_fmts(is->audio_filter_src.fmt,
-                                         is->audio_filter_src.channel_layout.nb_channels,
+                                         is->audio_filter_src.ch_layout.nb_channels,
                                          AVSampleFormat(frame->format),
                                          frame->ch_layout.nb_channels) ||
-                          is->audio_filter_src.channel_layout.nb_channels !=
+                          is->audio_filter_src.ch_layout.nb_channels !=
                               dec_channel_layout.nb_channels ||
                           is->audio_filter_src.freq != frame->sample_rate ||
                           is->auddec.pkt_serial != last_serial;
@@ -68,22 +68,23 @@ void AudioDecodeThread::run()
                 // is->audio_filter_src.channel_layout);
                 // av_get_channel_layout_string(buf2, sizeof(buf2), -1,
                 // dec_channel_layout);
-                av_channel_layout_describe(&is->audio_filter_src.channel_layout, buf1,
+                av_channel_layout_describe(&is->audio_filter_src.ch_layout, buf1,
                                            sizeof(buf1));
                 av_channel_layout_describe(&dec_channel_layout, buf2, sizeof(buf2));
 
                 av_log(nullptr, AV_LOG_DEBUG,
                        "Audio frame changed from rate:%d ch:%d fmt:%s layout:%s "
                        "serial:%d to rate:%d ch:%d fmt:%s layout:%s serial:%d\n",
-                       is->audio_filter_src.freq, is->audio_filter_src.channel_layout.nb_channels,
+                       is->audio_filter_src.freq, is->audio_filter_src.ch_layout.nb_channels,
                        av_get_sample_fmt_name(is->audio_filter_src.fmt), buf1,
                        last_serial, frame->sample_rate, frame->ch_layout.nb_channels,
                        av_get_sample_fmt_name(AVSampleFormat(frame->format)), buf2,
                        is->auddec.pkt_serial);
 
                 is->audio_filter_src.fmt = (AVSampleFormat)frame->format;
-                is->audio_filter_src.channel_layout.nb_channels = frame->ch_layout.nb_channels;
-                is->audio_filter_src.channel_layout = dec_channel_layout;
+                ret = av_channel_layout_copy(&is->audio_filter_src.ch_layout, &frame->ch_layout);
+                if (ret < 0)
+                    goto the_end;
                 is->audio_filter_src.freq = frame->sample_rate;
                 last_serial = is->auddec.pkt_serial;
 
@@ -97,9 +98,7 @@ void AudioDecodeThread::run()
             if (ret < 0)
                 goto the_end;
 
-            // while ((ret = av_buffersink_get_frame_flags(is->out_audio_filter,
-            // frame, 0)) >= 0) {
-            while ((ret = av_buffersink_get_frame(is->out_audio_filter, frame)) >= 0)
+            while ((ret = av_buffersink_get_frame_flags(is->out_audio_filter, frame, 0)) >= 0)
             {
                 tb = av_buffersink_get_time_base(is->out_audio_filter);
 #endif
@@ -108,9 +107,9 @@ void AudioDecodeThread::run()
                     goto the_end;
 
                 af->pts = (frame->pts == AV_NOPTS_VALUE) ? NAN : frame->pts * av_q2d(tb);
-                af->pos = AV_CODEC_FLAG_COPY_OPAQUE; //frame->pkt_pos;
+                af->pos = frame->pkt_pos; //AV_CODEC_FLAG_COPY_OPAQUE; //
                 af->serial = is->auddec.pkt_serial;
-                af->duration = av_q2d({frame->nb_samples, frame->sample_rate});
+                af->duration = av_q2d(AVRational{frame->nb_samples, frame->sample_rate});
 
                 av_frame_move_ref(af->frame, frame);
                 frame_queue_push(&is->sampq);

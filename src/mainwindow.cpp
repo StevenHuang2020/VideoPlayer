@@ -110,7 +110,7 @@ void MainWindow::create_video_label()
     m_video_label = std::make_unique<VideoLabel>(centralWidget());
     m_video_label->setObjectName(QString::fromUtf8("label_Video"));
     m_video_label->setScaledContents(true);
-    // m_video_label->setWindowFlags(label_Video->windowFlags() | Qt::Widget);
+    m_video_label->setWindowFlags(m_video_label->windowFlags() | Qt::SubWindow);
     m_video_label->show();
 }
 
@@ -1427,6 +1427,8 @@ bool MainWindow::start_play()
 
     if (bVideo)
     {
+        play_window_size();
+
         ret = create_decode_video_thread();
         if (!ret)
         {
@@ -1440,8 +1442,6 @@ bool MainWindow::start_play()
             qWarning("video play thread create failed.\n");
             return ret;
         }
-
-        play_window_size();
     }
 
 #if !NDEBUG

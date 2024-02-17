@@ -205,7 +205,7 @@ int frame_queue_init(FrameQueue* f, PacketQueue* pktq, int max_size, int keep_la
     return 0;
 }
 
-void frame_queue_destroy(FrameQueue* f)
+void frame_queue_destory(FrameQueue* f)
 {
     int i;
     for (i = 0; i < f->max_size; i++)
@@ -370,7 +370,7 @@ int get_video_frame(VideoState* is, AVFrame* frame)
 
         frame->sample_aspect_ratio =
             av_guess_sample_aspect_ratio(is->ic, is->video_st, frame);
-#if 1 /**drop frame**/
+
         if (framedrop > 0 ||
             (framedrop && get_master_sync_type(is) != AV_SYNC_VIDEO_MASTER))
         {
@@ -388,7 +388,6 @@ int get_video_frame(VideoState* is, AVFrame* frame)
                 }
             }
         }
-#endif
     }
 
     return got_picture;
@@ -466,7 +465,7 @@ int decoder_decode_frame(Decoder* d, AVFrame* frame, AVSubtitle* sub)
                         ret = avcodec_receive_frame(d->avctx, frame);
                         if (ret >= 0)
                         {
-                            AVRational tb = {1, frame->sample_rate};
+                            AVRational tb = AVRational{1, frame->sample_rate};
                             if (frame->pts != AV_NOPTS_VALUE)
                                 frame->pts = av_rescale_q(frame->pts, d->avctx->pkt_timebase, tb);
                             else if (d->next_pts != AV_NOPTS_VALUE)
@@ -537,17 +536,6 @@ int decoder_decode_frame(Decoder* d, AVFrame* frame, AVSubtitle* sub)
         }
         else
         {
-            if (d->pkt->buf && !d->pkt->opaque_ref)
-            {
-                FrameData* fd;
-
-                d->pkt->opaque_ref = av_buffer_allocz(sizeof(*fd));
-                if (!d->pkt->opaque_ref)
-                    return AVERROR(ENOMEM);
-                fd = (FrameData*)d->pkt->opaque_ref->data;
-                fd->pkt_pos = d->pkt->pos;
-            }
-
             if (avcodec_send_packet(d->avctx, d->pkt) == AVERROR(EAGAIN))
             {
                 av_log(d->avctx, AV_LOG_ERROR,
@@ -859,7 +847,7 @@ double vp_duration(VideoState* is, Frame* vp, Frame* nextvp)
     return 0.0;
 }
 
-void update_video_pts(VideoState* is, double pts, int serial)
+void update_video_pts(VideoState* is, double pts, int64_t pos, int serial)
 {
     /* update current video pts */
     set_clock(&is->vidclk, pts, serial);
@@ -1053,7 +1041,7 @@ int configure_audio_filters(VideoState* is, const char* afilters, int force_outp
   av_opt_set(is->agraph, "aresample_swr_opts", aresample_swr_opts, 0);*/
 
     av_bprint_init(&bp, 0, AV_BPRINT_SIZE_AUTOMATIC);
-    av_channel_layout_describe_bprint(&is->audio_filter_src.channel_layout, &bp);
+    av_channel_layout_describe_bprint(&is->audio_filter_src.ch_layout, &bp);
 
     snprintf(asrc_args, sizeof(asrc_args),
              "sample_rate=%d:sample_fmt=%s:time_base=%d/%d:channel_layout=%s",

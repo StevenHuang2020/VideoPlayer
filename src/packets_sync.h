@@ -17,6 +17,7 @@ extern "C"
 #include <libavutil/imgutils.h>
 #include <libavutil/samplefmt.h>
 #include <libavutil/time.h>
+#include <libavcodec/avfft.h>
 #include <libswresample/swresample.h>
 #include <libswscale/swscale.h>
 
@@ -108,7 +109,7 @@ typedef struct PacketQueue
 typedef struct AudioParams
 {
     int freq;
-    AVChannelLayout channel_layout;
+    AVChannelLayout ch_layout;
     enum AVSampleFormat fmt;
     int frame_size;
     int bytes_per_sec;
@@ -352,7 +353,7 @@ void packet_queue_print(const PacketQueue* q, const AVPacket* pkt, const QString
 
 /***************FrameQueue operations*****************/
 int frame_queue_init(FrameQueue* f, PacketQueue* pktq, int max_size, int keep_last);
-void frame_queue_destroy(FrameQueue* f);
+void frame_queue_destory(FrameQueue* f);
 void frame_queue_unref_item(Frame* vp);
 void frame_queue_signal(FrameQueue* f);
 Frame* frame_queue_peek_writable(FrameQueue* f);
@@ -397,7 +398,7 @@ void update_volume(VideoState* is, int sign, double step);
 void step_to_next_frame(VideoState* is);
 double compute_target_delay(double delay, VideoState* is);
 double vp_duration(VideoState* is, Frame* vp, Frame* nextvp);
-void update_video_pts(VideoState* is, double pts, int serial);
+void update_video_pts(VideoState* is, double pts, int64_t pos, int serial);
 
 #if PRINT_PACKETQUEUE_INFO
 void print_state_info(VideoState* is);
