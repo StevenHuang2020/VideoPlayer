@@ -87,6 +87,7 @@ EXPORTS
     av_channel_layout_check
     av_channel_layout_compare
     av_channel_layout_copy
+    av_channel_layout_custom_init
     av_channel_layout_default
     av_channel_layout_describe
     av_channel_layout_describe_bprint
@@ -95,6 +96,7 @@ EXPORTS
     av_channel_layout_from_string
     av_channel_layout_index_from_channel
     av_channel_layout_index_from_string
+    av_channel_layout_retype
     av_channel_layout_standard
     av_channel_layout_subset
     av_channel_layout_uninit
