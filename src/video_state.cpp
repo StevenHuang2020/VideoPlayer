@@ -591,7 +591,7 @@ int VideoStateData::stream_component_open(VideoState* is, int stream_index)
             is->audio_stream = stream_index;
             is->audio_st = ic->streams[stream_index];
 
-            if ((is->ic->iformat->flags & (AVFMT_NOBINSEARCH | AVFMT_NOGENSEARCH | AVFMT_NO_BYTE_SEEK)) && !is->ic->iformat->read_seek)
+            if ((is->ic->iformat->flags & (AVFMT_NOBINSEARCH | AVFMT_NOGENSEARCH | AVFMT_NO_BYTE_SEEK)))
             {
                 is->auddec.start_pts = is->audio_st->start_time;
                 is->auddec.start_pts_tb = is->audio_st->time_base;
